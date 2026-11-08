@@ -1,5 +1,5 @@
 // Scam ring radar: calls linked by a shared mule ID or by the scammer's voice fingerprint (Gnani clone embedding).
-import { AlertTriangle, AudioWaveform, Network, RefreshCw } from "lucide-react";
+import { AlertTriangle, AudioWaveform, Download, Network, RefreshCw } from "lucide-react";
 import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
 import { SCAM_TYPE_LABELS } from "../lib/labels";
@@ -59,7 +59,12 @@ export default function Rings() {
         kicker="Intelligence"
         title="Scam ring radar"
         sub="One gang uses many names and many numbers. Dadi links calls that share a mule UPI ID, phone or account, or the same scammer's voice: Gnani's voice-cloning model turns ~10 s of their speech into a voice fingerprint."
-        right={<button className="btn" onClick={reload} disabled={loading}><RefreshCw size={16} /> Refresh</button>}
+        right={
+          <div className="row wrap" style={{ gap: 8 }}>
+            <a className="btn" href="/api/feed/mule-ids.csv" download><Download size={16} /> Mule-ID feed (CSV)</a>
+            <button className="btn" onClick={reload} disabled={loading}><RefreshCw size={16} /> Refresh</button>
+          </div>
+        }
       />
       <div className="disclaimer" style={{ marginBottom: 16 }}>
         <AlertTriangle size={14} className="flex-none" /> Simulated calls with synthetic data. A voice match is a lead for investigators, not proof.
@@ -75,7 +80,7 @@ export default function Rings() {
       </Card>
       <div className="grid g2" style={{ marginTop: 16 }}>
         {d.rings.map((r, i) => (
-          <Card key={i} icon={AudioWaveform} title={`Ring ${i + 1}: ${r.calls.length} calls`} className="bad">
+          <Card key={i} icon={AudioWaveform} title={`Ring ${i + 1}: ${r.calls.length} calls`} className="alert">
             <div className="stack" style={{ gap: 10 }}>
               <div><div className="pill-src">Names used</div><div className="chips">{r.aliases.length ? r.aliases.map((a) => <Badge key={a} tone="amber">{a}</Badge>) : "–"}</div></div>
               <div><div className="pill-src">Mule IDs to freeze</div><div className="chips">{r.ids.length ? r.ids.map((x) => <Badge key={x} tone="rose">{x}</Badge>) : "–"}</div></div>

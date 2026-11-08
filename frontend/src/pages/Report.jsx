@@ -1,4 +1,4 @@
-import { ArrowLeft, Printer, ShieldAlert } from "lucide-react";
+import { ArrowLeft, AudioLines, Download, Printer, ShieldAlert } from "lucide-react";
 import { Badge, Card, Hud, PageHead } from "../ui";
 import { useApi } from "../lib/api";
 import { INTEL_FIELDS, mmss } from "../lib/labels";
@@ -30,6 +30,7 @@ export default function Report({ query }) {
         right={
           <div className="row no-print">
             <a className="btn ghost sm" href="#/app/history"><ArrowLeft size={15} /> Calls</a>
+            <a className="btn sm" href={`/api/calls/${id}/evidence.zip`} download><Download size={15} /> Evidence pack</a>
             <button className="btn primary sm" onClick={() => window.print()}><Printer size={15} /> Print / save PDF</button>
           </div>
         }
@@ -41,6 +42,20 @@ export default function Report({ query }) {
         </Card>
 
         <Card title="Summary"><p className="text-2">{r.summary}</p></Card>
+
+        {r.recording && (
+          <Card icon={AudioLines} title="Call recording (evidence)" right={<Hud tone="green">SHA-256 sealed</Hud>}>
+            <audio className="rec-player no-print" controls preload="none" src={r.recording.url} />
+            <div className="small text-2" style={{ marginTop: 8 }}>
+              Stereo: left = caller, right = {r.persona}, as it was heard on the call · {mmss(r.recording.seconds)}
+            </div>
+            <div className="hash mono">{r.recording.sha256}</div>
+            <div className="small muted">
+              The evidence pack holds the recording, the full transcript and this report, each with its SHA-256, so
+              anyone can check that nothing was changed.
+            </div>
+          </Card>
+        )}
 
         <div className="grid g2">
           <Card title="Incident">

@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS turns (
 );
 CREATE INDEX IF NOT EXISTS turns_call ON turns(call_id);
 CREATE TABLE IF NOT EXISTS voiceprints (call_id TEXT PRIMARY KEY, vec BLOB);
+CREATE TABLE IF NOT EXISTS recordings (call_id TEXT PRIMARY KEY, meta TEXT);
 """
 
 
@@ -98,3 +99,11 @@ class Store:
 
     def voiceprints(self) -> dict[str, np.ndarray]:
         return {r["call_id"]: np.frombuffer(r["vec"], "<f4") for r in self.db.execute("SELECT * FROM voiceprints")}
+
+    def save_recording(self, call_id: str, meta: dict) -> None:
+        self.db.execute("INSERT OR REPLACE INTO recordings(call_id, meta) VALUES (?,?)", (call_id, json.dumps(meta)))
+        self.db.commit()
+
+    def recording(self, call_id: str) -> dict | None:
+        row = self.db.execute("SELECT meta FROM recordings WHERE call_id=?", (call_id,)).fetchone()
+        return json.loads(row["meta"]) if row else None

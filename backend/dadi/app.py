@@ -10,10 +10,13 @@ import asyncio
 import json
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 from types import SimpleNamespace
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from voice_core.audio import pink_noise
@@ -28,6 +31,7 @@ from voice_core.testing import FakeLLM
 from .agent import DadiAgent
 from .arena import run_arena, run_noise_benchmark
 from .assets import load_or_make_babble, load_or_make_fillers
+from .evidence import CallRecorder, build_evidence_pack, feed_csv, mule_feed
 from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, all_audio, echo_stt, fake_embed, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
@@ -116,14 +120,51 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             raise HTTPException(404, "call not found")
         return c
 
-    @app.get("/api/calls/{call_id}/report")
-    async def report(call_id: str):
+    def _report_parts(call_id: str):
         c = store.get_call(call_id)
         if not c:
             raise HTTPException(404, "call not found")
         turns = [Turn(t["speaker"], t["text"], t["t"] or 0.0, t.get("lang")) for t in c["turns"]]
-        intel = IntelReport(**(c.get("intel") or {}))
-        return build_report(c, turns, intel)
+        r = build_report(c, turns, IntelReport(**(c.get("intel") or {})))
+        rec = store.recording(call_id)
+        if rec and not Path(rec["path"]).exists():
+            rec = None
+        r["recording"] = ({k: v for k, v in rec.items() if k != "path"} | {"url": f"/api/calls/{call_id}/audio"}
+                          if rec else None)
+        return r, turns, rec
+
+    @app.get("/api/calls/{call_id}/report")
+    async def report(call_id: str):
+        return _report_parts(call_id)[0]
+
+    @app.get("/api/calls/{call_id}/audio")
+    async def call_audio(call_id: str):
+        rec = store.recording(call_id)
+        if not rec or not Path(rec["path"]).exists():
+            raise HTTPException(404, "no recording for this call")
+        return FileResponse(rec["path"], media_type="audio/wav", filename=f"dadi-call-{call_id}.wav")
+
+    @app.get("/api/calls/{call_id}/evidence.zip")
+    async def evidence(call_id: str):
+        r, turns, rec = _report_parts(call_id)
+        wav = Path(rec["path"]).read_bytes() if rec else None
+        return Response(build_evidence_pack(r, turns, wav, rec), media_type="application/zip",
+                        headers={"Content-Disposition": f'attachment; filename="dadi-evidence-{call_id}.zip"'})
+
+    def _feed() -> list[dict]:
+        calls = store.list_calls(5000)
+        ring_of = {n["id"]: n["ring"] for n in build_rings(calls, store.voiceprints())["nodes"] if n["ring"]}
+        return mule_feed(calls, ring_of)
+
+    @app.get("/api/feed/mule-ids.json")
+    async def feed_json():
+        return {"generated_at": time.time(), "note": "Identifiers revealed by suspected scam callers. Leads, not proof.",
+                "rows": _feed()}
+
+    @app.get("/api/feed/mule-ids.csv")
+    async def feed_csv_file():
+        return Response(feed_csv(_feed()), media_type="text/csv; charset=utf-8",
+                        headers={"Content-Disposition": 'attachment; filename="dadi-mule-ids.csv"'})
 
     @app.get("/api/rings")
     async def rings():
@@ -135,13 +176,21 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
         await ws.accept()
         lock = asyncio.Lock()
         alive = {"v": True}
+        recorder = CallRecorder(settings.sample_rate)  # two-track evidence recording (caller | Dadi as played)
+        t0 = {"v": time.monotonic()}
+
+        def now() -> float:
+            return time.monotonic() - t0["v"]
 
         async def send_json(m: dict):
+            if m.get("type") == "stop_audio":
+                recorder.stop_agent(now())
             if alive["v"]:
                 async with lock:
                     await ws.send_json(m)
 
         async def send_audio(b: bytes):
+            recorder.agent(b, now())
             if alive["v"]:
                 async with lock:
                     await ws.send_bytes(b)
@@ -163,6 +212,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
         watch = VoiceWatch(store=getattr(agent, "store", store), call_id=agent.call_id, sample_rate=settings.sample_rate,
                            embed_fn=voice_embed_fn, api_key=settings.gnani_api_key, on_match=on_repeat_caller,
                            speech_filter=all_audio if fake else speech_only)
+        t0["v"] = time.monotonic()
         await sess.start()
         if first.get("noise_snr_db") is not None:
             await sess.set_noise(float(first["noise_snr_db"]))
@@ -172,6 +222,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
                 if msg.get("type") == "websocket.disconnect":
                     break
                 if msg.get("bytes"):
+                    recorder.caller(msg["bytes"], now())
                     if not getattr(sess, "speaking", False):  # keep Dadi's own echoed voice out of his fingerprint
                         watch.feed(msg["bytes"])
                     await sess.on_audio(msg["bytes"])
@@ -186,6 +237,13 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             pass
         finally:
             res = await sess.hangup()
+            call_store = getattr(agent, "store", store)
+            try:
+                meta = recorder.save(settings.cache_dir / "recordings", agent.call_id)
+                if meta:
+                    call_store.save_recording(agent.call_id, meta)
+            except Exception as e:
+                log.warning("saving the call recording failed: %r", e)
             try:
                 await send_json({"type": "call_ended", "call_id": agent.call_id, "wasted_seconds": res["session_seconds"]})
             except Exception:

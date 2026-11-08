@@ -139,3 +139,59 @@ def test_second_call_from_the_same_voice_is_flagged_live(tmp_path):
     rc = [m for m in second if m["type"] == "repeat_caller"]
     assert len(rc) == 1 and rc[0]["match"]["call_id"] == first[0]["call_id"]
     assert any(l["kind"] == "voice" for l in rings["links"]), rings
+
+
+def test_call_recording_evidence_pack_and_mule_feed(tmp_path):
+    import hashlib
+    import io
+    import json
+    import time
+    import wave
+    import zipfile
+
+    import numpy as np
+
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache")
+    holder = {}
+
+    def factory(send_json, send_audio, persona):
+        store = holder.setdefault("s", Store(settings.cache_dir / "dadi.db"))
+        agent = DadiAgent(store=store, llm=FakeLLM(["हाँ बेटा, लिख रही हूँ।"]), intel_llm=FakeLLM([]),
+                          persona_key="dadi", seed=1)
+        stt = FakeStt([ev("connected"), ev("transcript", "UPI ID likhiye rathore.cbi@okaxis")], gap=0.05)
+        sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
+                                 stt_factory=lambda: stt, tts_fn=fake_tts, rng=random.Random(0))
+        return sess, agent
+
+    app = create_app(settings, session_factory=factory)
+    tone = (np.sin(np.arange(8000 * 2) / 3) * 6000).astype("<i2").tobytes()
+    with TestClient(app) as c:
+        assert c.get("/api/calls/nope/audio").status_code == 404
+        assert c.get("/api/calls/nope/evidence.zip").status_code == 404
+        with c.websocket_connect("/ws/call") as ws:
+            ws.send_json({"type": "start", "persona": "dadi"})
+            cid = ws.receive_json()["call_id"]
+            for i in range(0, len(tone), 1024):
+                ws.send_bytes(tone[i : i + 1024])
+            time.sleep(0.4)
+            ws.send_json({"type": "hangup"})
+            for _ in range(100):
+                m = ws.receive()
+                if m.get("text") and json.loads(m["text"])["type"] == "call_ended":
+                    break
+        audio = c.get(f"/api/calls/{cid}/audio")
+        rep = c.get(f"/api/calls/{cid}/report").json()
+        pack = c.get(f"/api/calls/{cid}/evidence.zip")
+        feed_csv = c.get("/api/feed/mule-ids.csv")
+        feed_json = c.get("/api/feed/mule-ids.json").json()
+    assert audio.status_code == 200 and audio.headers["content-type"] == "audio/wav"
+    with wave.open(io.BytesIO(audio.content)) as w:
+        assert w.getnchannels() == 2 and w.getframerate() == 8000 and w.getnframes() >= 8000 * 2
+    assert rep["recording"]["sha256"] == hashlib.sha256(audio.content).hexdigest()
+    assert rep["recording"]["url"] == f"/api/calls/{cid}/audio" and "path" not in rep["recording"]
+    z = zipfile.ZipFile(io.BytesIO(pack.content))
+    assert pack.headers["content-type"] == "application/zip" and "recording.wav" in z.namelist()
+    assert hashlib.sha256(z.read("recording.wav")).hexdigest() == rep["recording"]["sha256"]
+    assert "rathore.cbi@okaxis" in z.read("transcript.txt").decode("utf-8")
+    assert feed_csv.status_code == 200 and feed_csv.text.splitlines()[0].startswith("kind,value,calls")
+    assert any(r["value"] == "rathore.cbi@okaxis" and r["kind"] == "upi_id" for r in feed_json["rows"])

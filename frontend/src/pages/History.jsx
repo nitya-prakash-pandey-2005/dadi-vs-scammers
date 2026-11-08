@@ -1,4 +1,4 @@
-import { ChevronRight, History as HistoryIcon } from "lucide-react";
+import { ChevronRight, Download, History as HistoryIcon } from "lucide-react";
 import { Avatar, Badge, Card, PageHead } from "../ui";
 import { useApi } from "../lib/api";
 import { PERSONA_HUE, SCAM_TYPE_LABELS, identifierCount, mmss } from "../lib/labels";
@@ -11,7 +11,12 @@ export default function History() {
   const { data: totals } = useApi("/api/totals");
   return (
     <>
-      <PageHead kicker="Calls & reports" title="Every scam call Dadi took" sub="Open any call to get its complaint draft." />
+      <PageHead
+        kicker="Calls & reports"
+        title="Every scam call Dadi took"
+        sub="Open any call for its complaint draft, recording and evidence pack."
+        right={<a className="btn sm" href="/api/feed/mule-ids.csv" download><Download size={15} /> Mule-ID feed for banks (CSV)</a>}
+      />
       <div className="grid">
         <Totals totals={totals} />
         <Card icon={HistoryIcon} title="Calls" right={<Badge>{calls?.length ?? 0}</Badge>}>
