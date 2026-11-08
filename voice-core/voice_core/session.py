@@ -279,10 +279,20 @@ class VoiceAgentSession:
         except Exception as e:
             log.warning("TTS fallback failed: %r", e)
 
+    async def _cached_or_tts(self, text: str):
+        if text in self.filler_audio:  # pre-rendered (greeting, fillers): instant and free
+            audio = self.filler_audio[text]
+            step = max(2, (self.sr // 5) * 2)  # 200 ms chunks
+            for i in range(0, len(audio), step):
+                yield audio[i : i + step]
+            return
+        async for chunk in self._tts(text):
+            yield chunk
+
     async def _speak_fixed(self, text: str) -> None:
         spoken = False
         try:
-            async for chunk in self._tts(text):
+            async for chunk in self._cached_or_tts(text):
                 if not spoken:
                     spoken = True
                     await self._safe_json({"type": "agent_speaking", "on": True})
