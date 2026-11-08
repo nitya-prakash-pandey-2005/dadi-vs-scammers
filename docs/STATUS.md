@@ -15,7 +15,7 @@ The plan with the exact interfaces and tests is in `docs/04-build-plan.md`.
 | 5 | Brain prompts, intel extraction, report | | | todo |
 | 6 | Call session engine | | | todo |
 | 7 | FastAPI app and WebSocket protocol | | | todo |
-| 8 | Frontend: phone, war room, report | | | todo |
+| 8 | Frontend: phone, war room, report | CL | main | done |
 | 9 | Live integration and tuning (needs keys) | TM | | todo |
 | 10 | Arena: AI vs AI and noise benchmark (P1) | | | todo |
 | 11 | README, interview prep, demo and post kit | CL | | todo |
