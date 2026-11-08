@@ -90,3 +90,37 @@ async def test_noise_benchmark_with_fakes():
     assert [r["snr_db"] for r in res["by_snr"]] == [None, 5]
     assert all(r["entity_recall"] == 1.0 for r in res["by_snr"])
     assert sum(1 for e in events if e["type"] == "bench_row") == 4
+
+
+async def test_arena_rematch_dadi_recognises_the_voice_live(tmp_path):
+    import base64
+    from dadi.store import Store
+    store, events = Store(tmp_path / "d.db"), []
+
+    async def emit(e):
+        events.append(e)
+
+    async def tts(api_key, text, sample_rate=8000, voice="", **kw):  # 5 s per line: the live check fires on line 2
+        return (np.sin(np.arange(sample_rate * 5) / 3) * 8000).astype("<i2").tobytes()
+
+    async def embed(api_key, wav):  # every call here is the same scammer voice
+        return {"embedding": base64.b64encode(np.array([1.0, 0.0], "<f4").tobytes()).decode()}
+
+    def kw():
+        return dict(scam_type="digital_arrest", turns=3, snr_db=None, settings=Settings(sample_rate=8000),
+                    scammer_llm=FakeLLM([]), dadi_llm=FakeLLM(["हाँ बेटा।"] * 3), intel_llm=FakeLLM([]), emit=emit,
+                    tts_fn=tts, stt_fn=echo_stt, store=store, embed_fn=embed)
+
+    first = await run_arena(**kw())
+    assert first["repeat_of"] is None and not any(e["type"] == "repeat_caller" for e in events)
+    events.clear()
+    second_kw = kw()
+    second = await run_arena(**second_kw)
+    rc = [i for i, e in enumerate(events) if e["type"] == "repeat_caller"]
+    assert len(rc) == 1 and events[rc[0]]["match"]["call_id"] == first["call_id"]
+    assert second["repeat_of"]["call_id"] == first["call_id"] and second["repeat_of"]["similarity"] > 0.99
+    dadi_turns = [e for e in events if e["type"] == "arena_turn" and e["speaker"] == "dadi"]
+    assert [d["recognised"] for d in dadi_turns] == [False, True, True]  # known before her 2nd reply
+    prompts = [m[0]["content"] for m in second_kw["dadi_llm"].calls]
+    assert "recognise this man's voice" in prompts[1] and "already told him" in prompts[2]
+    assert store.get_call(second["call_id"])["ended_at"] and len(store.get_call(second["call_id"])["turns"]) == 6

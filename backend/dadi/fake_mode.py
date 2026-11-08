@@ -4,6 +4,7 @@ A scripted 'scammer' speaks every few seconds and Dadi answers with canned lines
 from __future__ import annotations
 
 import asyncio
+import base64
 import itertools
 
 import numpy as np
@@ -103,3 +104,15 @@ async def tone_tts(api_key, text, sample_rate: int = 8000, **kw):
     for i in range(0, len(pcm), step):
         await asyncio.sleep(0.02)
         yield pcm[i : i + step]
+
+
+async def fake_embed(api_key, wav, **kw) -> dict:
+    """Fake voice fingerprint: every fake caller has the same 'voice', so a second fake call shows the
+    repeat-caller alert (UI work without keys). Same shape as Gnani's voice-clone embedding (768 float32)."""
+    v = np.full(768, 1 / np.sqrt(768), "<f4")
+    return {"embedding": base64.b64encode(v.tobytes()).decode(), "shape": [1, 768], "dtype": "float32"}
+
+
+def all_audio(pcm16: bytes, sr: int) -> bytes:
+    """Fake mode's 'speech filter': counts every mic frame as speech, so silence works too."""
+    return pcm16

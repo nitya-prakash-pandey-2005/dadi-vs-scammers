@@ -131,3 +131,13 @@ def test_store_totals(tmp_path):
     assert st.totals() == {"calls": 1, "seconds_wasted": 125.0, "mule_ids": 2}
     assert st.get_call(c)["turns"][0]["text"] == "hi"
     assert st.get_call("missing") is None
+
+
+async def test_speaking_flag_follows_playback_and_barge_in(tmp_path):
+    out_json, out_audio = [], []
+    sess, *_ = make_session(tmp_path, out_json, out_audio, streams=[FakeStt([])], dialogue=[], intel=[])
+    assert not sess.speaking
+    await sess._emit_audio(b"\x00\x00" * 4000)  # 0.5 s of audio at 8 kHz is now playing at the caller's end
+    assert sess.speaking
+    await sess._barge_in()
+    assert not sess.speaking
