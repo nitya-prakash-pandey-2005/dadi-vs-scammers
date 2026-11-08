@@ -34,6 +34,7 @@ from .taxonomy import SCAM_KEYTERMS
 log = logging.getLogger(__name__)
 Emit = Callable[[dict], Awaitable[None]]
 _BREAK = re.compile(r"\b(AI|A\.I\.|bot|chatbot|language model|assistant)\b|scammer|fraudster|धोखेबाज़", re.I)
+_LEAK = re.compile(r"\b(I am an AI|I'm an AI|as an AI|my (system )?prompt|my instructions)\b|मैं (एक )?(AI|एआई|रोबोट) हूँ|\bmain (ek )?(AI|robot) (hoon|hu|hun)\b", re.I)
 _REFUSAL = re.compile(r"\b(I can'?t|I cannot|I'm sorry|as an AI|I won'?t)\b", re.I)
 ENTITY_KEYS = ("upi_ids", "phones", "accounts", "ifsc")
 
@@ -116,7 +117,7 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
     scammer_view: list[dict] = []
     intel = IntelReport()
     t = 0.0
-    cers, recalls, breaks = [], [], 0
+    cers, recalls, breaks, leaks = [], [], 0, 0
     line_audio = bytearray()
 
     for i in range(turns):
@@ -147,6 +148,7 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
         state.last_scammer_text = heard
         reply = " ".join([s async for s in brain.reply_sentences(history, state, rng)]).strip()
         breaks += bool(_BREAK.search(reply))
+        leaks += bool(_LEAK.search(reply))
         t += max(1.5, len(reply) / 12) + 0.6
         history.append(Turn("dadi", reply, round(t, 1)))
         scammer_view.append({"role": "user", "content": reply})
@@ -166,7 +168,7 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
         "scam_type": scam_type, "turns": turns, "snr_db": snr_db, "seconds_simulated": round(t, 1),
         "cer_mean": round(sum(cers) / len(cers), 4) if cers else None,
         "entity_recall_mean": round(sum(recalls) / len(recalls), 3) if recalls else None,
-        "persona_breaks": breaks, "intel": intel_json(intel), "scammer_voice": scammer_voice,
+        "persona_breaks": breaks, "admitted_ai": leaks, "intel": intel_json(intel), "scammer_voice": scammer_voice,
         "mission": mission, "mission_turn": mission_turn,
     }
     if store is not None:

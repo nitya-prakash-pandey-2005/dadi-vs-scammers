@@ -77,7 +77,8 @@ PROMPT = (
     '"red_flags": [{"flag": "", "quote": "", "t": 0.0}]}. '
     f"scam_type must be one of {SCAM_TYPES}. Each red flag must be one of {sorted(RED_FLAGS)}; quote is a short "
     "exact quote and t is the [t=..] time of that line. Convert spoken numbers to digits. "
-    "Only include what was actually said. Reply with the JSON only."
+    "Only include what was actually said. names = only the names the caller gives for HIMSELF or his colleagues, "
+    "never names of the woman's family he repeats back. Reply with the JSON only."
 )
 
 

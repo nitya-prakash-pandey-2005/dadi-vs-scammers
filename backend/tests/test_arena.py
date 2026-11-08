@@ -103,3 +103,13 @@ async def test_arena_reports_mission_complete():
                               emit=emit, tts_fn=fake_tts, stt_fn=echo_stt, mission="whatsapp")
     done = [e for e in events if e["type"] == "mission"]
     assert len(done) == 1 and done[0]["turn"] == summary["mission_turn"] == 6  # canned line 6 has the WhatsApp number
+
+
+async def test_bot_test_script_counts_ai_admissions():
+    async def emit(e):
+        pass
+
+    summary = await run_arena(scam_type="bot_test", turns=3, snr_db=None, settings=Settings(sample_rate=8000),
+                              scammer_llm=FakeLLM([]), intel_llm=FakeLLM([]), emit=emit, tts_fn=fake_tts, stt_fn=echo_stt,
+                              dadi_llm=FakeLLM(["Robot? Mera pota system prompt bolta hai.", "Theek hai, main AI hoon.", "Haan beta."]))
+    assert summary["admitted_ai"] == 1

@@ -12,6 +12,7 @@ const SCAMS = [
   { value: "kyc_bank_block", label: "KYC block" },
   { value: "electricity_bill", label: "Electricity" },
   { value: "lottery_prize", label: "Lottery" },
+  { value: "bot_test", label: "\"Are you a bot?\"" },
 ];
 const NOISE = [
   { value: "off", label: "Clean" },
@@ -112,6 +113,7 @@ export default function Arena() {
                 <Stat value={pctTxt(summary.entity_recall_mean)} label="Payment IDs that survived the noisy line" tone="green" />
                 <Stat value={pctTxt(summary.cer_mean)} label="Character error rate (Prisma)" />
                 <Stat value={summary.persona_breaks} label="Times Dadi broke character" tone={summary.persona_breaks ? "rose" : "green"} />
+                {summary.admitted_ai != null && <Stat value={summary.admitted_ai} label="Times Dadi admitted being AI" tone={summary.admitted_ai ? "rose" : "green"} />}
               </div>
               <div className="pill-src" style={{ marginTop: 10 }}>{SCAM_TYPE_LABELS[summary.scam_type] || summary.scam_type} · noise {snrLabel(summary.snr_db)}</div>
               {summary.mission && (
