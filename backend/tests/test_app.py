@@ -87,3 +87,7 @@ def test_intelligence_routes(app_client):
     r = app_client.get("/api/freeze-list?format=csv")
     assert r.status_code == 200 and r.text.startswith("kind,id,bank") and "attachment" in r.headers["content-disposition"]
     assert app_client.get("/api/rings").json()["rings"] == []
+
+
+def test_check_route_needs_text(app_client):
+    assert app_client.post("/api/check", json={"text": " "}).status_code == 400

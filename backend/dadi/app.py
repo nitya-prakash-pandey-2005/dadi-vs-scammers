@@ -33,6 +33,7 @@ from .assets import load_or_make_babble, load_or_make_fillers
 from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, echo_stt, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
+from .checker import check_message
 from .insights import freeze_csv, freeze_list, insights
 from .report import build_report
 from .rings import build_rings, speech_only, voiceprint_vec
@@ -127,6 +128,15 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
     @app.get("/api/rings")
     async def rings():
         return build_rings(store.list_calls(500), store.voiceprints())
+
+    @app.post("/api/check")
+    async def check(body: dict):
+        text = str(body.get("text") or "").strip()
+        if not text:
+            raise HTTPException(400, "text is required")
+        if fake:
+            return await check_message(text, intel_llm=CyclingLLM([]), llm=CyclingLLM(DADI_LINES))
+        return await check_message(text, intel_llm=LLM(settings, purpose="intel"), llm=LLM(settings))
 
     @app.get("/api/insights")
     async def get_insights():

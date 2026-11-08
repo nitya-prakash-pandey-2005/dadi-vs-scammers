@@ -117,3 +117,7 @@ table.freeze th { text-align: left; color: var(--muted); font-weight: 500; paddi
 table.freeze td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 table.freeze a { color: var(--cyan); text-decoration: none; }
 .mono { font-family: ui-monospace, monospace; }
+
+/* Message checker */
+.fact { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--line); color: var(--text); font-size: 14px; line-height: 1.45; }
+.flags { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--text-2); line-height: 1.6; }
