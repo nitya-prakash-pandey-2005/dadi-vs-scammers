@@ -26,7 +26,7 @@ from .brain import DadiBrain
 from .intel import IntelReport, extract_intel, intel_json
 from .intel_rules import find_entities
 from .personas import PERSONAS
-from .rings import build_rings, speech_only, voiceprint_vec
+from .rings import build_rings, speech_only, synthetic_voice, tts_catalog, voiceprint_vec
 from .scammer_scripts import BENCH_LINES, SCAMMER_LANGUAGE, SCAMMER_VOICE, SCRIPTS
 from .tactics import CallState, mission_done
 from .taxonomy import SCAM_KEYTERMS
@@ -185,15 +185,18 @@ async def file_arena_call(store, persona_key, history, intel, seconds, line_audi
         store.add_turn(cid, turn)
     store.save_intel(cid, intel)
     store.end_call(cid, seconds)
+    synthetic = None
     try:
         speech = speech_only(line_audio, settings.sample_rate)
         if embed_fn and len(speech) / 2 / settings.sample_rate >= 5:
             emb = await embed_fn(settings.gnani_api_key, wav_bytes(speech, settings.sample_rate))
-            store.save_voiceprint(cid, voiceprint_vec(emb))
+            vec = voiceprint_vec(emb)
+            store.save_voiceprint(cid, vec)
+            synthetic = synthetic_voice(vec, tts_catalog())
     except Exception as e:
         log.info("voiceprint failed: %r", e)
     links = [l for l in build_rings(store.list_calls(500), store.voiceprints())["links"] if cid in (l["source"], l["target"])]
-    return {"call_id": cid, "ring_links": links}
+    return {"call_id": cid, "ring_links": links, "synthetic_voice": synthetic}
 
 
 async def run_noise_benchmark(*, settings: Settings, emit: Emit, tts_fn=None, stt_fn=None, noise=None,

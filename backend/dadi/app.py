@@ -36,7 +36,7 @@ from .personas import PERSONAS
 from .checker import check_message
 from .insights import freeze_csv, freeze_list, insights
 from .report import build_report
-from .rings import build_rings, speech_only, voiceprint_vec
+from .rings import tts_catalog, build_rings, speech_only, voiceprint_vec
 from .scammer_scripts import SCAMMER_VOICE
 from .tactics import MISSIONS
 from .store import Store
@@ -132,7 +132,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
 
     @app.get("/api/rings")
     async def rings():
-        return build_rings(store.list_calls(500), store.voiceprints())
+        return build_rings(store.list_calls(500), store.voiceprints(), catalog=tts_catalog())
 
     @app.post("/api/check")
     async def check(body: dict):

@@ -45,3 +45,22 @@ def test_store_keeps_voiceprints(tmp_path):
     cid = s.create_call("dadi")
     s.save_voiceprint(cid, np.array([0.1, 0.2], "<f4"))
     assert np.allclose(s.voiceprints()[cid], [0.1, 0.2])
+
+
+def test_synthetic_voice_needs_clear_top_match():
+    from dadi.rings import synthetic_voice
+    cat = {"Harshad": np.array([1.0, 0.0, 0.0]), "Avinash": np.array([0.0, 1.0, 0.0])}
+    hit = synthetic_voice(np.array([0.8, 0.3, 0.5]), cat)
+    assert hit["voice"] == "Harshad" and 0.75 <= hit["score"] < 0.9
+    assert synthetic_voice(np.array([0.6, 0.55, 0.55]), cat) is None  # no clear winner
+    assert synthetic_voice(np.array([0.1, 0.1, 1.0]), cat) is None  # too far from every catalogue voice
+
+
+def test_catalogue_ships_all_timbre_voices():
+    from dadi.rings import tts_catalog
+    assert len(tts_catalog()) == 13 and all(v.shape == (768,) for v in tts_catalog().values())
+
+
+def test_build_rings_marks_synthetic_nodes():
+    r = build_rings([{"id": "c1", "intel": {}}], {"c1": np.array([1.0, 0.0])}, catalog={"Harshad": np.array([1.0, 0.0]), "X": np.array([0.0, 1.0])})
+    assert r["nodes"][0]["synthetic"]["voice"] == "Harshad"

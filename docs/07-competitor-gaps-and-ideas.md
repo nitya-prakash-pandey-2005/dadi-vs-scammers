@@ -20,7 +20,7 @@ What Dadi already does that nobody else does in India: Hinglish/Tanglish/Benglis
 
 Effort: S < 2 h, M < 5 h, L > 5 h. Credits: Gnani calls needed.
 
-### Build now (high demo value, low credits)
+### Build now (high demo value, low credits): #1–#6 DONE on `dilavesh` (8 Nov)
 | # | Idea | Gap it closes | Award fit | Effort |
 |---|---|---|---|---|
 | 1 | **Scam Intelligence board**: top impersonated agencies/brands, scam types, ₹ demanded (lakh/crore), mule IDs by bank handle, minutes wasted | Apate insights portal | Real Deal, interview | S |

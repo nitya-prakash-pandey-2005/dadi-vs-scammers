@@ -124,3 +124,4 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
 .mission-pill { display: flex; gap: 8px; align-items: center; margin: 10px 0; padding: 8px 12px; border-radius: 10px;
   background: var(--amber-a); color: var(--amber); font-size: 13px; }
 .mission-pill.done { background: rgba(52, 211, 153, 0.13); color: var(--green); }
+.ring-synth { fill: var(--cyan) !important; font-size: 11px !important; }

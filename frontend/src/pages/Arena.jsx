@@ -121,6 +121,9 @@ export default function Arena() {
                   <Target size={15} /> Mission {MISSION_OPTIONS.find((o) => o.value === summary.mission)?.label}: {summary.mission_turn ? `complete in ${summary.mission_turn} turns` : "not completed"}
                 </div>
               )}
+              {summary.synthetic_voice && (
+                <div className="mission-pill"><Bot size={15} /> Scammer's voice matches the AI voice "{summary.synthetic_voice.voice}" ({summary.synthetic_voice.score}): likely synthetic</div>
+              )}
               {summary.ring_links?.length > 0 && (
                 <a className="ring-alert" href="#/app/rings">
                   <Network size={16} /> Linked to {summary.ring_links.length} earlier call{summary.ring_links.length > 1 ? "s" : ""}: {summary.ring_links.map((l) => l.reason).join(" · ")}
