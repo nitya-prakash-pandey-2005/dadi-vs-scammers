@@ -93,3 +93,16 @@ def test_system_prompt_pins_the_persona_language():
     for key, lang, sample in (("ajji", "Kannada", "ಯಾರಪ್ಪ"), ("ammamma", "Telugu", "నాయనా"), ("dadi", "Hinglish", "बेटा")):
         sp = system_prompt(PERSONAS[key], t, {})
         assert f"always reply in {lang}" in sp and sample in sp and "<coughs>" not in sp.split("Example")[1].split("\n")[0]
+
+
+def test_running_story_is_fixed_per_call_and_used_on_tangents():
+    from dadi.brain import system_prompt
+    from dadi.tactics import MOVES
+    for p in PERSONAS.values():
+        assert len(p.stories) >= 2
+    b1, b2 = DadiBrain(FakeLLM([]), PERSONAS["dadi"], seed=1), DadiBrain(FakeLLM([]), PERSONAS["dadi"], seed=1)
+    assert b1.story == b2.story and b1.story in PERSONAS["dadi"].stories
+    tangent = Tactic(phase="stall_pay", move="health_tangent", instruction=MOVES["health_tangent"])
+    other = Tactic(phase="extract", move="ask_upi", instruction=MOVES["ask_upi"])
+    assert b1.story in system_prompt(PERSONAS["dadi"], tangent, {}, story=b1.story)
+    assert b1.story not in system_prompt(PERSONAS["dadi"], other, {}, story=b1.story)

@@ -66,6 +66,7 @@ class DadiAgent:
             return None
         self.persona = new
         self.brain.persona = new
+        self.brain.story = random.Random(self.seed).choice(new.stories) if new.stories else None
         self.store.set_persona(self.call_id, new.key)
         return {"type": "persona", "persona": new.key, "persona_name": new.name, "city": new.city, "language": code}
 

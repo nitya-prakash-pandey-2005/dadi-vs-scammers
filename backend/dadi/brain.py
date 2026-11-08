@@ -36,7 +36,10 @@ def clean_reply(text: str) -> str:
     return re.sub(r"\s{2,}", " ", t).strip()
 
 
-def system_prompt(p: Persona, tactic: Tactic, wallet: dict) -> str:
+STORY_MOVES = {"health_tangent", "tv_serial", "neighbour", "grandson", "door_bell"}
+
+
+def system_prompt(p: Persona, tactic: Tactic, wallet: dict, story: str | None = None) -> str:
     notes = ""
     if tactic.fake_field and tactic.fake_field in wallet:
         notes = f"\nYour notes (FAKE, safe to read out): {tactic.fake_field} = {wallet[tactic.fake_field]}"
@@ -61,11 +64,14 @@ def system_prompt(p: Persona, tactic: Tactic, wallet: dict) -> str:
         "- If he gets angry, stay sweet and confused.\n"
         f"- Your little world: {', '.join(p.quirks)}.\n"
         f"Right now: {tactic.instruction}{notes}"
+        + (f"\nThis turn, drift into your running story (pick up where you left off, add one small new detail, "
+           f"then come back to his question): {story}." if story and tactic.move in STORY_MOVES else "")
     )
 
 
-def build_messages(persona: Persona, tactic: Tactic, history: list[Turn], wallet: dict) -> list[dict]:
-    msgs = [{"role": "system", "content": system_prompt(persona, tactic, wallet)}]
+def build_messages(persona: Persona, tactic: Tactic, history: list[Turn], wallet: dict,
+                   story: str | None = None) -> list[dict]:
+    msgs = [{"role": "system", "content": system_prompt(persona, tactic, wallet, story)}]
     for turn in history[-HISTORY_TURNS:]:
         role = "user" if turn.speaker == "scammer" else "assistant"
         msgs.append({"role": role, "content": turn.text})
@@ -77,6 +83,7 @@ class DadiBrain:
         self.llm = llm
         self.persona = persona
         self.wallet = fake_wallet(seed)
+        self.story = random.Random(seed).choice(persona.stories) if persona.stories else None
         self.last_tactic: Tactic | None = None
 
     async def reply_sentences(self, history: list[Turn], state: CallState, rng: random.Random) -> AsyncIterator[str]:
@@ -84,7 +91,7 @@ class DadiBrain:
         self.last_tactic = tactic
         state.recent_moves.append(tactic.move)
         state.turn += 1
-        msgs = build_messages(self.persona, tactic, history, self.wallet)
+        msgs = build_messages(self.persona, tactic, history, self.wallet, self.story)
         buf = ""
         async for delta in self.llm.stream(msgs, temperature=0.9, max_tokens=120):
             buf += delta
