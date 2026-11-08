@@ -85,3 +85,11 @@ def test_sanitise_drops_malformed_llm_identifiers():
                    "upi_ids": ["bijli office", "rathore.cbi@okax.in"], "amounts": ["990875", "₹980", "5 lakh"]})
     assert r.accounts == ["123456789012"] and r.phones == ["9876543210"]
     assert r.upi_ids == ["rathore.cbi@okaxis"] and r.amounts == ["₹980", "5 lakh"]
+
+
+def test_system_prompt_pins_the_persona_language():
+    from dadi.brain import system_prompt
+    t = Tactic(phase="confused", move="glasses", instruction="x")
+    for key, lang, sample in (("ajji", "Kannada", "ಯಾರಪ್ಪ"), ("ammamma", "Telugu", "నాయనా"), ("dadi", "Hinglish", "बेटा")):
+        sp = system_prompt(PERSONAS[key], t, {})
+        assert f"always reply in {lang}" in sp and sample in sp and "<coughs>" not in sp.split("Example")[1].split("\n")[0]

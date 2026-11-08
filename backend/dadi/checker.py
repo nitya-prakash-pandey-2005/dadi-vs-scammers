@@ -31,7 +31,8 @@ FACTS = {
     "investment": "Guaranteed high returns are a red flag. Check that the company is registered with SEBI.",
 }
 DEFAULT_FACT = "Never share an OTP or PIN and never pay a stranger. If money was lost, call 1930 at once."
-_SCRIPT_LANG = (("ta-IN", r"[஀-௿]"), ("bn-IN", r"[ঀ-৿]"), ("hi-IN", r"[ऀ-ॿ]"))
+_SCRIPT_LANG = (("ta-IN", r"[\u0B80-\u0BFF]"), ("bn-IN", r"[\u0980-\u09FF]"), ("kn-IN", r"[\u0C80-\u0CFF]"),
+                ("te-IN", r"[\u0C00-\u0C7F]"), ("hi-IN", r"[\u0900-\u097F]"))
 
 
 def verdict(confidence: float, n_flags: int, has_ids: bool) -> str:

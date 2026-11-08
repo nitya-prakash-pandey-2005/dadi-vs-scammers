@@ -18,7 +18,7 @@ const STT_BADGE = {
   reconnecting: ["amber", "Reconnecting…"],
   error: ["rose", "Speech service error"],
 };
-const SHORT = { dadi: "Dadi", paati: "Paati", thakuma: "Thakuma" };
+const SHORT = { dadi: "Dadi", paati: "Paati", thakuma: "Thakuma", ajji: "Ajji", ammamma: "Ammamma" };
 
 export const MISSION_OPTIONS = [
   { value: "", label: "Free play" }, { value: "upi", label: "UPI" }, { value: "account", label: "Account" },

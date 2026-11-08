@@ -32,7 +32,7 @@ def app_client(tmp_path):
 def test_health_and_personas(app_client):
     h = app_client.get("/api/health")
     assert h.status_code == 200 and "gnani_key" in h.json()
-    assert {p["key"] for p in app_client.get("/api/personas").json()} == {"dadi", "paati", "thakuma"}
+    assert {p["key"] for p in app_client.get("/api/personas").json()} == {"dadi", "paati", "thakuma", "ajji", "ammamma"}
     assert app_client.get("/api/totals").json()["calls"] == 0
 
 

@@ -15,9 +15,17 @@ from .tactics import CallState, Tactic, next_tactic
 
 ALLOWED_TAGS = ("coughs", "sigh", "laugh", "pauses", "slow", "clears throat")
 HISTORY_TURNS = 12
-_LABEL = re.compile(r"^\s*(?:dadi|paati|thakuma|kamla(?: devi)?|meenakshi|bela(?: rani)?|assistant|grandma)\s*[:：-]\s*", re.I)
+_LABEL = re.compile(r"^\s*(?:dadi|paati|thakuma|ajji|ammamma|kamla(?: devi)?|meenakshi|bela(?: rani)?|shantamma|sarojini|assistant|grandma)\s*[:：-]\s*", re.I)
 _STAGE = re.compile(r"\s*(?:\([^)]*\)|\*[^*]*\*|\[[^\]]*\])\s*")
 _TAG = re.compile(r"<([^<>]{1,20})>")
+
+
+_LANG_NAME = {"hi": "Hinglish (Hindi + English)", "ta": "Tamil (Tanglish)", "bn": "Bengali (Benglish)",
+              "kn": "Kannada (Kanglish)", "te": "Telugu (Tenglish)"}
+
+
+def strip_tags(text: str) -> str:
+    return re.sub(r"\s*<[^<>]{1,20}>\s*", " ", text).strip()
 
 
 def clean_reply(text: str) -> str:
@@ -39,7 +47,8 @@ def system_prompt(p: Persona, tactic: Tactic, wallet: dict) -> str:
         "(his UPI ID, bank account and IFSC, phone or WhatsApp number, his name and badge number), while you never "
         "give any real information.\n"
         "How you talk:\n"
-        f"- {p.style}\n"
+        f"- LANGUAGE (most important): always reply in {_LANG_NAME.get(p.language[:2], 'Hindi')}, even when the caller "
+        f"speaks Hindi or English. {p.style} Example of your voice: \"{strip_tags(p.fillers[0])} {strip_tags(p.greeting)}\"\n"
         "- 1 or 2 short spoken sentences per reply (at most about 25 words). Warm, slow, a little confused; you may repeat words.\n"
         "- You may use at most one of these sound tags per reply, inside the text: <coughs> <sigh> <laugh> <pauses> <slow> <clears throat>.\n"
         "- No lists, no emojis, no stage directions in brackets, no speaker labels.\n"

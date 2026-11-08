@@ -14,7 +14,7 @@ from .store import Store
 from .tactics import CallState, mission_done
 from .taxonomy import SCAM_KEYTERMS
 
-AUTO_STT_HINT = "hi-IN,en-IN,ta-IN,bn-IN"
+AUTO_STT_HINT = "hi-IN,en-IN,ta-IN,bn-IN,kn-IN,te-IN"
 
 
 class DadiAgent:

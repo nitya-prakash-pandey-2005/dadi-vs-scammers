@@ -97,11 +97,14 @@ def test_moves_do_not_repeat_within_three():
 
 
 def test_personas_and_language():
-    assert set(PERSONAS) == {"dadi", "paati", "thakuma"}
+    assert set(PERSONAS) == {"dadi", "paati", "thakuma", "ajji", "ammamma"}
     for p in PERSONAS.values():
         assert len(p.fillers) >= 6 and p.greeting and p.voice
     assert persona_for_language("ta-IN").key == "paati"
     assert persona_for_language("bn-IN").key == "thakuma"
+    assert persona_for_language("kn-IN").key == "ajji" and persona_for_language("te-IN").key == "ammamma"
+    assert words_to_digits("ಒಂಬತ್ತು ಎಂಟು ಏಳು ಆರು") == "9876" and words_to_digits("తొమ్మిది ఎనిమిది ఏడు ఆరు") == "9876"
+    assert words_to_digits("೯೮ ౭౬") == "9876"
     assert persona_for_language(None).key == "dadi"
 
 

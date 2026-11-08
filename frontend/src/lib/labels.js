@@ -54,8 +54,8 @@ export const INTEL_FIELDS = [
   ["amounts", "Amounts demanded"],
 ];
 
-export const MIX_LABEL = { "hi-IN": "Hinglish", "ta-IN": "Tanglish", "bn-IN": "Benglish" };
-export const PERSONA_HUE = { dadi: 330, paati: 200, thakuma: 35 };
+export const MIX_LABEL = { "hi-IN": "Hinglish", "ta-IN": "Tanglish", "bn-IN": "Benglish", "kn-IN": "Kanglish", "te-IN": "Tenglish" };
+export const PERSONA_HUE = { dadi: 330, paati: 200, thakuma: 35, ajji: 140, ammamma: 270 };
 
 export const DISCLAIMER = "Simulated scam call: scammer played by an actor or our AI";
 
