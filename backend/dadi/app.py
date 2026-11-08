@@ -22,9 +22,12 @@ from voice_core.llm import LLM
 from voice_core.session import VoiceAgentSession
 from voice_core.types import Turn
 
+from voice_core.testing import FakeLLM
+
 from .agent import DadiAgent
+from .arena import run_arena, run_noise_benchmark
 from .assets import load_or_make_babble, load_or_make_fillers
-from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, tone_tts
+from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, echo_stt, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
 from .report import build_report
@@ -170,6 +173,49 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
                 await ws.close()
             except Exception:
                 pass
+
+    # ------------------------------------------------------------------ Arena (AI scammer vs AI Dadi) + noise benchmark
+    @app.websocket("/ws/arena")
+    async def ws_arena(ws: WebSocket):
+        await ws.accept()
+        try:
+            req = await ws.receive_json()
+        except Exception:
+            return
+
+        async def emit(m: dict):
+            await ws.send_json(m)
+
+        fakes = dict(tts_fn=tone_tts_bytes, stt_fn=echo_stt) if fake else {}
+        try:
+            if not fake and not settings.gnani_api_key:
+                await emit({"type": "error", "message": "GNANI_API_KEY missing in .env"})
+            elif req.get("type") == "benchmark":
+                snrs = tuple(req.get("snr_list") or (None, 20, 10, 5, 0))
+                await run_noise_benchmark(settings=settings, emit=emit, noise=st.babble, snr_list=snrs, **fakes)
+            else:
+                await run_arena(
+                    scam_type=req.get("scam_type") or "digital_arrest",
+                    turns=max(1, min(12, int(req.get("turns") or 6))),
+                    snr_db=req.get("snr_db"),
+                    settings=settings,
+                    scammer_llm=FakeLLM([]) if fake else LLM(settings),
+                    dadi_llm=CyclingLLM(DADI_LINES) if fake else LLM(settings),
+                    intel_llm=CyclingLLM([]) if fake else LLM(settings, purpose="intel"),
+                    emit=emit, noise=st.babble, persona_key=req.get("persona") or "dadi", **fakes,
+                )
+        except (WebSocketDisconnect, RuntimeError):
+            return
+        except Exception as e:
+            log.exception("arena failed")
+            try:
+                await emit({"type": "error", "message": repr(e)})
+            except Exception:
+                return
+        try:
+            await ws.close()
+        except Exception:
+            pass
 
     dist = repo_root() / "frontend" / "dist"
     if dist.exists():

@@ -83,6 +83,16 @@ class ScriptedStt:
         self._closed.set()
 
 
+async def tone_tts_bytes(api_key, text, sample_rate: int = 8000, **kw) -> bytes:
+    return b"".join([c async for c in tone_tts(api_key, text, sample_rate=sample_rate)])
+
+
+async def echo_stt(api_key, wav, *, intended=None, **kw) -> SttEvent:
+    """Fake 'perfect hearing' for the arena in fake mode."""
+    await asyncio.sleep(0.2)
+    return SttEvent("transcript", text=intended or "", language="hi-IN", latency_ms=150.0)
+
+
 async def tone_tts(api_key, text, sample_rate: int = 8000, **kw):
     """A soft 220 Hz hum whose length follows the text (stands in for Timbre audio)."""
     secs = min(4.0, 0.06 * len(text) + 0.4)
