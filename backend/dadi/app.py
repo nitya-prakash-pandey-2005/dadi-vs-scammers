@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 from types import SimpleNamespace
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
 from voice_core.audio import pink_noise
@@ -32,6 +33,7 @@ from .assets import load_or_make_babble, load_or_make_fillers
 from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, echo_stt, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
+from .insights import freeze_csv, freeze_list, insights
 from .report import build_report
 from .rings import build_rings, speech_only, voiceprint_vec
 from .scammer_scripts import SCAMMER_VOICE
@@ -125,6 +127,19 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
     @app.get("/api/rings")
     async def rings():
         return build_rings(store.list_calls(500), store.voiceprints())
+
+    @app.get("/api/insights")
+    async def get_insights():
+        return insights(store.list_calls(500))
+
+    @app.get("/api/freeze-list")
+    async def get_freeze_list(format: str = "json"):
+        calls = store.list_calls(500)
+        rows = freeze_list(calls, build_rings(calls, store.voiceprints()))
+        if format == "csv":
+            return Response(freeze_csv(rows), media_type="text/csv",
+                            headers={"Content-Disposition": "attachment; filename=dadi-freeze-list.csv"})
+        return rows
 
     async def fingerprint_caller(call_id: str, pcm: bytes):
         speech = speech_only(pcm, settings.sample_rate)

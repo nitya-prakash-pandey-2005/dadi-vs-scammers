@@ -79,3 +79,11 @@ def test_ws_arena_fake_mode(tmp_path, monkeypatch):
                 break
         assert sum(1 for m in msgs if m["type"] == "arena_turn") == 4
         assert msgs[-1]["type"] == "arena_done"
+
+
+def test_intelligence_routes(app_client):
+    assert app_client.get("/api/insights").json()["calls"] == 0
+    assert app_client.get("/api/freeze-list").json() == []
+    r = app_client.get("/api/freeze-list?format=csv")
+    assert r.status_code == 200 and r.text.startswith("kind,id,bank") and "attachment" in r.headers["content-disposition"]
+    assert app_client.get("/api/rings").json()["rings"] == []

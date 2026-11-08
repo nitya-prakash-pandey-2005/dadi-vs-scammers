@@ -74,3 +74,14 @@ def test_report_has_disclaimer_and_identifiers():
                      [Turn("scammer", "hi", 0.0)], IntelReport(upi_ids=["x@ybl"]))
     assert "Simulated" in r["disclaimer"] and r["suspect_identifiers"] == {"upi_ids": ["x@ybl"]}
     assert r["duration_seconds"] == 125 and "cybercrime.gov.in" in r["where_to_report"]
+    ch = build_report({"id": "c1", "started_at": 0, "persona": "dadi"}, [],
+                      IntelReport(scam_type="digital_arrest", upi_ids=["x@ybl"]))["chakshu"]
+    assert ch["medium"] == "Call" and "Impersonation" in ch["category"] and "x@ybl" in ch["description"]
+
+
+def test_sanitise_drops_malformed_llm_identifiers():
+    from dadi.intel import _sanitise
+    r = _sanitise({"accounts": ["99087565", "624655", "1234 5678 9012"], "phones": ["99887", "+91 98765 43210"],
+                   "upi_ids": ["bijli office", "rathore.cbi@okax.in"], "amounts": ["990875", "₹980", "5 lakh"]})
+    assert r.accounts == ["123456789012"] and r.phones == ["9876543210"]
+    assert r.upi_ids == ["rathore.cbi@okaxis"] and r.amounts == ["₹980", "5 lakh"]

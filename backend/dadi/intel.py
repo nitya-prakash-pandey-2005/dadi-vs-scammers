@@ -4,6 +4,7 @@ deterministic regex extraction (UPI, phones, accounts, IFSC, apps, URLs, amounts
 from __future__ import annotations
 
 import json
+import re
 import logging
 
 from pydantic import BaseModel, Field
@@ -85,6 +86,9 @@ def _sanitise(d: dict) -> IntelReport:
     for f in LIST_FIELDS:
         v = d.get(f) or []
         data[f] = [str(x) for x in v] if isinstance(v, list) else []
+    for f in ("upi_ids", "phones", "accounts", "ifsc"):  # LLM IDs must pass the same format rules as the regex
+        data[f] = [x for item in data[f] for x in find_entities(item)[f]]
+    data["amounts"] = [a for a in data["amounts"] if not re.fullmatch(r"[\d,.\s]+", a)]  # bare numbers are guesses
     st = d.get("scam_type") or "other"
     data["scam_type"] = st if st in SCAM_TYPES else "other"
     try:

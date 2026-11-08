@@ -39,6 +39,9 @@ def _repair_handle(m: re.Match) -> str:
         hit = difflib.get_close_matches(one + two.lower(), UPI_HANDLES, n=1, cutoff=0.8)
         if hit:
             return "@" + hit[0]
+    prefixed = [h for h in UPI_HANDLES if len(one) >= 2 and h.startswith(one)]
+    if len(prefixed) == 1:
+        return "@" + prefixed[0] + (sep + two if two else "")
     hit = difflib.get_close_matches(one, UPI_HANDLES, n=1, cutoff=0.8)
     return "@" + hit[0] + (sep + two if two else "") if hit else m.group(0)
 

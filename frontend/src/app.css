@@ -103,3 +103,17 @@
 .ring-legend i.voice { border-top: 2.5px dashed var(--cyan); }
 .ring-alert { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding: 8px 10px; border-radius: 10px;
   background: var(--cyan-a); color: var(--cyan); font-size: 13px; text-decoration: none; }
+
+/* Scam intelligence board */
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 9em) 1fr 2em; gap: 8px; align-items: center; font-size: 13px; }
+.bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.bar-track { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 4px; }
+.bar-n { text-align: right; color: var(--text); }
+.table-wrap { overflow-x: auto; }
+table.freeze { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.freeze th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--line-2); }
+table.freeze td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+table.freeze a { color: var(--cyan); text-decoration: none; }
+.mono { font-family: ui-monospace, monospace; }

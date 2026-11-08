@@ -59,6 +59,8 @@ def test_find_entities_repairs_misheard_upi_handles():
     # Prisma at 10 dB heard "@okaxis" as "@okax.in" (live arena, 8 Nov)
     assert find_entities("transfer kar do rathore.cbi@okax.in")["upi_ids"] == ["rathore.cbi@okaxis"]
     assert find_entities("bhejo vijay99 at the rate ok sbi")["upi_ids"] == ["vijay99@oksbi"]
+    assert find_entities("turant bijli.office@pa। A white")["upi_ids"] == ["bijli.office@paytm"]  # cut short
+    assert find_entities("vijay@ok pe bhejo")["upi_ids"] == ["vijay@ok"]  # ambiguous prefix: left alone
     e = find_entities("mail boss@gmail.com, site fedex-help.in")
     assert e["upi_ids"] == [] and "fedex-help.in" in e["urls"]
 
