@@ -22,6 +22,11 @@ Replace every `[…]` with **real numbers from your recorded call**. The rules f
 
 Subtitles matter: most people watch muted, and many don't speak Hindi. CapCut's auto-captions plus a quick manual fix work fine.
 
+Optional extra shots (branch `dilavesh`; pick one, keep the cut at 60 s):
+- **Scam Ring Radar (Jugaad Genius):** two arena calls with the same scammer voice and different scripts → the radar links "Inspector Vijay Rathore, CBI" and "Rahul, SBI" as **same voice (0.93)**; caption "Two different officers. Two different numbers. Same voice: same gang." (Gnani's voice-cloning model used as a voice fingerprint.)
+- **Check a message (Crowd Favourite):** paste the Hinglish "digital arrest" WhatsApp sample → "Scam" + the true fact + Dadi's bait reply; caption "Forward it to your parents' phone."
+- **Five grandmothers (Main Character / Mixed Vibes):** 3-second clips of Ajji (Kannada) and Ammamma (Telugu) answering the same scam.
+
 ## 3. LinkedIn post (native video upload; tag Gnani AI as `@Gnani AI`)
 ```
 My Dadi just kept a fake "CBI officer" busy on the phone for [X] minutes… and got his UPI ID. 👵📞

@@ -30,7 +30,7 @@ Effort: S < 2 h, M < 5 h, L > 5 h. Credits: Gnani calls needed.
 | 5 | **"Are you a bot?" defence**: arena script where the scammer tests Dadi; Dadi deflects in character; persona-break metric | Kitboga showed bots leak prompts | interview | S |
 | 6 | **AI-voice flag on scammers**: compare the scammer's voice fingerprint with fingerprints of known TTS voices; "this caller sounds synthetic" | Truecaller AI Call Scanner, voice-clone "digital arrest 2.0" | Jugaad Genius | M (≈13 Gnani calls once) |
 
-### Next (more personas and languages)
+### Next (more personas and languages): #7 and #8 DONE on `dilavesh` (8 Nov)
 | 7 | Two more grandmothers: **Ajji** (Kannada-English) and **Ammamma** (Telugu-English); Timbre v3.0 speaks all 10 languages | Apate persona variety | Main Character, Mixed Vibes | M (≈20 Gnani calls for fillers) |
 | 8 | **Daisy-style story memory**: each grandmother has a few running stories (the cat, the knee operation) she returns to | Daisy's long calls | demo | S |
 
