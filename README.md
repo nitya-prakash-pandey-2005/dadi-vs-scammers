@@ -5,7 +5,7 @@
 Built on Gnani AI's sovereign voice stack: **Prisma v3.0** (realtime speech-to-text), **Timbre v3.0** (streaming text-to-speech with audio tags) and **Evon v3.3** (LLM).
 Entry for Gnani AI's *Great Indian AI Internship Challenge* (#GnaniAI #GreatIndianAIInternshipChallenge).
 
-> Status: under active development (8–10 Nov 2026). Start with `docs/TEAM-PLAYBOOK.md`.
+> **New here? Read `docs/START-HERE.md` first.** Status: under active development (8–10 Nov 2026). Start with `docs/TEAM-PLAYBOOK.md`.
 
 ## Why
 - Indians lost about **₹22,845 crore** to cyber fraud in 2024 (I4C, MHA).
