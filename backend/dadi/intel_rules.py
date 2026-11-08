@@ -3,6 +3,7 @@ Runs on every scammer turn; the LLM extractor adds names, agencies, scam type an
 
 from __future__ import annotations
 
+import difflib
 import re
 
 from .numwords import words_to_digits
@@ -10,9 +11,9 @@ from .numwords import words_to_digits
 _UPI = re.compile(r"(?<![\w.@-])([a-zA-Z0-9][a-zA-Z0-9._-]{1,255}@[a-zA-Z]{2,64})(?![\w@]|\.[a-zA-Z])")
 _IFSC = re.compile(r"\b([A-Za-z]{4}0[A-Za-z0-9]{6})\b")
 _URL = re.compile(r"(https?://\S+|\b[a-z0-9-]+\.(?:com|in|net|org|xyz|top|online|site|app|co|info|live)\b(?:/\S*)?)", re.I)
-_DIGIT_GROUPS = re.compile(r"(?:\+?91[\s-]?)?\d+(?:[\s-]\d+)*")
+_DIGIT_GROUPS = re.compile(r"(?:\+?91[\s-]?)?\d+(?:(?:[\s-]|,\s)\d+)*")
 _AMOUNT = re.compile(
-    r"(₹\s?[\d,]+(?:\.\d+)?|(?:rs\.?|inr)\s?[\d,]+|[\d,]+(?:\.\d+)?\s?(?:rupees|rupaye|rupay|rs|lakh|lac|crore|hazaar|hazar|thousand))",
+    r"(₹\s?[\d,]+(?:\.\d+)?|(?:rs\.?|inr)\s?[\d,]+|[\d,]+(?:\.\d+)?\s?(?:rupees|rupaye|rupay|rs|lakh|lac|crore|hazaar|hazar|thousand|रुपये|रुपए|रुपया|हजार|हज़ार|लाख))",
     re.I,
 )
 _APPS = {
@@ -21,6 +22,25 @@ _APPS = {
 }
 _AT_RATE = re.compile(r"\s*(?:at the rate(?: of)?|attherate|एट द रेट)\s*", re.I)
 _DOT = re.compile(r"\s+(?:dot|डॉट)\s+", re.I)
+UPI_HANDLES = [
+    "okaxis", "oksbi", "okhdfcbank", "okicici", "ybl", "ibl", "axl", "paytm", "upi", "apl", "ptyes", "ptaxis",
+    "pthdfc", "ptsbi", "axisbank", "sbi", "icici", "hdfcbank", "kotak", "idfcbank", "yesbank", "freecharge",
+    "jupiteraxis", "naviaxis", "superyes", "fam", "airtel", "jio", "cnrb", "barodampay", "pnb", "indus",
+]
+_HANDLE = re.compile(r"@([a-zA-Z]+)(?:([\s.])([a-zA-Z]+))?")
+
+
+def _repair_handle(m: re.Match) -> str:
+    """Snaps a misheard UPI handle to a known one: "@okax.in" -> "@okaxis", "@ok sbi" -> "@oksbi"."""
+    one, sep, two = m.group(1).lower(), m.group(2), m.group(3)
+    if one in UPI_HANDLES:
+        return m.group(0)
+    if two:
+        hit = difflib.get_close_matches(one + two.lower(), UPI_HANDLES, n=1, cutoff=0.8)
+        if hit:
+            return "@" + hit[0]
+    hit = difflib.get_close_matches(one, UPI_HANDLES, n=1, cutoff=0.8)
+    return "@" + hit[0] + (sep + two if two else "") if hit else m.group(0)
 
 
 def _dedupe(items: list[str]) -> list[str]:
@@ -49,6 +69,7 @@ def find_entities(text: str) -> dict[str, list[str]]:
     t = words_to_digits(text or "")
     t = _AT_RATE.sub("@", t)
     t = _DOT.sub(".", t)
+    t = _HANDLE.sub(_repair_handle, t)
     out: dict[str, list[str]] = {k: [] for k in ("upi_ids", "phones", "accounts", "ifsc", "urls", "apps", "amounts")}
 
     for m in _UPI.finditer(t):

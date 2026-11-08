@@ -87,3 +87,19 @@
 .sfx { font-style: italic; font-size: 0.85em; color: var(--muted); padding: 0 2px; }
 .sfx::before { content: "("; }
 .sfx::after { content: ")"; }
+
+/* Scam ring radar */
+.ring-graph { width: 100%; height: auto; display: block; }
+.ring-link { stroke-width: 2.5; }
+.ring-link.id { stroke: var(--rose); }
+.ring-link.voice { stroke: var(--cyan); stroke-dasharray: 7 5; }
+.ring-reason { fill: var(--text-2); font-size: 12px; text-anchor: middle; }
+.ring-node { cursor: pointer; }
+.ring-node circle { fill: var(--line-2); stroke: var(--muted); stroke-width: 2; }
+.ring-node.hot circle { fill: var(--rose); stroke: var(--text); }
+.ring-node text { fill: var(--text); font-size: 12px; text-anchor: middle; }
+.ring-legend { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.ring-legend i { display: inline-block; width: 18px; height: 0; border-top: 2.5px solid var(--rose); }
+.ring-legend i.voice { border-top: 2.5px dashed var(--cyan); }
+.ring-alert { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding: 8px 10px; border-radius: 10px;
+  background: var(--cyan-a); color: var(--cyan); font-size: 13px; text-decoration: none; }

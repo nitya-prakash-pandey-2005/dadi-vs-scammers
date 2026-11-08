@@ -12,6 +12,9 @@ Entry for Gnani AI's *Great Indian AI Internship Challenge* (#GnaniAI #GreatIndi
 - Blocking a scam call costs the scammer nothing; he dials the next number. **Routing it to Dadi costs him real time** that would have gone to a real victim.
 - Scammers must eventually reveal where the money should go (a mule UPI ID or bank account). Dadi collects those for police and banks.
 
+## Scam Ring Radar
+One gang uses many names and many numbers. Dadi links calls that share a mule UPI ID, phone or account, **or the same scammer's voice**: Gnani's voice-cloning model turns ~10 s of the scammer's speech into a 768-d voice fingerprint (same voice 0.93–0.95 cosine over an 8 kHz line, different voices ≤ 0.63). Page: *Scam ring radar*; API: `GET /api/rings`. A voice match is a lead for investigators, not proof.
+
 ## Repo map
 | Path | What |
 |---|---|

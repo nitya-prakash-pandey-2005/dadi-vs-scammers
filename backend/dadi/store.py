@@ -8,6 +8,8 @@ import time
 import uuid
 from pathlib import Path
 
+import numpy as np
+
 from voice_core.types import Turn
 
 from .intel import IntelReport
@@ -22,6 +24,7 @@ CREATE TABLE IF NOT EXISTS turns (
   t REAL, lang TEXT, latency_ms REAL
 );
 CREATE INDEX IF NOT EXISTS turns_call ON turns(call_id);
+CREATE TABLE IF NOT EXISTS voiceprints (call_id TEXT PRIMARY KEY, vec BLOB);
 """
 
 
@@ -87,3 +90,11 @@ class Store:
             for k in ("upi_ids", "accounts", "phones"):
                 mule.update(str(x).lower() for x in intel.get(k, []))
         return {"calls": len(rows), "seconds_wasted": seconds, "mule_ids": len(mule)}
+
+    def save_voiceprint(self, call_id: str, vec: np.ndarray) -> None:
+        self.db.execute("INSERT OR REPLACE INTO voiceprints(call_id, vec) VALUES (?,?)",
+                        (call_id, np.asarray(vec, "<f4").tobytes()))
+        self.db.commit()
+
+    def voiceprints(self) -> dict[str, np.ndarray]:
+        return {r["call_id"]: np.frombuffer(r["vec"], "<f4") for r in self.db.execute("SELECT * FROM voiceprints")}

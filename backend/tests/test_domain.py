@@ -44,6 +44,25 @@ def test_find_entities_grouped_digits_and_email_not_upi():
     assert e["accounts"] == ["123456789012"]
 
 
+def test_hindi_compound_numbers_from_prisma():
+    # live arena, 8 Nov: "99887 76655" came back as Hindi number words
+    e = find_entities("Suresh निन्यानवे हज़ार आठ सौ सत्तासी, छिहत्तर हज़ार छह सौ पचपन, अब OTP दो")
+    assert e["phones"] == ["9988776655"]
+    assert find_entities("नंबर लिखो निन्यानवे अट्ठासी सतहत्तर छियासठ पचपन")["phones"] == ["9988776655"]
+    assert words_to_digits("नौ सौ अस्सी रुपये भेजो") == "980 रुपये भेजो"
+    assert find_entities("नौ सौ अस्सी रुपये भेजो")["amounts"] == ["980 रुपये"]
+    assert words_to_digits("दो लाख पचास हजार") == "250000"
+    assert words_to_digits("एक मिनट रुको, दो मिनट") == "एक मिनट रुको, दो मिनट"
+
+
+def test_find_entities_repairs_misheard_upi_handles():
+    # Prisma at 10 dB heard "@okaxis" as "@okax.in" (live arena, 8 Nov)
+    assert find_entities("transfer kar do rathore.cbi@okax.in")["upi_ids"] == ["rathore.cbi@okaxis"]
+    assert find_entities("bhejo vijay99 at the rate ok sbi")["upi_ids"] == ["vijay99@oksbi"]
+    e = find_entities("mail boss@gmail.com, site fedex-help.in")
+    assert e["upi_ids"] == [] and "fedex-help.in" in e["urls"]
+
+
 def test_find_entities_amounts_and_apps_variants():
     e = find_entities("Team Viewer download karo aur ₹25,000 bhejo, nahi to 5 lakh fine")
     assert e["apps"] == ["TeamViewer"]

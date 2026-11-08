@@ -26,6 +26,7 @@ from .brain import DadiBrain
 from .intel import IntelReport, extract_intel, intel_json
 from .intel_rules import find_entities
 from .personas import PERSONAS
+from .rings import build_rings, speech_only, voiceprint_vec
 from .scammer_scripts import BENCH_LINES, SCAMMER_LANGUAGE, SCAMMER_VOICE, SCRIPTS
 from .tactics import CallState
 from .taxonomy import SCAM_KEYTERMS
@@ -89,17 +90,21 @@ async def default_stt(api_key, wav, *, intended=None, **kw) -> SttEvent:
     return await transcribe_rest(api_key, wav, **kw)
 
 
-async def _speak_and_hear(text, *, settings, tts_fn, stt_fn, noise, snr_db, rng):
+async def _speak_and_hear(text, *, settings, tts_fn, stt_fn, noise, snr_db, rng, voice=SCAMMER_VOICE, line_audio=None):
     sr = settings.sample_rate
-    pcm = await tts_fn(settings.gnani_api_key, text, voice=SCAMMER_VOICE, language=SCAMMER_LANGUAGE, sample_rate=sr)
-    heard_ev = await stt_fn(settings.gnani_api_key, wav_bytes(degrade(pcm, sr, noise, snr_db, rng), sr),
+    pcm = await tts_fn(settings.gnani_api_key, text, voice=voice, language=SCAMMER_LANGUAGE, sample_rate=sr)
+    phone = degrade(pcm, sr, noise, snr_db, rng)
+    if line_audio is not None:
+        line_audio.extend(phone)
+    heard_ev = await stt_fn(settings.gnani_api_key, wav_bytes(phone, sr),
                             intended=text, language_code="hi-IN,en-IN", keyterms=SCAM_KEYTERMS)
     return heard_ev.text, len(pcm) / 2 / sr, heard_ev.latency_ms
 
 
 async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, settings: Settings, scammer_llm, dadi_llm,
                     intel_llm, emit: Emit, tts_fn=None, stt_fn=None, noise: np.ndarray | None = None,
-                    persona_key: str = "dadi", seed: int = 0) -> dict:
+                    persona_key: str = "dadi", seed: int = 0, scammer_voice: str = SCAMMER_VOICE,
+                    store=None, embed_fn=None) -> dict:
     script = SCRIPTS.get(scam_type) or SCRIPTS["digital_arrest"]
     rng = random.Random(seed)
     tts_fn = tts_fn or default_tts(settings)
@@ -111,6 +116,7 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
     intel = IntelReport()
     t = 0.0
     cers, recalls, breaks = [], [], 0
+    line_audio = bytearray()
 
     for i in range(turns):
         # 1. scammer line (LLM, with canned fallback)
@@ -125,7 +131,8 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
             line = script["lines"][min(i, len(script["lines"]) - 1)]
         # 2. through the noisy phone line into Prisma
         heard, secs, lat = await _speak_and_hear(line, settings=settings, tts_fn=tts_fn, stt_fn=stt_fn,
-                                                 noise=noise, snr_db=snr_db, rng=rng)
+                                                 noise=noise, snr_db=snr_db, rng=rng, voice=scammer_voice,
+                                                 line_audio=line_audio)
         c, rec = cer(line, heard), entity_recall(line, heard)
         cers.append(c)
         if rec is not None:
@@ -154,10 +161,31 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
         "scam_type": scam_type, "turns": turns, "snr_db": snr_db, "seconds_simulated": round(t, 1),
         "cer_mean": round(sum(cers) / len(cers), 4) if cers else None,
         "entity_recall_mean": round(sum(recalls) / len(recalls), 3) if recalls else None,
-        "persona_breaks": breaks, "intel": intel_json(intel),
+        "persona_breaks": breaks, "intel": intel_json(intel), "scammer_voice": scammer_voice,
     }
+    if store is not None:
+        summary.update(await file_arena_call(store, persona_key, history, intel, t, bytes(line_audio),
+                                             settings, embed_fn))
     await emit({"type": "arena_done", "summary": summary})
     return summary
+
+
+async def file_arena_call(store, persona_key, history, intel, seconds, line_audio, settings, embed_fn) -> dict:
+    """Saves the arena call like a real one, fingerprints the scammer's voice, returns its ring links."""
+    cid = store.create_call(persona_key)
+    for turn in history:
+        store.add_turn(cid, turn)
+    store.save_intel(cid, intel)
+    store.end_call(cid, seconds)
+    try:
+        speech = speech_only(line_audio, settings.sample_rate)
+        if embed_fn and len(speech) / 2 / settings.sample_rate >= 5:
+            emb = await embed_fn(settings.gnani_api_key, wav_bytes(speech, settings.sample_rate))
+            store.save_voiceprint(cid, voiceprint_vec(emb))
+    except Exception as e:
+        log.info("voiceprint failed: %r", e)
+    links = [l for l in build_rings(store.list_calls(500), store.voiceprints())["links"] if cid in (l["source"], l["target"])]
+    return {"call_id": cid, "ring_links": links}
 
 
 async def run_noise_benchmark(*, settings: Settings, emit: Emit, tts_fn=None, stt_fn=None, noise=None,

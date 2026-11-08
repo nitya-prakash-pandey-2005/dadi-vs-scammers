@@ -52,6 +52,33 @@ async def test_run_arena_with_fakes():
     assert events[-1]["type"] == "arena_done"
 
 
+async def test_arena_files_call_and_links_same_voice(tmp_path):
+    import base64
+    from dadi.store import Store
+    store, seen = Store(tmp_path / "d.db"), []
+
+    async def emit(e):
+        pass
+
+    async def tts(api_key, text, sample_rate=8000, voice="", **kw):
+        seen.append(voice)
+        return (np.sin(np.arange(sample_rate * 3) / 3) * 8000).astype("<i2").tobytes()
+
+    async def embed(api_key, wav):  # fingerprint = which voice spoke
+        v = [1.0, 0.0] if seen[-1] == "Harshad" else [0.0, 1.0]
+        return {"embedding": base64.b64encode(np.array(v, "<f4").tobytes()).decode()}
+
+    kw = dict(scam_type="digital_arrest", turns=2, snr_db=None, settings=Settings(sample_rate=8000), scammer_llm=FakeLLM([]),
+              dadi_llm=FakeLLM(["हाँ बेटा।"] * 6), intel_llm=FakeLLM([]), emit=emit, tts_fn=tts, stt_fn=echo_stt,
+              store=store, embed_fn=embed)
+    first = await run_arena(**kw, scammer_voice="Harshad")
+    other = await run_arena(**kw, scammer_voice="Avinash")
+    again = await run_arena(**kw, scammer_voice="Harshad")
+    assert len(store.voiceprints()) == 3 and first["ring_links"] == [] and other["ring_links"] == []
+    assert [l["kind"] for l in again["ring_links"]] == ["voice"]
+    assert {again["ring_links"][0]["source"], again["ring_links"][0]["target"]} == {first["call_id"], again["call_id"]}
+
+
 async def test_noise_benchmark_with_fakes():
     events = []
 

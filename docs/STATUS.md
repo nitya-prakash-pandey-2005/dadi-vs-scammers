@@ -16,10 +16,12 @@ The plan with the exact interfaces and tests is in `docs/04-build-plan.md`.
 | 6 | Call session engine | | | todo |
 | 7 | FastAPI app and WebSocket protocol | | | todo |
 | 8 | Frontend: phone, war room, report | CL | main | done |
-| 9 | Live integration and tuning (needs keys) | TM | | todo |
+| 9 | Live integration and tuning (needs keys) | TM | feat/tm-dadi-live | arena live-tested; UPI-handle + Hindi-number fixes |
 | 10 | Arena: AI vs AI and noise benchmark (P1) | CL | main | done (live run pending keys) |
 | 11 | README, interview prep, demo and post kit | CL | main | interview prep + demo kit done; README pending results |
+| R | Scam Ring Radar: link calls by mule ID or voice fingerprint (Gnani clone embedding) | TM | feat/tm-dadi-live | done, live-tested |
 | E | Host Evon (`docs/EVON-HOSTING.md`) | TM | feat/tm-evon | todo |
 
 ## Log
 - Sun 8 Nov 10:30: repo skeleton, docs and playbook (CL).
+- Sun 8 Nov 17:40: arena live run, UPI/number fixes, Scam Ring Radar (TM).

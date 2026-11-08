@@ -36,6 +36,65 @@ _TRAIL = re.compile(r"^(.*?)([,.;:!?।|\"')\]]*)$", re.S)
 _LEAD = re.compile(r"^([\"'(\[]*)(.*)$", re.S)
 
 
+_HI_1_99 = (
+    "एक दो तीन चार पांच छह सात आठ नौ दस ग्यारह बारह तेरह चौदह पंद्रह सोलह सत्रह अठारह उन्नीस बीस इक्कीस बाईस "
+    "तेईस चौबीस पच्चीस छब्बीस सत्ताईस अट्ठाईस उनतीस तीस इकतीस बत्तीस तैंतीस चौंतीस पैंतीस छत्तीस सैंतीस अडतीस "
+    "उनतालीस चालीस इकतालीस बयालीस तैंतालीस चौवालीस पैंतालीस छियालीस सैंतालीस अडतालीस उनचास पचास इक्यावन बावन "
+    "तिरेपन चौवन पचपन छप्पन सत्तावन अट्ठावन उनसठ साठ इकसठ बासठ तिरसठ चौंसठ पैंसठ छियासठ सडसठ अडसठ उनहत्तर "
+    "सत्तर इकहत्तर बहत्तर तिहत्तर चौहत्तर पचहत्तर छिहत्तर सतहत्तर अठहत्तर उनासी अस्सी इक्यासी बयासी तिरासी "
+    "चौरासी पचासी छियासी सत्तासी अट्ठासी नवासी नब्बे इक्यानवे बानवे तिरानवे चौरानवे पचानवे छियानवे सत्तानवे "
+    "अट्ठानवे निन्यानवे"
+).split()
+_HI_N = {w: i for i, w in enumerate(_HI_1_99, 1)} | {"छः": 6, "छे": 6}
+_HI_MULT = {"सौ": 100, "हजार": 1000, "लाख": 100_000, "करोड": 10_000_000}
+
+
+def _hi_key(tok: str) -> str:
+    return tok.replace("\u093c", "").replace("\u0901", "\u0902")  # drop nukta, chandrabindu -> anusvara
+
+
+def _hindi_compounds(text: str) -> str:
+    """'निन्यानवे हज़ार आठ सौ सत्तासी' -> '99887', 'पचपन' -> '55'. Single digits are left for the digit-run rule."""
+    out: list[str] = []
+    group: list[tuple[str, str, str]] = []  # (kind, key, trail)
+
+    def flush() -> None:
+        if not group:
+            return
+        if any(k == "m" for k, _, _ in group):
+            total = cur = 0
+            for kind, key, _ in group:
+                if kind == "n":
+                    cur += _HI_N[key]
+                elif _HI_MULT[key] == 100:
+                    cur = (cur or 1) * 100
+                else:
+                    total, cur = total + (cur or 1) * _HI_MULT[key], 0
+            out.append(str(total + cur) + group[-1][2])
+        else:
+            out.extend(str(_HI_N[key]) + tr if _HI_N[key] >= 10 else raw for (_, key, tr), raw in zip(group, raws))
+        group.clear()
+        raws.clear()
+
+    raws: list[str] = []
+    for tok in text.split():
+        core, trail = _TRAIL.match(tok).groups()
+        key = _hi_key(core)
+        kind = "n" if key in _HI_N else "m" if key in _HI_MULT else None
+        if kind is None or (kind == "n" and group and group[-1][0] == "n" and any(k == "m" for k, _, _ in group)) \
+                or (kind == "m" and not group):
+            flush()
+            if kind is None or kind == "m":
+                out.append(tok)
+                continue
+        group.append((kind, key, trail))
+        raws.append(tok)
+        if trail:
+            flush()
+    flush()
+    return " ".join(out)
+
+
 def _digit_value(core: str) -> str | None:
     c = core.translate(_NATIVE)
     if c.isascii() and c.isdigit():
@@ -48,6 +107,7 @@ def words_to_digits(text: str) -> str:
     run: list[str] = []  # digit strings
     raw: list[str] = []  # original tokens of the run
     mult: int | None = None
+    text = _hindi_compounds(text)
 
     def flush(trail: str = "") -> None:
         nonlocal mult

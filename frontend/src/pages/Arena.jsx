@@ -1,6 +1,6 @@
 // Arena: AI scammer vs AI Dadi over a simulated noisy 8 kHz phone line, plus the Prisma noise benchmark.
 import { useEffect, useRef, useState } from "react";
-import { Activity, AlertTriangle, Bot, Gauge as GaugeIcon, Play, Swords } from "lucide-react";
+import { Activity, AlertTriangle, Bot, Gauge as GaugeIcon, Network, Play, Swords } from "lucide-react";
 import { Badge, Card, Hud, PageHead, Progress, Seg, Stat, toast } from "../ui";
 import { IntelCard } from "../components/WarRoom";
 import SpeechText from "../components/SpeechText";
@@ -18,6 +18,11 @@ const NOISE = [
   { value: "10", label: "10 dB" },
   { value: "5", label: "5 dB" },
   { value: "0", label: "0 dB" },
+];
+const VOICES = [
+  { value: "Harshad", label: "Harshad" },
+  { value: "Avinash", label: "Avinash" },
+  { value: "Yashraj", label: "Yashraj" },
 ];
 const TURNS = [{ value: 4, label: "4 turns" }, { value: 6, label: "6 turns" }, { value: 8, label: "8 turns" }];
 const pctTxt = (v) => (v == null ? "–" : `${Math.round(v * 100)}%`);
@@ -37,6 +42,7 @@ export default function Arena() {
   const [scam, setScam] = useState("digital_arrest");
   const [noise, setNoise] = useState("10");
   const [turns, setTurns] = useState(6);
+  const [voice, setVoice] = useState("Harshad");
   const [running, setRunning] = useState(null); // "arena" | "bench" | null
   const [feed, setFeed] = useState([]);
   const [intel, setIntel] = useState(null);
@@ -60,7 +66,7 @@ export default function Arena() {
   const runArena = () => {
     setFeed([]); setIntel(null); setSummary(null); setRunning("arena");
     wsRef.current = openArena(
-      { type: "arena", scam_type: scam, turns, snr_db: noise === "off" ? null : Number(noise), persona: "dadi" },
+      { type: "arena", scam_type: scam, turns, snr_db: noise === "off" ? null : Number(noise), persona: "dadi", scammer_voice: voice },
       onEvent, () => setRunning(null));
   };
   const runBench = () => {
@@ -87,6 +93,7 @@ export default function Arena() {
             <div className="stack" style={{ gap: 12 }}>
               <label className="field">Scam script<Seg options={SCAMS} value={scam} onChange={setScam} /></label>
               <label className="field">Call-centre noise (SNR)<Seg options={NOISE} value={noise} onChange={setNoise} /></label>
+              <label className="field">Scammer's voice (Timbre)<Seg options={VOICES} value={voice} onChange={setVoice} /></label>
               <label className="field">Length<Seg options={TURNS} value={turns} onChange={setTurns} /></label>
               <button className="btn primary block" disabled={!!running} onClick={runArena}>
                 <Play size={16} /> {running === "arena" ? "Call in progress…" : "Start AI-vs-AI call"}
@@ -103,6 +110,11 @@ export default function Arena() {
                 <Stat value={summary.persona_breaks} label="Times Dadi broke character" tone={summary.persona_breaks ? "rose" : "green"} />
               </div>
               <div className="pill-src" style={{ marginTop: 10 }}>{SCAM_TYPE_LABELS[summary.scam_type] || summary.scam_type} · noise {snrLabel(summary.snr_db)}</div>
+              {summary.ring_links?.length > 0 && (
+                <a className="ring-alert" href="#/app/rings">
+                  <Network size={16} /> Linked to {summary.ring_links.length} earlier call{summary.ring_links.length > 1 ? "s" : ""}: {summary.ring_links.map((l) => l.reason).join(" · ")}
+                </a>
+              )}
             </Card>
           )}
 

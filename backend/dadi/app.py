@@ -18,6 +18,8 @@ from fastapi.staticfiles import StaticFiles
 
 from voice_core.audio import pink_noise
 from voice_core.config import Settings, get_settings, repo_root
+from voice_core.audio import wav_bytes
+from voice_core.gnani.tts import create_voice_embedding
 from voice_core.llm import LLM
 from voice_core.session import VoiceAgentSession
 from voice_core.types import Turn
@@ -31,6 +33,8 @@ from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, echo_stt, tone_tts, 
 from .intel import IntelReport
 from .personas import PERSONAS
 from .report import build_report
+from .rings import build_rings, speech_only, voiceprint_vec
+from .scammer_scripts import SCAMMER_VOICE
 from .store import Store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -118,6 +122,20 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
         intel = IntelReport(**(c.get("intel") or {}))
         return build_report(c, turns, intel)
 
+    @app.get("/api/rings")
+    async def rings():
+        return build_rings(store.list_calls(500), store.voiceprints())
+
+    async def fingerprint_caller(call_id: str, pcm: bytes):
+        speech = speech_only(pcm, settings.sample_rate)
+        if fake or not call_id or len(speech) / 2 / settings.sample_rate < 5:
+            return
+        try:
+            emb = await create_voice_embedding(settings.gnani_api_key, wav_bytes(speech, settings.sample_rate))
+            store.save_voiceprint(call_id, voiceprint_vec(emb))
+        except Exception as e:
+            log.info("voiceprint failed: %r", e)
+
     # ------------------------------------------------------------------ WebSocket call
     @app.websocket("/ws/call")
     async def ws_call(ws: WebSocket):
@@ -144,6 +162,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
             return
         sess, agent = factory(send_json, send_audio, first.get("persona") or "auto")
         await sess.start()
+        caller_pcm = bytearray()  # scammer's mic, for the voice fingerprint after hang-up
         if first.get("noise_snr_db") is not None:
             await sess.set_noise(float(first["noise_snr_db"]))
         try:
@@ -152,6 +171,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
                 if msg.get("type") == "websocket.disconnect":
                     break
                 if msg.get("bytes"):
+                    if len(caller_pcm) < settings.sample_rate * 2 * 120:
+                        caller_pcm.extend(msg["bytes"])
                     await sess.on_audio(msg["bytes"])
                 elif msg.get("text"):
                     d = json.loads(msg["text"])
@@ -164,6 +185,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
             pass
         finally:
             res = await sess.hangup()
+            asyncio.create_task(fingerprint_caller(agent.call_id, bytes(caller_pcm)))
             try:
                 await send_json({"type": "call_ended", "call_id": agent.call_id, "wasted_seconds": res["session_seconds"]})
             except Exception:
@@ -202,7 +224,9 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
                     scammer_llm=FakeLLM([]) if fake else LLM(settings),
                     dadi_llm=CyclingLLM(DADI_LINES) if fake else LLM(settings),
                     intel_llm=CyclingLLM([]) if fake else LLM(settings, purpose="intel"),
-                    emit=emit, noise=st.babble, persona_key=req.get("persona") or "dadi", **fakes,
+                    emit=emit, noise=st.babble, persona_key=req.get("persona") or "dadi",
+                    scammer_voice=req.get("scammer_voice") or SCAMMER_VOICE, store=store,
+                    embed_fn=None if fake else create_voice_embedding, **fakes,
                 )
         except (WebSocketDisconnect, RuntimeError):
             return
