@@ -140,8 +140,9 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
         if not text:
             raise HTTPException(400, "text is required")
         if fake:
-            return await check_message(text, intel_llm=CyclingLLM([]), llm=CyclingLLM(DADI_LINES))
-        return await check_message(text, intel_llm=LLM(settings, purpose="intel"), llm=LLM(settings))
+            return await check_message(text, intel_llm=CyclingLLM([]), llm=CyclingLLM(DADI_LINES), calls=store.list_calls(500))
+        return await check_message(text, intel_llm=LLM(settings, purpose="intel"), llm=LLM(settings),
+                                   calls=store.list_calls(500))
 
     @app.get("/api/insights")
     async def get_insights():

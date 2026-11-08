@@ -33,3 +33,17 @@ def test_verdict_rules():
     assert verdict(0.9, 0, False) == "scam" and verdict(0.1, 2, False) == "scam" and verdict(0.1, 1, True) == "scam"
     assert verdict(0.4, 0, False) == "suspicious" and verdict(0.1, 1, False) == "suspicious"
     assert verdict(0.0, 0, False) == "no_signs"
+
+
+def test_link_risks_flags_lookalikes_and_spares_official_sites():
+    from dadi.checker import link_risks
+    r = link_risks(["sbi-kyc-update.top", "https://bit.ly/3xYz", "http://103.21.4.9/pay", "https://onlinesbi.sbi/login",
+                    "https://uidai.gov.in"])
+    assert [x["url"] for x in r] == ["sbi-kyc-update.top", "https://bit.ly/3xYz", "http://103.21.4.9/pay"]
+    assert any("'sbi'" in w for w in r[0]["reasons"]) and any(".top" in w for w in r[0]["reasons"])
+
+
+async def test_check_message_matches_ids_from_earlier_scam_calls():
+    calls = [{"id": "c1", "intel": {"upi_ids": ["rathore.cbi@okaxis"]}}, {"id": "c2", "intel": {"upi_ids": ["x@ybl"]}}]
+    r = await check_message(MSG, intel_llm=FakeLLM(["not json"]), llm=FakeLLM([]), rng=random.Random(0), calls=calls)
+    assert r["seen_before"] == [{"id": "rathore.cbi@okaxis", "calls": ["c1"]}] and r["verdict"] == "scam"

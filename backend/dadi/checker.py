@@ -31,6 +31,12 @@ FACTS = {
     "investment": "Guaranteed high returns are a red flag. Check that the company is registered with SEBI.",
 }
 DEFAULT_FACT = "Never share an OTP or PIN and never pay a stranger. If money was lost, call 1930 at once."
+SHORTENERS = {"bit.ly", "tinyurl.com", "t.ly", "cutt.ly", "is.gd", "rb.gy", "shorturl.at", "goo.gl"}
+CHEAP_TLDS = {"top", "xyz", "online", "site", "live", "info", "icu", "click", "shop", "buzz", "link", "cc"}
+BRANDS = ("sbi", "hdfc", "icici", "axis", "kotak", "paytm", "phonepe", "gpay", "npci", "uidai", "aadhaar", "kyc",
+          "incometax", "epfo", "indiapost", "cbi", "police", "customs", "bescom", "tneb", "bijli", "rbi", "trai")
+OFFICIAL = ("sbi.co.in", "onlinesbi.sbi", "hdfcbank.com", "icicibank.com", "axisbank.com", "kotak.com", "paytm.com",
+            "phonepe.com", "npci.org.in", "rbi.org.in", "gov.in", "nic.in")
 _SCRIPT_LANG = (("ta-IN", r"[\u0B80-\u0BFF]"), ("bn-IN", r"[\u0980-\u09FF]"), ("kn-IN", r"[\u0C80-\u0CFF]"),
                 ("te-IN", r"[\u0C00-\u0C7F]"), ("hi-IN", r"[\u0900-\u097F]"))
 
@@ -41,6 +47,39 @@ def verdict(confidence: float, n_flags: int, has_ids: bool) -> str:
     if confidence >= 0.3 or n_flags == 1:
         return "suspicious"
     return "no_signs"
+
+
+def link_risks(urls: list[str]) -> list[dict]:
+    """Why each link looks like phishing: short link, bare IP, cheap domain, a bank/agency name on a non-official site."""
+    out = []
+    for u in urls:
+        host = re.sub(r"^https?://", "", u.lower()).split("/")[0].split(":")[0].removeprefix("www.")
+        if any(host == d or host.endswith("." + d) for d in OFFICIAL):
+            continue
+        why = []
+        if host in SHORTENERS:
+            why.append("short link hides the real site")
+        if re.fullmatch(r"[\d.]+", host):
+            why.append("a bare number (IP address), not a website name")
+        if host.rsplit(".", 1)[-1] in CHEAP_TLDS:
+            why.append(f"cheap .{host.rsplit('.', 1)[-1]} domain, common for phishing")
+        brand = next((b for b in BRANDS if any(b in tok for tok in re.split(r"[.-]", host))), None)
+        if brand:
+            why.append(f"uses the name '{brand}' but is not the official site")
+        if why:
+            out.append({"url": u, "reasons": why})
+    return out
+
+
+def seen_before(ids: dict[str, list[str]], calls: list[dict]) -> list[dict]:
+    """Mule IDs in the message that already came up in scam calls Dadi answered."""
+    out = []
+    for k in ("upi_ids", "phones", "accounts"):
+        for v in ids.get(k, []):
+            hits = [c["id"] for c in calls if v.lower() in {str(x).lower() for x in (c.get("intel") or {}).get(k, [])}]
+            if hits:
+                out.append({"id": v, "calls": hits})
+    return out
 
 
 def _lang(text: str) -> str:
@@ -60,12 +99,16 @@ async def _dadi_reply(llm, text: str, lang: str, rng: random.Random) -> str:
         return ""
 
 
-async def check_message(text: str, *, intel_llm, llm, rng: random.Random | None = None) -> dict:
+async def check_message(text: str, *, intel_llm, llm, rng: random.Random | None = None,
+                        calls: list[dict] | None = None) -> dict:
     text = (text or "").strip()[:MAX_CHARS]
     rng = rng or random.Random()
     intel = await extract_intel(intel_llm, [Turn("scammer", text, 0.0)], IntelReport())
     ids = {k: getattr(intel, k) for k in (*ID_FIELDS, "amounts") if getattr(intel, k)}
-    v = verdict(intel.scam_confidence, len(intel.red_flags), any(k in ids for k in ("upi_ids", "phones", "accounts", "urls")))
+    links = link_risks(ids.get("urls", []))
+    seen = seen_before(ids, calls or [])
+    v = "scam" if seen else verdict(intel.scam_confidence, len(intel.red_flags) + bool(links),
+                                    any(k in ids for k in ("upi_ids", "phones", "accounts", "urls")))
     lang = _lang(text)
     return {
         "verdict": v,
@@ -75,6 +118,8 @@ async def check_message(text: str, *, intel_llm, llm, rng: random.Random | None 
         "claimed": intel.agencies_claimed + intel.names,
         "red_flags": [{"flag": f.flag, "label": RED_FLAG_LABELS.get(f.flag, f.flag), "quote": f.quote} for f in intel.red_flags],
         "identifiers": ids,
+        "risky_links": links,
+        "seen_before": seen,
         "fact": FACTS.get(intel.scam_type, DEFAULT_FACT),
         "persona": persona_for_language(lang).key,
         "dadi_reply": await _dadi_reply(llm, text, lang, rng) if v != "no_signs" else "",

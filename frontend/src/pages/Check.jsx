@@ -1,6 +1,6 @@
 // Scam Message Checker: paste a suspicious SMS / WhatsApp / "notice", get a verdict and a Dadi reply to bait the sender.
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Copy, MessageSquareWarning, Search, ShieldAlert, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, MessageSquareWarning, Network, Search, Share2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Badge, Card, PageHead, toast } from "../ui";
 
 const SAMPLES = [
@@ -13,6 +13,7 @@ const VERDICT = {
   suspicious: { tone: "amber", icon: AlertTriangle, text: "Suspicious. Check with the real organisation first." },
   no_signs: { tone: "green", icon: ShieldCheck, text: "No scam signs found. Stay careful anyway." },
 };
+const shareText = (r, v) => `${v.text}\n${r.fact}\nReport: sancharsaathi.gov.in (Chakshu) or call 1930.\nChecked with Dadi vs Scammers`;
 const ID_LABEL = { upi_ids: "UPI ID", phones: "Phone", accounts: "Account", ifsc: "IFSC", urls: "Link", apps: "App", amounts: "Amount" };
 
 export default function Check() {
@@ -62,12 +63,27 @@ export default function Check() {
                       <ul className="flags">{r.red_flags.map((f) => <li key={f.flag}><b>{f.label}</b>{f.quote ? `: “${f.quote}”` : ""}</li>)}</ul>
                     </div>
                   )}
+                  {r.seen_before?.length > 0 && (
+                    <div className="fact"><Network size={16} className="flex-none" />
+                      <span>Dadi has heard this before: {r.seen_before.map((x) => (
+                        <span key={x.id}><b>{x.id}</b> came up in {x.calls.length} scam call{x.calls.length > 1 ? "s" : ""} ({x.calls.map((c) => <a key={c} href={`#/app/report?id=${c}`}>{c.slice(0, 6)}</a>).reduce((a, b) => [a, ", ", b])}). </span>
+                      ))}<a href="#/app/rings">See the ring</a></span>
+                    </div>
+                  )}
+                  {r.risky_links?.length > 0 && (
+                    <div><div className="pill-src">Dangerous links</div>
+                      <ul className="flags">{r.risky_links.map((l) => <li key={l.url}><b>{l.url}</b>: {l.reasons.join("; ")}</li>)}</ul>
+                    </div>
+                  )}
                   {Object.keys(r.identifiers).length > 0 && (
                     <div><div className="pill-src">Details to report</div>
                       <div className="chips">{Object.entries(r.identifiers).flatMap(([k, vals]) => vals.map((x) => <Badge key={k + x} tone="rose">{ID_LABEL[k] || k}: {x}</Badge>))}</div>
                     </div>
                   )}
                   <div className="pill-src">Report at: {r.report_at.join(" · ")}</div>
+                  <a className="btn sm" target="_blank" rel="noreferrer" href={`https://wa.me/?text=${encodeURIComponent(shareText(r, v))}`}>
+                    <Share2 size={14} /> Warn the family on WhatsApp
+                  </a>
                 </div>
               </Card>
               {r.dadi_reply && (
