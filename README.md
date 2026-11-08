@@ -1,0 +1,32 @@
+# Dadi vs Scammers
+
+**India's first multilingual AI grandmother who picks up scam calls, keeps fraudsters busy in Hinglish, Tanglish and Benglish, and quietly collects their UPI IDs, bank accounts and phone numbers into a ready-to-file cybercrime report.**
+
+Built on Gnani AI's sovereign voice stack: **Prisma v3.0** (realtime speech-to-text), **Timbre v3.0** (streaming text-to-speech with audio tags) and **Evon v3.3** (LLM).
+Entry for Gnani AI's *Great Indian AI Internship Challenge* (#GnaniAI #GreatIndianAIInternshipChallenge).
+
+> Status: under active development (8–10 Nov 2026). Start with `docs/TEAM-PLAYBOOK.md`.
+
+## Why
+- Indians lost about **₹22,845 crore** to cyber fraud in 2024 (I4C, MHA).
+- Blocking a scam call costs the scammer nothing; he dials the next number. **Routing it to Dadi costs him real time** that would have gone to a real victim.
+- Scammers must eventually reveal where the money should go (a mule UPI ID or bank account). Dadi collects those for police and banks.
+
+## Repo map
+| Path | What |
+|---|---|
+| `voice-core/` | Shared voice engine (Gnani clients, audio, LLM adapter). Canonical copy; synced to `apni-awaaz` and `pukaar`. |
+| `backend/` | Dadi's brain, intel extraction, call session, FastAPI app |
+| `frontend/` | React + Vite UI (phone + war room + report) |
+| `docs/` | Rules, API reference, design, build plan, team playbook, Evon hosting, task board |
+
+## Quick start
+```bash
+uv sync --all-packages
+cp .env.example .env        # add GNANI_API_KEY and GROQ_API_KEY
+uv run pytest -q
+cd frontend && npm install && npm run dev
+```
+
+## Safety
+Every demo call is simulated (the scammer is played by an actor or our AI). Dadi never uses real personal data. The card and Aadhaar numbers she reads out are generated to be provably invalid (they fail the Luhn and Verhoeff checks).

@@ -1,0 +1,23 @@
+[project]
+name = "dadi-vs-scammers"
+version = "0.1.0"
+description = "AI grandmother that answers scam calls, wastes fraudsters' time and extracts mule accounts. Built on Gnani AI Prisma, Timbre and Evon."
+requires-python = ">=3.12,<3.13"
+dependencies = ["voice-core", "dadi"]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "gnani-vachana>=0.9.0"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["voice-core", "backend"]
+
+[tool.uv.sources]
+voice-core = { workspace = true }
+dadi = { workspace = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["voice-core/tests", "backend/tests"]
