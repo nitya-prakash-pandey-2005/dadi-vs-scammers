@@ -8,10 +8,10 @@ The plan with the exact interfaces and tests is in `docs/04-build-plan.md`.
 
 | # | Task (plan section) | Owner | Branch | Status |
 |---|---|---|---|---|
-| 1 | Config and audio utilities (`voice-core`) | CL | main | in progress |
-| 2 | Gnani clients and smoke test (`voice-core`) | CL | main | todo |
-| 3 | LLM adapter (Groq/Evon) and `eval_llm.py` (`voice-core`) | CL | main | todo |
-| 4 | Dadi domain: personas, taxonomy, fakes, number words, intel rules, tactics | (free; TM may claim if CL hasn't pushed it by Sun 18:00) | | todo |
+| 1 | Config and audio utilities (`voice-core`) | CL | main | done |
+| 2 | Gnani clients and smoke test (`voice-core`) | CL | main | done (live run pending keys) |
+| 3 | LLM adapter (Groq/Evon) and `eval_llm.py` (`voice-core`) | CL | main | done |
+| 4 | Dadi domain: personas, taxonomy, fakes, number words, intel rules, tactics | CL | main | in progress |
 | 5 | Brain prompts, intel extraction, report | | | todo |
 | 6 | Call session engine | | | todo |
 | 7 | FastAPI app and WebSocket protocol | | | todo |
