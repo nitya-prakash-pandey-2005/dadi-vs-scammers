@@ -15,5 +15,6 @@ export default defineConfig({
       "/ws": { target: "ws://127.0.0.1:8765", ws: true },
     },
   },
-  build: { target: "es2022" },
+  // emit the AudioWorklet as a real file (data: URLs are not accepted by addModule everywhere)
+  build: { target: "es2022", assetsInlineLimit: (file) => (file.endsWith(".js") ? false : undefined) },
 });

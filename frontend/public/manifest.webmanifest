@@ -1,7 +1,7 @@
 {
-  "name": "My App",
-  "short_name": "App",
-  "description": "Replace with your app's description.",
+  "name": "Dadi vs Scammers",
+  "short_name": "Dadi",
+  "description": "AI grandmother that answers scam calls, wastes fraudsters' time and extracts their mule accounts. Built on Gnani AI.",
   "start_url": "/#/app",
   "scope": "/",
   "display": "standalone",
