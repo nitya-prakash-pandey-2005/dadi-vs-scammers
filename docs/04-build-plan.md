@@ -10,6 +10,15 @@
 
 **Spec:** `docs/03-design.md` (API facts in `docs/01-gnani-api-reference.md`)
 
+## Amendments (Sun 8 Nov, 10:50): these win over anything below
+1. **The engine contract is `voice-core/README.md`.** Every `voice_core` name, signature and event in this plan must match it.
+2. `Turn` lives in `voice_core/types.py` (created in Task 1). Tasks 5 and 6 import it from there.
+3. `split_sentences` lives in `voice_core/turns.py` (Task 6), not in `dadi/brain.py`. `brain.py` imports it.
+4. Task 6 is split: the **generic** `VoiceAgentSession` (barge-in, fillers, echo guard, reconnect, noise, TTS fallback) goes in `voice_core/session.py`. `backend/dadi/agent.py` defines `DadiAgent`, which implements the Agent protocol from the contract (persona switching, brain, tactics, intel, store). Event names follow the contract: `session_started` / `session_ended` / `agent_speaking` (the UI shows them as call started / ended / Dadi speaking). `call_id` is added by `DadiAgent` into `session_started`.
+5. Settings gain `intel_llm_provider`, `evon_api_key`, `stt_mode` and `cache_dir`. `extract_intel` uses `LLM(settings, purpose="intel")`.
+6. Task 2 also creates `create_voice_embedding`, `tts_clone_rest` and `TtsCache` (used by apni-awaaz). Task 3 also creates `scripts/eval_llm.py`. Its prompts: the 3 Dadi personas, 5 intel transcripts, 5 Pukaar flood-call transcripts and 3 Awaaz reply-suggestion cases. It measures time to first token, total time, script correctness and valid-JSON rate, and writes a markdown table to `docs/evon-eval.md`.
+7. `voice-core/web` also exports `pcmToWav` and `decodeToPcm16` (contract).
+
 ## Global Constraints
 
 - Gnani base URL `https://api.vachana.ai`; REST header `X-API-Key-ID`; WebSocket header `x-api-key-id`.
