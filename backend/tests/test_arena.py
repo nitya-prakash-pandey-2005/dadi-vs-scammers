@@ -90,3 +90,16 @@ async def test_noise_benchmark_with_fakes():
     assert [r["snr_db"] for r in res["by_snr"]] == [None, 5]
     assert all(r["entity_recall"] == 1.0 for r in res["by_snr"])
     assert sum(1 for e in events if e["type"] == "bench_row") == 4
+
+
+async def test_arena_reports_mission_complete():
+    events = []
+
+    async def emit(e):
+        events.append(e)
+
+    summary = await run_arena(scam_type="digital_arrest", turns=6, snr_db=None, settings=Settings(sample_rate=8000),
+                              scammer_llm=FakeLLM([]), dadi_llm=FakeLLM(["हाँ बेटा।"] * 12), intel_llm=FakeLLM([]),
+                              emit=emit, tts_fn=fake_tts, stt_fn=echo_stt, mission="whatsapp")
+    done = [e for e in events if e["type"] == "mission"]
+    assert len(done) == 1 and done[0]["turn"] == summary["mission_turn"] == 6  # canned line 6 has the WhatsApp number

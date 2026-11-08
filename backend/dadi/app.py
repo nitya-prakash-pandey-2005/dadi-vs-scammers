@@ -38,6 +38,7 @@ from .insights import freeze_csv, freeze_list, insights
 from .report import build_report
 from .rings import build_rings, speech_only, voiceprint_vec
 from .scammer_scripts import SCAMMER_VOICE
+from .tactics import MISSIONS
 from .store import Store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -100,6 +101,10 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
     async def personas():
         return [{"key": p.key, "name": p.name, "age": p.age, "city": p.city, "language": p.language, "voice": p.voice}
                 for p in PERSONAS.values()]
+
+    @app.get("/api/missions")
+    async def missions():
+        return [{"key": k, "label": v["label"]} for k, v in MISSIONS.items()]
 
     @app.get("/api/totals")
     async def totals():
@@ -186,6 +191,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
             await ws.close(code=1008)
             return
         sess, agent = factory(send_json, send_audio, first.get("persona") or "auto")
+        if first.get("mission") in MISSIONS:
+            agent.state.mission = first["mission"]
         await sess.start()
         caller_pcm = bytearray()  # scammer's mic, for the voice fingerprint after hang-up
         if first.get("noise_snr_db") is not None:
@@ -251,6 +258,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None) -> Fas
                     intel_llm=CyclingLLM([]) if fake else LLM(settings, purpose="intel"),
                     emit=emit, noise=st.babble, persona_key=req.get("persona") or "dadi",
                     scammer_voice=req.get("scammer_voice") or SCAMMER_VOICE, store=store,
+                    mission=req.get("mission") if req.get("mission") in MISSIONS else None,
                     embed_fn=None if fake else create_voice_embedding, **fakes,
                 )
         except (WebSocketDisconnect, RuntimeError):

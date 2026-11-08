@@ -22,3 +22,9 @@ One line per test: date and time, build, scenario, result, latency, notes.
 - **Voice fingerprint (new):** Gnani's voice-clone embedding (`/voice-clone/embeddings`, 768-d) works as a speaker ID over the 8 kHz phone band. 3 male Timbre voices × 2 different scam lines: same voice 0.93–0.95 cosine, different voices ≤ 0.63. Threshold 0.8.
 - **Ring Radar live:** arena "Inspector Vijay Rathore, CBI" (digital arrest, Harshad) and "Rahul, SBI head office" (KYC, Harshad): different names, scripts and IDs, linked as **same voice (0.93)**. "Suresh, electricity office" (Avinash) not linked. Cost: ~27 Gnani calls for 3 runs.
 - Caveat for the interview: Timbre voices are very consistent; real human voices vary more between calls, so a match is a lead, not proof.
+
+## Sun 8 Nov evening, branch `dilavesh` (TM)
+- **Message checker (live, Groq only):** 3 synthetic messages (Hinglish digital arrest, Hindi electricity, Tamil KYC): all "scam", right scam type, UPI/phone/link extracted, Tamil message answered by Paati in Tamil. The 3 verdict texts used as harmless controls: all "no scam signs".
+- **Mission mode (live arena, KYC script, mission "account", 6 turns):** Dadi asked for the account + IFSC on turns 4 and 6 ("UPI से नहीं भेज सकती… बैंक अकाउंट नंबर और IFSC बताओ"); the AI scammer insisted on UPI, so the mission was **not** completed (UPI `kyc.sbi.help@ybl` captured instead). Honest result shown in the UI.
+- **Ring radar:** the third Harshad call linked to both earlier ones (0.95, 0.96). ~13 Gnani calls.
+- **LLM IDs are now validated:** the intel LLM had turned one spoken phone number into fake "accounts" (624655, 99087565) and bare "amounts"; `_sanitise` now applies the regex format rules to LLM IDs and drops bare-number amounts.

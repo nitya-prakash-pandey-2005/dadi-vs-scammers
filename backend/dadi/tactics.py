@@ -38,6 +38,18 @@ POOLS: dict[str, list[str]] = {
              "ask_whatsapp", "ask_account_ifsc", "ask_upi"],
 }
 
+MISSIONS: dict[str, dict] = {  # operator-set goal for a call: which intel to get first
+    "upi": {"label": "Get the UPI ID", "field": "upi_ids", "moves": ["ask_upi"]},
+    "account": {"label": "Get the bank account + IFSC", "field": "accounts", "moves": ["ask_account_ifsc"]},
+    "whatsapp": {"label": "Get the WhatsApp number", "field": "phones", "moves": ["ask_whatsapp"]},
+    "identity": {"label": "Get name, badge and office", "field": "names", "moves": ["ask_name_badge", "ask_police_station"]},
+}
+
+
+def mission_done(mission: str | None, intel: dict) -> bool:
+    return bool(mission in MISSIONS and intel.get(MISSIONS[mission]["field"]))
+
+
 PHASE_GOALS = {
     "confused": "You just picked up; you are confused and slow. Do not agree to anything yet.",
     "scared": "You are getting scared and want to cooperate, but you're slow and ask innocent questions.",
@@ -60,6 +72,8 @@ class CallState:
     captured: set[str] = field(default_factory=set)
     recent_moves: list[str] = field(default_factory=list)
     last_scammer_text: str = ""
+    mission: str | None = None
+    mission_done: bool = False
 
 
 @dataclass
@@ -95,12 +109,17 @@ def next_tactic(state: CallState, rng: random.Random) -> Tactic:
         move = "slow_digits" if "slow_digits" not in recent else "wrong_button"
         if move in recent:
             move = next((m for m in POOLS["stall_pay"] if m not in recent), "glasses")
+    elif state.mission in MISSIONS and not state.mission_done and state.turn >= 2 and state.turn % 2 == 0:
+        moves = MISSIONS[state.mission]["moves"]
+        move = moves[(state.turn // 2) % len(moves)]
     else:
         options = [m for m in POOLS[phase] if m not in recent]
         if not options:
             options = [m for m in MOVES if m not in recent and m != "slow_digits"]
         move = rng.choice(options)
     instruction = f"{PHASE_GOALS[phase]} This turn: {MOVES[move]}"
+    if state.mission in MISSIONS and not state.mission_done:
+        instruction += f" Your hidden aim for this call: {MISSIONS[state.mission]['label'].lower()}."
     if fake:
         instruction += f" They asked for your {fake}: give the FAKE {fake} from your notes, slowly, with one mistake."
     return Tactic(phase=phase, move=move, instruction=instruction, fake_field=fake)

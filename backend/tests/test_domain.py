@@ -109,3 +109,18 @@ def test_taxonomy():
     assert "digital_arrest" in SCAM_TYPES and "other" in SCAM_TYPES
     assert "threat_of_arrest" in RED_FLAGS
     assert 10 <= len(SCAM_KEYTERMS) <= 40
+
+
+def test_mission_steers_tactics_until_done():
+    from dadi.tactics import MISSIONS, mission_done
+    rng = random.Random(0)
+    st = CallState(mission="account")
+    moves = []
+    for _ in range(8):
+        t = next_tactic(st, rng)
+        moves.append(t.move)
+        st.recent_moves.append(t.move)
+        st.turn += 1
+    assert moves.count("ask_account_ifsc") >= 3 and moves[0] != "ask_account_ifsc"  # still confused at first
+    assert "account" in MISSIONS and mission_done("account", {"accounts": ["123456789012"]})
+    assert not mission_done("identity", {"upi_ids": ["a@ybl"]}) and mission_done("identity", {"names": ["Rahul"]})

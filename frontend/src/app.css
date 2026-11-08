@@ -121,3 +121,6 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
 /* Message checker */
 .fact { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--line); color: var(--text); font-size: 14px; line-height: 1.45; }
 .flags { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+.mission-pill { display: flex; gap: 8px; align-items: center; margin: 10px 0; padding: 8px 12px; border-radius: 10px;
+  background: var(--amber-a); color: var(--amber); font-size: 13px; }
+.mission-pill.done { background: rgba(52, 211, 153, 0.13); color: var(--green); }

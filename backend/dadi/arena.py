@@ -28,7 +28,7 @@ from .intel_rules import find_entities
 from .personas import PERSONAS
 from .rings import build_rings, speech_only, voiceprint_vec
 from .scammer_scripts import BENCH_LINES, SCAMMER_LANGUAGE, SCAMMER_VOICE, SCRIPTS
-from .tactics import CallState
+from .tactics import CallState, mission_done
 from .taxonomy import SCAM_KEYTERMS
 
 log = logging.getLogger(__name__)
@@ -104,13 +104,14 @@ async def _speak_and_hear(text, *, settings, tts_fn, stt_fn, noise, snr_db, rng,
 async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, settings: Settings, scammer_llm, dadi_llm,
                     intel_llm, emit: Emit, tts_fn=None, stt_fn=None, noise: np.ndarray | None = None,
                     persona_key: str = "dadi", seed: int = 0, scammer_voice: str = SCAMMER_VOICE,
-                    store=None, embed_fn=None) -> dict:
+                    store=None, embed_fn=None, mission: str | None = None) -> dict:
     script = SCRIPTS.get(scam_type) or SCRIPTS["digital_arrest"]
     rng = random.Random(seed)
     tts_fn = tts_fn or default_tts(settings)
     stt_fn = stt_fn or default_stt
     brain = DadiBrain(dadi_llm, PERSONAS.get(persona_key, PERSONAS["dadi"]), seed=seed)
-    state = CallState()
+    state = CallState(mission=mission)
+    mission_turn = None
     history: list[Turn] = []
     scammer_view: list[dict] = []
     intel = IntelReport()
@@ -155,13 +156,18 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
         # 4. intelligence so far
         intel = await extract_intel(intel_llm, history, intel)
         state.captured = {k for k in ("upi_ids", "accounts", "phones") if getattr(intel, k)}
-        await emit({"type": "intel", "intel": intel_json(intel)})
+        data = intel_json(intel)
+        if mission and mission_turn is None and mission_done(mission, data):
+            state.mission_done, mission_turn = True, i + 1
+            await emit({"type": "mission", "mission": mission, "done": True, "turn": mission_turn})
+        await emit({"type": "intel", "intel": data})
 
     summary = {
         "scam_type": scam_type, "turns": turns, "snr_db": snr_db, "seconds_simulated": round(t, 1),
         "cer_mean": round(sum(cers) / len(cers), 4) if cers else None,
         "entity_recall_mean": round(sum(recalls) / len(recalls), 3) if recalls else None,
         "persona_breaks": breaks, "intel": intel_json(intel), "scammer_voice": scammer_voice,
+        "mission": mission, "mission_turn": mission_turn,
     }
     if store is not None:
         summary.update(await file_arena_call(store, persona_key, history, intel, t, bytes(line_audio),
