@@ -44,7 +44,7 @@ def tts_catalog() -> dict[str, np.ndarray]:
 
 def synthetic_voice(vec: np.ndarray, catalog: dict[str, np.ndarray]) -> dict | None:
     """A known TTS voice that is clearly the closest match, else None. Catalogue match only, not deepfake detection."""
-    ranked = sorted(((_cos(vec, v), k) for k, v in catalog.items()), reverse=True)
+    ranked = sorted(((_cos(vec, v), k) for k, v in catalog.items() if len(v) == len(vec)), reverse=True)
     if len(ranked) < 2 or ranked[0][0] < SYNTH_FLOOR or ranked[0][0] - ranked[1][0] < SYNTH_MARGIN:
         return None
     return {"voice": ranked[0][1], "score": round(ranked[0][0], 3)}

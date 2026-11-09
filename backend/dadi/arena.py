@@ -26,10 +26,11 @@ from .brain import DadiBrain
 from .intel import IntelReport, extract_intel, intel_json
 from .intel_rules import find_entities
 from .personas import PERSONAS
-from .rings import build_rings, speech_only, synthetic_voice, tts_catalog, voiceprint_vec
+from .rings import build_rings, synthetic_voice, tts_catalog
 from .scammer_scripts import BENCH_LINES, SCAMMER_LANGUAGE, SCAMMER_VOICE, SCRIPTS
 from .tactics import CallState, mission_done
 from .taxonomy import SCAM_KEYTERMS
+from .voicewatch import VoiceWatch
 
 log = logging.getLogger(__name__)
 Emit = Callable[[dict], Awaitable[None]]
@@ -106,6 +107,8 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
                     intel_llm, emit: Emit, tts_fn=None, stt_fn=None, noise: np.ndarray | None = None,
                     persona_key: str = "dadi", seed: int = 0, scammer_voice: str = SCAMMER_VOICE,
                     store=None, embed_fn=None, mission: str | None = None) -> dict:
+    """With a `store`, the call is filed like a real one as it happens, and with an `embed_fn` the scammer's voice is
+    fingerprinted live: if it matches an earlier call, Dadi is told and teases him (same as a live call)."""
     script = SCRIPTS.get(scam_type) or SCRIPTS["digital_arrest"]
     rng = random.Random(seed)
     tts_fn = tts_fn or default_tts(settings)
@@ -118,51 +121,76 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
     intel = IntelReport()
     t = 0.0
     cers, recalls, breaks, leaks = [], [], 0, 0
-    line_audio = bytearray()
+    cid = store.create_call(persona_key) if store is not None else None
 
-    for i in range(turns):
-        # 1. scammer line (LLM, with canned fallback)
-        line = ""
-        if i > 0:
-            try:
-                line = (await scammer_llm.complete(
-                    [{"role": "system", "content": script["system"]}, *scammer_view], temperature=0.8, max_tokens=90)).strip()
-            except Exception as e:
-                log.info("scammer llm failed: %r", e)
-        if not line or _REFUSAL.search(line):
-            line = script["lines"][min(i, len(script["lines"]) - 1)]
-        # 2. through the noisy phone line into Prisma
-        heard, secs, lat = await _speak_and_hear(line, settings=settings, tts_fn=tts_fn, stt_fn=stt_fn,
-                                                 noise=noise, snr_db=snr_db, rng=rng, voice=scammer_voice,
-                                                 line_audio=line_audio)
-        c, rec = cer(line, heard), entity_recall(line, heard)
-        cers.append(c)
-        if rec is not None:
-            recalls.append(rec)
-        t += secs + 0.6
-        history.append(Turn("scammer", heard or line, round(t, 1)))
-        scammer_view.append({"role": "assistant", "content": line})
-        await emit({"type": "arena_turn", "speaker": "scammer", "intended": line, "text": heard, "cer": c,
-                    "entity_recall": rec, "snr_db": snr_db, "latency_ms": lat, "t": round(t, 1)})
-        # 3. Dadi answers
-        state.last_scammer_text = heard
-        reply = " ".join([s async for s in brain.reply_sentences(history, state, rng)]).strip()
-        breaks += bool(_BREAK.search(reply))
-        leaks += bool(_LEAK.search(reply))
-        t += max(1.5, len(reply) / 12) + 0.6
-        history.append(Turn("dadi", reply, round(t, 1)))
-        scammer_view.append({"role": "user", "content": reply})
-        tac = brain.last_tactic
-        await emit({"type": "arena_turn", "speaker": "dadi", "text": reply, "t": round(t, 1),
-                    "tactic": tac.move if tac else None, "phase": tac.phase if tac else None})
-        # 4. intelligence so far
-        intel = await extract_intel(intel_llm, history, intel)
-        state.captured = {k for k in ("upi_ids", "accounts", "phones") if getattr(intel, k)}
-        data = intel_json(intel)
-        if mission and mission_turn is None and mission_done(mission, data):
-            state.mission_done, mission_turn = True, i + 1
-            await emit({"type": "mission", "mission": mission, "done": True, "turn": mission_turn})
-        await emit({"type": "intel", "intel": data})
+    async def on_repeat_caller(match: dict) -> None:
+        brain.known_caller = match
+        await emit({"type": "repeat_caller", "call_id": cid, "match": match})
+
+    watch = VoiceWatch(store=store, call_id=cid, sample_rate=settings.sample_rate, embed_fn=embed_fn,
+                       api_key=settings.gnani_api_key, on_match=on_repeat_caller) if store is not None else None
+
+    def record(turn: Turn) -> None:
+        history.append(turn)
+        if store is not None:
+            store.add_turn(cid, turn)
+
+    try:
+        for i in range(turns):
+            # 1. scammer line (LLM, with canned fallback)
+            line = ""
+            if i > 0:
+                try:
+                    line = (await scammer_llm.complete(
+                        [{"role": "system", "content": script["system"]}, *scammer_view], temperature=0.8,
+                        max_tokens=90)).strip()
+                except Exception as e:
+                    log.info("scammer llm failed: %r", e)
+            if not line or _REFUSAL.search(line):
+                line = script["lines"][min(i, len(script["lines"]) - 1)]
+            # 2. through the noisy phone line into Prisma (and into the voice fingerprint)
+            line_audio = bytearray()
+            heard, secs, lat = await _speak_and_hear(line, settings=settings, tts_fn=tts_fn, stt_fn=stt_fn,
+                                                     noise=noise, snr_db=snr_db, rng=rng, voice=scammer_voice,
+                                                     line_audio=line_audio)
+            if watch is not None:
+                watch.feed(bytes(line_audio))
+                await watch.wait()  # deterministic: a match reaches Dadi before her next reply
+            c, rec = cer(line, heard), entity_recall(line, heard)
+            cers.append(c)
+            if rec is not None:
+                recalls.append(rec)
+            t += secs + 0.6
+            record(Turn("scammer", heard or line, round(t, 1)))
+            scammer_view.append({"role": "assistant", "content": line})
+            await emit({"type": "arena_turn", "speaker": "scammer", "intended": line, "text": heard, "cer": c,
+                        "entity_recall": rec, "snr_db": snr_db, "latency_ms": lat, "t": round(t, 1)})
+            # 3. Dadi answers
+            state.last_scammer_text = heard
+            reply = " ".join([s async for s in brain.reply_sentences(history, state, rng)]).strip()
+            breaks += bool(_BREAK.search(reply))
+            leaks += bool(_LEAK.search(reply))
+            t += max(1.5, len(reply) / 12) + 0.6
+            record(Turn("dadi", reply, round(t, 1)))
+            scammer_view.append({"role": "user", "content": reply})
+            tac = brain.last_tactic
+            await emit({"type": "arena_turn", "speaker": "dadi", "text": reply, "t": round(t, 1),
+                        "tactic": tac.move if tac else None, "phase": tac.phase if tac else None,
+                        "recognised": bool(brain.known_caller)})
+            # 4. intelligence so far
+            intel = await extract_intel(intel_llm, history, intel)
+            state.captured = {k for k in ("upi_ids", "accounts", "phones") if getattr(intel, k)}
+            if store is not None:
+                store.save_intel(cid, intel)
+            data = intel_json(intel)
+            if mission and mission_turn is None and mission_done(mission, data):
+                state.mission_done, mission_turn = True, i + 1
+                await emit({"type": "mission", "mission": mission, "done": True, "turn": mission_turn})
+            await emit({"type": "intel", "intel": data})
+    finally:
+        if store is not None:  # also when the viewer stops the run: keep what happened
+            store.end_call(cid, t)
+            await watch.finish()
 
     summary = {
         "scam_type": scam_type, "turns": turns, "snr_db": snr_db, "seconds_simulated": round(t, 1),
@@ -170,33 +198,15 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
         "entity_recall_mean": round(sum(recalls) / len(recalls), 3) if recalls else None,
         "persona_breaks": breaks, "admitted_ai": leaks, "intel": intel_json(intel), "scammer_voice": scammer_voice,
         "mission": mission, "mission_turn": mission_turn,
+        "repeat_of": watch.match if watch is not None else None,
     }
     if store is not None:
-        summary.update(await file_arena_call(store, persona_key, history, intel, t, bytes(line_audio),
-                                             settings, embed_fn))
+        links = build_rings(store.list_calls(500), store.voiceprints())["links"]
+        summary.update(call_id=cid, ring_links=[l for l in links if cid in (l["source"], l["target"])])
+        vec = store.voiceprints().get(cid)
+        summary["synthetic_voice"] = synthetic_voice(vec, tts_catalog()) if vec is not None else None
     await emit({"type": "arena_done", "summary": summary})
     return summary
-
-
-async def file_arena_call(store, persona_key, history, intel, seconds, line_audio, settings, embed_fn) -> dict:
-    """Saves the arena call like a real one, fingerprints the scammer's voice, returns its ring links."""
-    cid = store.create_call(persona_key)
-    for turn in history:
-        store.add_turn(cid, turn)
-    store.save_intel(cid, intel)
-    store.end_call(cid, seconds)
-    synthetic = None
-    try:
-        speech = speech_only(line_audio, settings.sample_rate)
-        if embed_fn and len(speech) / 2 / settings.sample_rate >= 5:
-            emb = await embed_fn(settings.gnani_api_key, wav_bytes(speech, settings.sample_rate))
-            vec = voiceprint_vec(emb)
-            store.save_voiceprint(cid, vec)
-            synthetic = synthetic_voice(vec, tts_catalog())
-    except Exception as e:
-        log.info("voiceprint failed: %r", e)
-    links = [l for l in build_rings(store.list_calls(500), store.voiceprints())["links"] if cid in (l["source"], l["target"])]
-    return {"call_id": cid, "ring_links": links, "synthetic_voice": synthetic}
 
 
 async def run_noise_benchmark(*, settings: Settings, emit: Emit, tts_fn=None, stt_fn=None, noise=None,

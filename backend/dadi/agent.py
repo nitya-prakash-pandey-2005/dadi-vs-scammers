@@ -78,7 +78,15 @@ class DadiAgent:
 
     def turn_meta(self) -> dict:
         t = self.brain.last_tactic
-        return {"tactic": t.move, "phase": t.phase} if t else {}
+        meta = {"tactic": t.move, "phase": t.phase} if t else {}
+        if self.brain.known_caller:
+            meta["recognised"] = True
+        return meta
+
+    def recognise(self, match: dict) -> dict:
+        """The caller's voice matches an earlier call (voicewatch.py): Dadi will tease him about it in character."""
+        self.brain.known_caller = match
+        return {"type": "repeat_caller", "call_id": self.call_id, "match": match}
 
     async def on_user_turn(self, history: list[Turn]) -> dict | None:
         self.intel = await extract_intel(self.intel_llm, history, self.intel)

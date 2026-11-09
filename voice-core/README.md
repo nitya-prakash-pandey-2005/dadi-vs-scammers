@@ -19,6 +19,7 @@ All audio inside the engine is **PCM16 little-endian mono**. Default sample rate
 - `wav_bytes(pcm16, hz) -> bytes`, `read_wav(b) -> (np.ndarray, hz)`
 
 ## `voice_core.gnani` (Gnani AI APIs; host `https://api.vachana.ai`)
+- **Request gate (live finding, 8 Nov):** a key allows one short request at a time (a second concurrent one gets `429 RATE_LIMITED`). `tts_rest`, `tts_stream`, `transcribe_rest`, `create_voice_embedding` and `tts_clone_rest` all go through `gate.gnani_slot()` and retry 429/5xx (`gate.RETRY_DELAYS` = 0.5, 1, 2 s). The Prisma streaming socket is not gated. `tts_stream` holds the slot while streaming and retries only before its first chunk. Never wrap these calls in your own parallel `gather`; it is safe but they will queue. `gnani_call(fn, *a)` gates any other Gnani call. Env `GNANI_MAX_CONCURRENT` (default 1) if the quota allows more.
 - `SttEvent`: `type` in {"connected","speech_start","processing","transcript","error","closed"}, `text`, `language`, `latency_ms`, `raw`
 - `build_stt_headers(api_key, *, language_code, model="prisma-v3.0", sample_rate=8000, fmt="codemix", keyterms=None, vad=None) -> dict` (streaming takes exactly one locale: a list such as `"ta-IN,hi-IN"` becomes `indic-auto` on v3.0, or its first locale on v2.5; keyterms are sent as ASCII-escaped JSON)
 - `parse_stt_message(msg: str) -> SttEvent`

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Activity, AlertTriangle, Bot, Gauge as GaugeIcon, Network, Play, Swords, Target } from "lucide-react";
 import { Badge, Card, Hud, PageHead, Progress, Seg, Stat, toast } from "../ui";
-import { IntelCard } from "../components/WarRoom";
+import { IntelCard, RepeatCaller } from "../components/WarRoom";
 import { MISSION_OPTIONS } from "../components/Phone";
 import SpeechText from "../components/SpeechText";
 import { SCAM_TYPE_LABELS, TACTIC_LABELS, mmss } from "../lib/labels";
@@ -50,6 +50,7 @@ export default function Arena() {
   const [feed, setFeed] = useState([]);
   const [intel, setIntel] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [repeat, setRepeat] = useState(null);
   const [bench, setBench] = useState({ rows: [], bySnr: null });
   const wsRef = useRef(null);
   const feedRef = useRef(null);
@@ -62,13 +63,14 @@ export default function Arena() {
     else if (m.type === "intel") setIntel(m.intel);
     else if (m.type === "arena_done") setSummary(m.summary);
     else if (m.type === "mission") toast(`Mission complete in ${m.turn} turns`, "info");
+    else if (m.type === "repeat_caller") setRepeat(m.match);
     else if (m.type === "bench_row") setBench((b) => ({ ...b, rows: [...b.rows, m] }));
     else if (m.type === "bench_done") setBench((b) => ({ ...b, bySnr: m.by_snr }));
     else if (m.type === "error") toast(m.message || "Arena error", "warn");
   };
 
   const runArena = () => {
-    setFeed([]); setIntel(null); setSummary(null); setRunning("arena");
+    setFeed([]); setIntel(null); setSummary(null); setRepeat(null); setRunning("arena");
     wsRef.current = openArena(
       { type: "arena", scam_type: scam, turns, snr_db: noise === "off" ? null : Number(noise), persona: "dadi", scammer_voice: voice, mission: mission || null },
       onEvent, () => setRunning(null));
@@ -78,6 +80,7 @@ export default function Arena() {
     wsRef.current = openArena({ type: "benchmark", snr_list: [null, 20, 10, 5, 0] }, onEvent, () => setRunning(null));
   };
   const stop = () => { wsRef.current?.close(); setRunning(null); };
+  const firstKnown = feed.findIndex((m) => m.speaker === "dadi" && m.recognised);
 
   return (
     <>
@@ -105,6 +108,8 @@ export default function Arena() {
               </button>
             </div>
           </Card>
+
+          <RepeatCaller match={repeat} />
 
           {summary && (
             <Card icon={Activity} title="Result" className="good">
@@ -156,6 +161,7 @@ export default function Arena() {
                   <div key={i} className="bubble me">
                     <div className="bubble-text"><SpeechText text={m.text} /></div>
                     {m.tactic && <div className="meta">Tactic: {TACTIC_LABELS[m.tactic] || m.tactic}</div>}
+                    {i === firstKnown && <div className="row" style={{ marginTop: 6 }}><Badge tone="rose" dot>Recognised his voice</Badge></div>}
                   </div>
                 ),
               )}

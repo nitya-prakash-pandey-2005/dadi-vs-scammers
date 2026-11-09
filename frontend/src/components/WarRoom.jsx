@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { AlertTriangle, CheckCircle2, FileText, Fingerprint, MessagesSquare, Radar, Timer } from "lucide-react";
+import { AlertTriangle, AudioLines, CheckCircle2, FileText, Fingerprint, MessagesSquare, Network, Radar, Timer } from "lucide-react";
 import { Badge, Card, Hud, Progress, Stat } from "../ui";
 import SpeechText from "./SpeechText";
 import { navigate } from "../lib/router";
@@ -95,6 +95,38 @@ export function RedFlags({ intel }) {
   );
 }
 
+const when = (s) => (s ? new Date(s * 1000).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : null);
+
+// Dadi never forgets a voice: the caller's Gnani voice fingerprint matches an earlier call.
+export function RepeatCaller({ match }) {
+  if (!match) return null;
+  const alias = match.names?.[0] || match.agencies?.[0];
+  const type = match.scam_type ? SCAM_TYPE_LABELS[match.scam_type] || match.scam_type : null;
+  const date = when(match.started_at);
+  return (
+    <Card className="alert" icon={AudioLines} title="Repeat scammer: Dadi knows this voice"
+      right={<Badge tone="rose" dot>{Math.round((match.similarity || 0) * 100)}% voice match</Badge>}>
+      <div className="small text-2">
+        Same voice as {date ? <>the call on <b>{date}</b></> : "an earlier call"}
+        {alias ? <>, when he called himself <b>{alias}</b></> : null}
+        {type ? <> ({type})</> : null}. Dadi will tease him about it, in character.
+      </div>
+      {match.ids?.length > 0 && (
+        <div className="row wrap" style={{ gap: 6, marginTop: 10 }}>
+          {match.ids.map((id) => <Badge key={id} tone="muted">{id}</Badge>)}
+        </div>
+      )}
+      <div className="row wrap" style={{ gap: 8, marginTop: 12 }}>
+        <button className="btn sm" onClick={() => navigate(`/app/report?id=${match.call_id}`)}><FileText size={14} /> Earlier call's report</button>
+        <button className="btn sm" onClick={() => navigate("/app/rings")}><Network size={14} /> Scam ring radar</button>
+      </div>
+      <div className="disclaimer" style={{ marginTop: 10 }}>
+        <AlertTriangle size={13} className="flex-none" /> A voice match is a lead for investigators, not proof.
+      </div>
+    </Card>
+  );
+}
+
 export function Transcript({ call }) {
   const boxRef = useRef(null);
   useEffect(() => {
@@ -102,6 +134,7 @@ export function Transcript({ call }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [call.turns.length]);
   const name = call.persona?.name || "Dadi";
+  const firstKnown = call.turns.findIndex((t) => t.speaker !== "scammer" && t.recognised);
   return (
     <Card icon={MessagesSquare} title="Live transcript" right={call.speaking ? <Badge tone="pink" dot>{name} speaking</Badge> : null} tour="transcript">
       <div className="chat" ref={boxRef}>
@@ -115,6 +148,7 @@ export function Transcript({ call }) {
                 {scammer ? "Scammer" : name} · {mmss(t.t)}
                 {scammer && t.latency_ms != null ? ` · Prisma ${Math.round(t.latency_ms)} ms` : ""}
                 {!scammer && t.tactic ? ` · ${TACTIC_LABELS[t.tactic] || t.tactic}` : ""}
+                {i === firstKnown ? " · Recognised his voice" : ""}
               </div>
             </div>
           );
@@ -129,6 +163,7 @@ export default function WarRoom({ call, totals }) {
     <div className="grid g-12 warroom">
       <div className="span-7"><TimeWasted call={call} /></div>
       <div className="span-5"><ScamType intel={call.intel} /></div>
+      {call.repeat && <div className="span-12"><RepeatCaller match={call.repeat} /></div>}
       {call.phase === "ended" && call.callId && (
         <div className="span-12">
           <Card className="good">

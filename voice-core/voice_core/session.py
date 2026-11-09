@@ -204,6 +204,12 @@ class VoiceAgentSession:
         elif ev.type == "error":
             log.info("stt error event: %s", ev.raw)
 
+    @property
+    def speaking(self) -> bool:
+        """True while the agent's audio is (estimated to be) playing at the caller's end. A bridge can use it to keep
+        the agent's own voice, echoed back through a speakerphone, out of anything it collects from the caller."""
+        return time.monotonic() < self._speaking_until
+
     def _agent_busy(self) -> bool:
         return (self._speak_task is not None and not self._speak_task.done()) or time.monotonic() < self._speaking_until
 

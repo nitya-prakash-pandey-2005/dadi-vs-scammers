@@ -17,6 +17,7 @@ export function useCall({ onEnded } = {}) {
   const [speaking, setSpeaking] = useState(false);
   const [startedAt, setStartedAt] = useState(null);
   const [wasted, setWasted] = useState(0);
+  const [repeat, setRepeat] = useState(null); // earlier call with the same voice (Gnani voice fingerprint)
   const refs = useRef({ call: null, mic: null, player: null, onEnded });
   refs.current.onEnded = onEnded;
 
@@ -51,6 +52,10 @@ export function useCall({ onEnded } = {}) {
         setIntel(m.intel);
         if (m.mission) setMission((old) => { if (m.mission.done && !old?.done) toast("Mission complete!", "info"); return m.mission; });
         break;
+      case "repeat_caller":
+        setRepeat(m.match);
+        toast("Dadi knows this voice: same scammer as an earlier call", "warn");
+        break;
       case "persona":
         setPersona({ key: m.persona, name: m.persona_name, city: m.city });
         toast(`${m.persona_name} took the call: language switched`, "info");
@@ -73,6 +78,7 @@ export function useCall({ onEnded } = {}) {
     setTurns([]);
     setIntel(null);
     setMission(missionKey ? { key: missionKey, done: false } : null);
+    setRepeat(null);
     setWasted(0);
     setCallId(null);
     setSpeaking(false);
@@ -124,7 +130,7 @@ export function useCall({ onEnded } = {}) {
     refs.current.player?.close();
   }, []);
 
-  return { phase, callId, persona, mission, turns, intel, stt, speaking, startedAt, wasted, start, hangup, setNoise, playerLevel, micLevel };
+  return { phase, callId, persona, mission, turns, intel, repeat, stt, speaking, startedAt, wasted, start, hangup, setNoise, playerLevel, micLevel };
 }
 
 export function useNow(active, every = 250) {
