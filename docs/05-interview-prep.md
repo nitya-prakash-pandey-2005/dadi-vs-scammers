@@ -9,13 +9,19 @@ Read this twice before the interview. Every big decision is here with **the reas
 
 ## 2. The problem (numbers you should know)
 - **₹22,845 crore** lost to cyber fraud in 2024 (I4C, Ministry of Home Affairs), up from about ₹7,465 crore in 2023.
-- **Digital arrest** scams (fake CBI/police on video or phone) took about ₹1,935 crore in 2024. The Prime Minister warned about them on national radio.
+- **Digital arrest** scams (fake CBI/police on video or phone) took about ₹1,935 crore in 2024 and then **fell 86% in 2025** (17,264 cases, ₹644 crore; ThePrint, 18 Feb 2026). Never say they are still rising: say they peaked in 2024 while total fraud stayed around ₹22,500 crore in 2025.
+- **Elderly:** 1,03,488 senior citizens reported losing ₹4,005 crore in 2025 (MHA, Rajya Sabha): about 4% of complainants, roughly 18% of the money.
+- **Real cases to name:** S.P. Oswal (₹7 crore, Aug 2024, fake Supreme Court hearing on Skype); an 86-year-old in Mumbai (₹20.26 crore, check-ins every 3 hours); a 78-year-old retired banker in Delhi (₹23 crore through 4,000+ layered accounts).
 - 2025: roughly 21–28 lakh fraud complaints (sources differ; say "over 20 lakh").
 - **Mule accounts** are how scam money moves. The RBI built *MuleHunter.AI* to find them from transaction patterns; we get them straight from the scammer's mouth.
 
 ## 3. Prior art (say it before they do)
-- **O2 "Daisy" (UK, Nov 2024):** an English AI granny that kept scammers on the line for up to 40 minutes and had over 1,000 calls. It was a marketing campaign with no intelligence output.
-- **What we add:** Indian languages and code-mixing (three personas), **intelligence extraction** (UPI, accounts, phones, IFSC, apps, claimed identity, red flags), a **complaint draft** for India's systems (cybercrime.gov.in, 1930, Sanchar Saathi Chakshu), **noise robustness** on 8 kHz phone audio, an **AI-vs-AI test arena**, and a **sovereign stack** (Gnani speech plus open-weight Evon).
+- **O2 "Daisy" (UK, Nov 2024):** an English AI granny that kept scammers on the line for up to 40 minutes (O2's own claim). A publicity campaign, not a product, with no intelligence output.
+- **Apate.ai (Australia, Macquarie University spin-out) — the closest competitor; know it cold.** AI bots hold long scam conversations for CommBank and TPG (280,000+ calls diverted, company-reported), with personas in several accents including Indian, and CommBank's bots hand out payment details the bank can trace. **Our answer:** "Apate proves the model works for a bank in Australia. Dadi is built for Indian citizens and Indian channels: she speaks Hinglish, Tanglish, Benglish, Kanglish and Tenglish, pulls UPI IDs and mule accounts out of the scammer, drafts the complaint for cybercrime.gov.in, 1930 and Chakshu, seals the recording, and recognises a repeat scammer by voice. To our knowledge nobody does that for India."
+- **Jolly Roger Telephone (US), Lenny, Kitboga:** English bots and entertainers; no reporting pipeline.
+- **Truecaller Assistant, Airtel AI spam labels:** they screen or label calls for the victim; they never engage the scammer.
+- **Pindrop (US):** voice "phoneprinting" for bank call centres is prior art for our voice fingerprint. We apply the idea to scam callers, using Gnani's voice-cloning embedding.
+- **What we add:** Indian languages and code-mixing (five grandmothers), **intelligence extraction** (UPI, accounts, phones, IFSC, apps, claimed identity, red flags), a **complaint draft** for India's systems (cybercrime.gov.in, 1930, Sanchar Saathi Chakshu), **noise robustness** on 8 kHz phone audio, an **AI-vs-AI test arena**, and repeat-scammer recognition by voice (Gnani voice cloning as a fingerprint). Evon is supported by the adapter, but say plainly that the demo ran on Groq.
 - Scam *detection* apps (Truecaller, Google) warn victims. We do something different: we waste the scammer's time and harvest his payment details.
 
 ## 4. Architecture (draw this on paper)
