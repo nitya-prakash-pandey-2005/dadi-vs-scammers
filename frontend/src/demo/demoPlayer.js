@@ -30,6 +30,12 @@ export function createDemoPlayer(src) {
     for (let i = 0; i < scratch.length; i++) s += scratch[i] * scratch[i];
     return Math.min(1, Math.sqrt(s / scratch.length) * 6);
   };
+  // Created inside the "Call" click: a silent play() right now unlocks this element on browsers that only allow
+  // playback started by a tap (iOS Safari), because start() runs a moment later, when the replay begins.
+  let wanted = false;
+  audio.muted = true;
+  audio.play().then(() => { if (!wanted) { audio.pause(); audio.currentTime = 0; } }).catch(() => {}).finally(() => { audio.muted = false; });
+
   // the transcript runs on the wall clock from start(); if the file took a moment to load, jump the audio forward
   // once it plays, so voices and bubbles stay together
   let startedAt = 0;
@@ -42,12 +48,14 @@ export function createDemoPlayer(src) {
   });
   return {
     start() {
+      wanted = true;
+      audio.muted = false;
       startedAt = performance.now();
       ctx?.resume().catch(() => {});
       try { audio.currentTime = 0; } catch { /* not loaded yet: starts at 0 anyway */ }
       audio.play().catch(() => {});
     },
-    stop() { audio.pause(); },
+    stop() { wanted = false; audio.pause(); },
     play() {},
     flush() {},
     busy: () => !audio.paused,

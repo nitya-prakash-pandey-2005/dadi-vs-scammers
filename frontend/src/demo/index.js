@@ -33,6 +33,7 @@ export function apiHref(path) {
 
 export async function demoGet(path) {
   const p = demoPath(path);
+  if (path === "/api/health" && !hasDemoFile(p)) return { demo: true };
   if (!hasDemoFile(p)) throw new Error(`${path} → 404 (not in the demo snapshot)`);
   const r = await fetch(p, { headers: { Accept: "application/json" } });
   if (!r.ok) throw new Error(`${path} → ${r.status}`);
