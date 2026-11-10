@@ -83,7 +83,10 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
                                      stt_factory=lambda: ScriptedStt(), tts_fn=tone_tts, noise=st.babble)
         else:
-            agent = DadiAgent(store=store, llm=LLM(settings), intel_llm=LLM(settings, purpose="intel"), persona_key=persona)
+            # realtime: no SDK retries (a 429 Retry-After means minutes of silence) and a 5 s first-token limit;
+            # the session then says a pre-rendered "say that again?" line instead of dead air
+            llm = LLM(settings, max_retries=0, first_token_timeout=5.0)
+            agent = DadiAgent(store=store, llm=llm, intel_llm=LLM(settings, purpose="intel"), persona_key=persona)
             sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
                                      filler_audio=st.fillers, noise=st.babble)
         return sess, agent

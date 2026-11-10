@@ -58,6 +58,11 @@ class DadiAgent:
     def filler_texts(self) -> list[str]:
         return self.persona.fillers
 
+    def fallback_texts(self) -> list[str]:
+        """Said when a reply fails (LLM down or slow): the "say that again?" fillers, which are pre-rendered."""
+        asks = [f for f in self.persona.fillers if f.rstrip(" .…").endswith("?")]
+        return asks or list(self.persona.fillers)
+
     def on_language(self, code: str | None) -> dict | None:
         if not self.auto:
             return None

@@ -33,7 +33,7 @@ All audio inside the engine is **PCM16 little-endian mono**. Default sample rate
 - `TtsCache(cache_dir)`: `get_or_make(api_key, text, **body_kwargs) -> bytes` caches by a hash of (text, voice, model, language, speed, sample_rate) so we never pay twice for the same audio
 
 ## `voice_core.llm`
-- `LLM(settings, provider=None, purpose="dialogue"|"intel")`: `complete(messages, *, temperature=0.8, max_tokens=220, json_mode=False) -> str`; `stream(messages, ...)` (async iterator of text deltas); `.provider`, `.model`. `purpose="intel"` uses `settings.intel_llm_provider`.
+- `LLM(settings, provider=None, purpose="dialogue"|"intel", *, max_retries=1, first_token_timeout=None, timeout=30.0)`: `complete(messages, *, temperature=0.8, max_tokens=220, json_mode=False) -> str`; `stream(messages, ...)` (async iterator of text deltas); `.provider`, `.model`. `purpose="intel"` uses `settings.intel_llm_provider`. **Realtime dialogue should pass `max_retries=0, first_token_timeout=5.0`**: the SDK otherwise sleeps out a 429 `Retry-After` (minutes of dead air); with a timeout set, `stream()` raises `asyncio.TimeoutError` (and closes the response) when no text delta arrives in time.
 - `parse_json_loose(text) -> dict`
 - `voice_core.testing.FakeLLM(replies: list[str])`, `FakeStt(events: list[SttEvent])`, `fake_tts(text, **kw)` (two 320-byte chunks), for offline tests
 
@@ -50,15 +50,16 @@ voice: str; tts_language: str; speed: float     # current Timbre settings (may c
 stt_language_code: str; keyterms: list[str]
 def greeting(self) -> str
 def filler_texts(self) -> list[str]
+def fallback_texts(self) -> list[str]                                  # OPTIONAL: lines for a failed reply (else filler_texts)
 def on_language(self, code: str | None) -> None                       # first meaningful turn: switch persona or language
 async def reply_sentences(self, history: list[Turn]) -> AsyncIterator[str]
 async def on_user_turn(self, history: list[Turn]) -> dict | None      # background analysis; returns an event to send, e.g. {"type":"intel",...}
 async def record(self, turn: Turn) -> None                            # persistence hook
 ```
-`VoiceAgentSession(agent, *, send_json, send_audio, settings, stt_factory=None, tts_fn=None, tts_cache=None, noise=None, rng=None)`:
+`VoiceAgentSession(agent, *, send_json, send_audio, settings, stt_factory=None, tts_fn=None, filler_audio=None, noise=None, rng=None, filler_delay=0.25, reconnect_delays=(0.5, 1, 2, 4, 8), first_sentence_timeout=8.0)`:
 - `start()`, `on_audio(pcm16)`, `set_noise(snr_db | None)`, `hangup() -> {"session_seconds": float}`, `.started_at`
 - Sends JSON events: `session_started`, `turn` {speaker, text, t, lang, latency_ms}, `agent_speaking` {on}, `stop_audio`, `status` {stt: connected|reconnecting|error}, `session_ended`, plus whatever `on_user_turn` returns. Sends binary PCM16 for agent speech.
-- Pinned behaviour: barge-in (`speech_start` while speaking → cancel and `stop_audio`); a filler after `processing` if no reply audio within 250 ms; ignore non-meaningful and echo transcripts; STT reconnect with backoff 0.5/1/2/4/8 s; TTS failure → retry once on `timbre-v2.5` with tags stripped; noise (if set) mixed into user audio at `snr_db` after `telephone_band`.
+- Pinned behaviour: barge-in (`speech_start` while speaking → cancel and `stop_audio`); a filler after `processing` if no reply audio within 250 ms; ignore non-meaningful and echo transcripts; **no dead air**: when a reply produces no audio (agent error, first sentence later than `first_sentence_timeout`, empty reply, TTS failure) the session plays a pre-rendered line from `fallback_texts()` (else `filler_texts()`), only texts present in `filler_audio`, never the same clip twice in a row, sent as a normal agent `turn` with `"fallback": true`; STT reconnect with backoff 0.5/1/2/4/8 s; TTS failure → retry once on `timbre-v2.5` with tags stripped; noise (if set) mixed into user audio at `snr_db` after `telephone_band`.
 
 ## `voice-core/web` (browser, plain ES modules)
 - `startMic({ targetRate = 8000, onFrame }) -> Promise<{ stop() }>` (AudioWorklet; 512-sample Int16 frames)

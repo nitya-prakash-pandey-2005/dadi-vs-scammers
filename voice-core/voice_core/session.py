@@ -51,6 +51,7 @@ class VoiceAgentSession:
         rng: random.Random | None = None,
         filler_delay: float = 0.25,
         reconnect_delays: tuple[float, ...] = (0.5, 1, 2, 4, 8),
+        first_sentence_timeout: float | None = 8.0,
     ):
         self.agent = agent
         self.send_json = send_json
@@ -65,6 +66,7 @@ class VoiceAgentSession:
         self.rng = rng or random.Random()
         self.filler_delay = filler_delay
         self.reconnect_delays = reconnect_delays
+        self.first_sentence_timeout = first_sentence_timeout
 
         self.history: list[Turn] = []
         self.started_at = 0.0
@@ -323,10 +325,49 @@ class VoiceAgentSession:
             await self._safe_json({"type": "turn", "speaker": turn.speaker, "text": text, "t": turn.t})
             await self._finish_speaking()
 
+    async def _reply_stream(self):
+        """agent.reply_sentences, but the first sentence must arrive within first_sentence_timeout."""
+        agen = self.agent.reply_sentences(list(self.history)).__aiter__()
+        first = True
+        try:
+            while True:
+                try:
+                    if first and self.first_sentence_timeout:
+                        sentence = await asyncio.wait_for(agen.__anext__(), self.first_sentence_timeout)
+                    else:
+                        sentence = await agen.__anext__()
+                except StopAsyncIteration:
+                    return
+                first = False
+                yield sentence
+        finally:
+            aclose = getattr(agen, "aclose", None)
+            if aclose is not None:
+                try:
+                    await aclose()
+                except Exception:
+                    pass
+
+    def _fallback_choice(self) -> str | None:
+        """A pre-rendered line to say when a reply produced no audio (LLM error, timeout or empty reply)."""
+        texts: list[str] = []
+        if hasattr(self.agent, "fallback_texts"):
+            try:
+                texts = list(self.agent.fallback_texts() or [])
+            except Exception as e:
+                log.warning("fallback_texts failed: %r", e)
+        options = [t for t in texts if t in self.filler_audio and t != self._last_filler]
+        if not options:
+            options = [t for t in self.agent.filler_texts() if t in self.filler_audio and t != self._last_filler]
+        return self.rng.choice(options) if options else None
+
     async def _reply(self) -> None:
         said: list[str] = []
+        meta: dict = {}
+        emitted = False
+        cancelled = False
         try:
-            async for sentence in self.agent.reply_sentences(list(self.history)):
+            async for sentence in self._reply_stream():
                 said.append(sentence)
                 self._recent_agent_lines.append(sentence)
                 async for chunk in self._tts(sentence):
@@ -335,20 +376,35 @@ class VoiceAgentSession:
                         if self._filler_task and not self._filler_task.done():
                             self._filler_task.cancel()
                         await self._safe_json({"type": "agent_speaking", "on": True})
+                    emitted = True
                     await self._emit_audio(chunk)
         except asyncio.CancelledError:
-            pass
+            cancelled = True
         except Exception as e:
             log.warning("reply failed: %r", e)
-        finally:
-            if said:
-                text = " ".join(said)
-                turn = Turn(self.agent.agent_label, text, round(self.now(), 2))
-                self.history.append(turn)
-                await self._record(turn)
+        if not cancelled and not emitted and not self._closing:
+            # never leave the caller in dead air: say a pre-rendered "say that again?" line instead
+            text = self._fallback_choice()
+            if text:
+                log.info("reply produced no audio; fallback line")
+                try:
+                    self._last_filler = text
+                    self._recent_agent_lines.append(text)
+                    self._reply_audio_started = True
+                    await self._safe_json({"type": "agent_speaking", "on": True})
+                    await self._emit_audio(self.filler_audio[text])
+                    said, meta = [text], {"fallback": True}
+                except asyncio.CancelledError:
+                    pass
+        if said:
+            text = " ".join(said)
+            turn = Turn(self.agent.agent_label, text, round(self.now(), 2))
+            self.history.append(turn)
+            await self._record(turn)
+            if not meta:
                 meta = self.agent.turn_meta() if hasattr(self.agent, "turn_meta") else {}
-                await self._safe_json({"type": "turn", "speaker": turn.speaker, "text": text, "t": turn.t, **meta})
-            await self._finish_speaking()
+            await self._safe_json({"type": "turn", "speaker": turn.speaker, "text": text, "t": turn.t, **meta})
+        await self._finish_speaking()
 
     async def _finish_speaking(self) -> None:
         await self._safe_json({"type": "agent_speaking", "on": False})
