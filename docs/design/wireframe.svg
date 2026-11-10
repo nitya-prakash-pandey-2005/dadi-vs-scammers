@@ -1,0 +1,460 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" width="1600" height="1200" role="img" aria-labelledby="wt"><title id="wt">Dadi vs Scammers wireframe: live call, report, scam ring radar, arena, message checker, intelligence</title><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5aa5"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d6337f"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#9a9aae"/></marker></defs><rect width="1600" height="1200" fill="#f6f6fa"/>
+<text x="40" y="42" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#232336" text-anchor="start">Dadi vs Scammers: wireframe of the main screens and the user flow</text>
+<text x="40" y="64" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#6b6b80" text-anchor="start">Low fidelity. Boxes are cards, grey bars are text. Desktop has a sidebar, phones get bottom tabs; every screen is reachable from both.</text>
+<path d="M1236 40 L1286 40" fill="none" stroke="#d6337f" stroke-width="2" marker-end="url(#ah)" stroke-linejoin="round"/>
+<text x="1294" y="44" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#232336" text-anchor="start">flow of a call / its data</text>
+<path d="M1236 62 L1286 62" fill="none" stroke="#9a9aae" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ahg)" stroke-linejoin="round"/>
+<text x="1294" y="66" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#232336" text-anchor="start">same screen at 390 px</text>
+<rect x="40" y="110" width="800" height="480" rx="12" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="40" y="110" width="800" height="26" rx="12" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="40" y="124" width="800" height="12" rx="0" fill="#ececf3" stroke="none" stroke-width="1"/>
+<circle cx="54" cy="123" r="4" fill="#ff6b6b"/>
+<circle cx="67" cy="123" r="4" fill="#ffc145"/>
+<circle cx="80" cy="123" r="4" fill="#3ecf8e"/>
+<text x="98" y="127.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">1 · Live call</text>
+<text x="828" y="127.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">/#/app · desktop 1440 px</text>
+<rect x="40" y="136" width="104" height="454" rx="0" fill="#f3f3f8" stroke="none" stroke-width="1"/>
+<circle cx="56" cy="154" r="8" fill="url(#lg)"/>
+<text x="70" y="158" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#232336" text-anchor="start">Dadi vs Scammers</text>
+<rect x="46" y="170" width="92" height="18" rx="5" fill="#e4dcf7" stroke="none" stroke-width="1"/>
+<text x="54" y="182" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#232336" text-anchor="start">Live call</text>
+<text x="54" y="204" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Check a message</text>
+<text x="54" y="226" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Calls &amp; reports</text>
+<text x="54" y="248" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Scam intelligence</text>
+<text x="54" y="270" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Scam ring radar</text>
+<text x="54" y="292" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">AI-vs-AI arena</text>
+<rect x="156" y="144" width="672" height="22" rx="5" fill="#f3f3f8" stroke="none" stroke-width="1"/>
+<text x="164" y="159" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#232336" text-anchor="start">Live scam line</text>
+<rect x="728" y="147" width="96" height="17" rx="8.5" fill="#dcf7ea" stroke="none" stroke-width="1"/>
+<text x="776.0" y="159.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#0f8a5f" text-anchor="middle">● Gnani live</text>
+<text x="156" y="186" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#232336" text-anchor="start">Don't block scammers. Route them to Dadi.</text>
+<rect x="156" y="194" width="360" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="156" y="203" width="216.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="156" y="218" width="220" height="360" rx="10" fill="#ffffff" stroke="#d6337f" stroke-width="1.4"/>
+<text x="166" y="235" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#d6337f" text-anchor="start">PHONE PANEL</text>
+<rect x="304" y="224" width="62" height="17" rx="8.5" fill="#eeeef3" stroke="none" stroke-width="1"/>
+<text x="335.0" y="236.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#6b6b80" text-anchor="middle">Line idle</text>
+<circle cx="266.0" cy="284" r="30" fill="url(#lg)"/>
+<text x="266.0" y="289" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">KD</text>
+<text x="266.0" y="334" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="700" fill="#232336" text-anchor="middle">Kamla Devi</text>
+<text x="266.0" y="349" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="middle">Kanpur · Hinglish · auto language</text>
+<rect x="168" y="360" width="196" height="24" rx="7" fill="#d6337f" stroke="none" stroke-width="1"/>
+<text x="266.0" y="376" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">Call Dadi (mic) / replay</text>
+<text x="168" y="404" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#232336" text-anchor="start">Dadi's mission</text>
+<rect x="168" y="411" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="199" y="423" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Free play</text>
+<rect x="234" y="411" width="62" height="17" rx="5" fill="#e4dcf7" stroke="none" stroke-width="1"/>
+<text x="265" y="423" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">UPI</text>
+<rect x="300" y="411" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="331" y="423" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Account</text>
+<rect x="168" y="432" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="199" y="444" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">WhatsApp</text>
+<rect x="234" y="432" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="265" y="444" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Name+badge</text>
+<text x="168" y="472" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#232336" text-anchor="start">Who picks up</text>
+<rect x="168" y="479" width="62" height="17" rx="5" fill="#e4dcf7" stroke="none" stroke-width="1"/>
+<text x="199" y="491" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Auto</text>
+<rect x="234" y="479" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="265" y="491" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Dadi</text>
+<rect x="300" y="479" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="331" y="491" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Paati</text>
+<rect x="168" y="500" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="199" y="512" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Thakuma</text>
+<rect x="234" y="500" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="265" y="512" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Ajji</text>
+<rect x="300" y="500" width="62" height="17" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="331" y="512" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="500" fill="#232336" text-anchor="middle">Ammamma</text>
+<text x="168" y="540" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Line: earphones / speaker · 8 kHz</text>
+<text x="168" y="556" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#d6337f" text-anchor="start">Hang up → report</text>
+<text x="388" y="214" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#7c4ddb" text-anchor="start">WAR ROOM (updates live)</text>
+<rect x="388" y="218" width="216.0" height="82" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="398" y="236" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Scammer ka time barbaad</text>
+<text x="398" y="278" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#d6337f" text-anchor="start">0:00</text>
+<rect x="480" y="262" width="112.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="480" y="271" width="67.2" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="612.0" y="218" width="216.0" height="82" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="622.0" y="236" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Scam type</text>
+<text x="818.0" y="236" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">confidence</text>
+<rect x="622.0" y="248" width="120" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="682.0" y="260.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">Digital arrest 98%</text>
+<rect x="622.0" y="278" width="196.0" height="6" rx="3" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="622.0" y="278" width="176.4" height="6" rx="3" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="388" y="310" width="216.0" height="160" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="398" y="328" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Live transcript</text>
+<text x="594.0" y="328" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">Prisma</text>
+<rect x="398" y="340" width="133.92" height="19" rx="6" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="475.2" y="365" width="118.80000000000001" height="19" rx="6" fill="#efe6fb" stroke="none" stroke-width="1"/>
+<rect x="398" y="390" width="133.92" height="19" rx="6" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="475.2" y="415" width="118.80000000000001" height="19" rx="6" fill="#efe6fb" stroke="none" stroke-width="1"/>
+<rect x="398" y="440" width="133.92" height="19" rx="6" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="398" y="465" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">scammer left · Dadi right</text>
+<rect x="612.0" y="310" width="216.0" height="96" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="622.0" y="328" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Intel captured</text>
+<text x="818.0" y="328" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">regex + LLM</text>
+<rect x="622.0" y="334" width="150" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="697.0" y="346.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">UPI rathore.cbi@okaxis ✓</text>
+<rect x="622.0" y="356" width="112" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="678.0" y="368.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">phone 98765 43210</text>
+<rect x="740.0" y="356" width="56" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="768.0" y="368.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">AnyDesk</text>
+<rect x="622.0" y="378" width="116" height="17" rx="8.5" fill="#eeeef3" stroke="none" stroke-width="1"/>
+<text x="680.0" y="390.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="middle">CBI · Vijay Rathore</text>
+<rect x="612.0" y="414" width="216.0" height="56" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="622.0" y="432" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Mission: UPI</text>
+<text x="818.0" y="432" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">complete ✓</text>
+<rect x="622.0" y="446" width="186.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="622.0" y="455" width="111.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="388" y="480" width="216.0" height="98" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="398" y="498" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Red flags (with quotes)</text>
+<text x="594.0" y="498" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">4</text>
+<text x="398" y="514" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">0:08</text>
+<rect x="428" y="507" width="164.0" height="5" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="428" y="515" width="98.39999999999999" height="4" rx="2" fill="#e3e3ea" stroke="none" stroke-width="1"/>
+<text x="398" y="535" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">0:21</text>
+<rect x="428" y="528" width="164.0" height="5" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="428" y="536" width="98.39999999999999" height="4" rx="2" fill="#e3e3ea" stroke="none" stroke-width="1"/>
+<text x="398" y="556" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">0:34</text>
+<rect x="428" y="549" width="164.0" height="5" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="428" y="557" width="98.39999999999999" height="4" rx="2" fill="#e3e3ea" stroke="none" stroke-width="1"/>
+<rect x="612.0" y="480" width="216.0" height="98" rx="8" fill="#fff3f8" stroke="#d6337f" stroke-width="1.3"/>
+<text x="622.0" y="498" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#d6337f" text-anchor="start">Repeat caller! same voice 0.956</text>
+<text x="622.0" y="516" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Gnani voice-clone fingerprint</text>
+<text x="622.0" y="530" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">matched an earlier call</text>
+<rect x="622.0" y="542" width="108" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="676.0" y="558" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Open earlier call</text>
+<rect x="872" y="110" width="214" height="480" rx="26" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="950" y="118" width="58" height="8" rx="4" fill="#d9d9e3" stroke="none" stroke-width="1"/>
+<text x="979.0" y="610" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="middle">1 · Live call at 390 px</text>
+<circle cx="894" cy="144" r="9" fill="url(#lg)"/>
+<text x="910" y="148" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#232336" text-anchor="start">Live scam line</text>
+<rect x="1022" y="136" width="52" height="17" rx="8.5" fill="#dcf7ea" stroke="none" stroke-width="1"/>
+<text x="1048.0" y="148.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#0f8a5f" text-anchor="middle">Demo</text>
+<rect x="886" y="166" width="186" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="886" y="175" width="186" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="886" y="184" width="111.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="886" y="200" width="93.0" height="22" rx="6" fill="#e4dcf7" stroke="none" stroke-width="1"/>
+<text x="932.5" y="215" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#232336" text-anchor="middle">Phone</text>
+<text x="1025.5" y="215" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="500" fill="#6b6b80" text-anchor="middle">War room</text>
+<rect x="886" y="230" width="186" height="290" rx="10" fill="#ffffff" stroke="#d6337f" stroke-width="1.2"/>
+<circle cx="979.0" cy="280" r="28" fill="url(#lg)"/>
+<text x="979.0" y="332" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="middle">Kamla Devi</text>
+<rect x="898" y="346" width="162" height="24" rx="7" fill="#d6337f" stroke="none" stroke-width="1"/>
+<text x="979.0" y="362" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">Call Dadi</text>
+<rect x="898" y="386" width="162" height="16" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="898" y="410" width="162" height="16" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="898" y="434" width="162" height="16" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="898" y="458" width="162" height="16" rx="5" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="872" y="534" width="214" height="56" rx="0" fill="#f3f3f8" stroke="none" stroke-width="1"/>
+<rect x="872" y="560" width="214" height="30" rx="26" fill="#f3f3f8" stroke="none" stroke-width="1"/>
+<text x="894.0" y="568" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="700" fill="#d6337f" text-anchor="middle">Call</text>
+<rect x="887.0" y="544" width="14" height="12" rx="3" fill="#d6337f" stroke="none" stroke-width="1"/>
+<text x="936.5" y="568" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="middle">Check</text>
+<rect x="929.5" y="544" width="14" height="12" rx="3" fill="#c9c9d6" stroke="none" stroke-width="1"/>
+<text x="979.0" y="568" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="middle">Intel</text>
+<rect x="972.0" y="544" width="14" height="12" rx="3" fill="#c9c9d6" stroke="none" stroke-width="1"/>
+<text x="1021.5" y="568" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="middle">Rings</text>
+<rect x="1014.5" y="544" width="14" height="12" rx="3" fill="#c9c9d6" stroke="none" stroke-width="1"/>
+<text x="1064.0" y="568" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="middle">Arena</text>
+<rect x="1057.0" y="544" width="14" height="12" rx="3" fill="#c9c9d6" stroke="none" stroke-width="1"/>
+<path d="M840 350 L870 350" fill="none" stroke="#9a9aae" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ahg)" stroke-linejoin="round"/>
+<rect x="1124" y="110" width="436" height="480" rx="12" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="1124" y="110" width="436" height="26" rx="12" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="1124" y="124" width="436" height="12" rx="0" fill="#ececf3" stroke="none" stroke-width="1"/>
+<circle cx="1138" cy="123" r="4" fill="#ff6b6b"/>
+<circle cx="1151" cy="123" r="4" fill="#ffc145"/>
+<circle cx="1164" cy="123" r="4" fill="#3ecf8e"/>
+<text x="1182" y="127.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">2 · Report (complaint draft)</text>
+<text x="1548" y="127.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">/#/app/report/&lt;id&gt;</text>
+<text x="1136" y="156" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="700" fill="#232336" text-anchor="start">Suspected scam call: complaint draft</text>
+<rect x="1324" y="164" width="60" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1354.0" y="180" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Calls</text>
+<rect x="1390" y="164" width="82" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1431.0" y="180" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Evidence pack</text>
+<rect x="1478" y="164" width="70" height="24" rx="7" fill="#d6337f" stroke="none" stroke-width="1"/>
+<text x="1513.0" y="180" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">Print/PDF</text>
+<text x="1136" y="180" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">Call 2c57… · Kamla Devi answered</text>
+<rect x="1136" y="196" width="412" height="22" rx="6" fill="#fff8e1" stroke="#e0b84a" stroke-width="1"/>
+<text x="1144" y="211" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#8a6a10" text-anchor="start">Simulated scam call · review before filing</text>
+<rect x="1136" y="226" width="412" height="48" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1146" y="244" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Summary</text>
+<rect x="1146" y="250" width="392" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="259" width="235.2" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1136" y="282" width="412" height="62" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1146" y="300" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Call recording (evidence)</text>
+<text x="1538" y="300" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">SHA-256 SEALED</text>
+<rect x="1146" y="302" width="392" height="16" rx="8" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="1166" y="308.5" width="4" height="3" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1175" y="305.0" width="4" height="10" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1184" y="306.0" width="4" height="8" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1193" y="307.0" width="4" height="6" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1202" y="308.0" width="4" height="4" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1211" y="304.5" width="4" height="11" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1220" y="305.5" width="4" height="9" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1229" y="306.5" width="4" height="7" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1238" y="307.5" width="4" height="5" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1247" y="308.5" width="4" height="3" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1256" y="305.0" width="4" height="10" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1265" y="306.0" width="4" height="8" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1274" y="307.0" width="4" height="6" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1283" y="308.0" width="4" height="4" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1292" y="304.5" width="4" height="11" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1301" y="305.5" width="4" height="9" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1310" y="306.5" width="4" height="7" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1319" y="307.5" width="4" height="5" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1328" y="308.5" width="4" height="3" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1337" y="305.0" width="4" height="10" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1346" y="306.0" width="4" height="8" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1355" y="307.0" width="4" height="6" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1364" y="308.0" width="4" height="4" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1373" y="304.5" width="4" height="11" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1382" y="305.5" width="4" height="9" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1391" y="306.5" width="4" height="7" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1400" y="307.5" width="4" height="5" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1409" y="308.5" width="4" height="3" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1418" y="305.0" width="4" height="10" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1427" y="306.0" width="4" height="8" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1436" y="307.0" width="4" height="6" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1445" y="308.0" width="4" height="4" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1454" y="304.5" width="4" height="11" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1463" y="305.5" width="4" height="9" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1472" y="306.5" width="4" height="7" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1481" y="307.5" width="4" height="5" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1490" y="308.5" width="4" height="3" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1499" y="305.0" width="4" height="10" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1508" y="306.0" width="4" height="8" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1517" y="307.0" width="4" height="6" rx="1" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<text x="1146" y="334" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">6f63b4d7b6a9c2d5…  left = caller, right = Dadi</text>
+<rect x="1136" y="352" width="202.0" height="70" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1146" y="370" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Incident</text>
+<rect x="1146" y="376" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="385" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="394" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="403" width="109.2" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1346.0" y="352" width="202.0" height="70" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1356.0" y="370" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Claimed identity</text>
+<rect x="1356.0" y="376" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1356.0" y="385" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1356.0" y="394" width="109.2" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1136" y="430" width="412" height="54" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1146" y="448" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Suspect identifiers</text>
+<rect x="1146" y="456" width="118" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="1205.0" y="468.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">rathore.cbi@okaxis</text>
+<rect x="1270" y="456" width="80" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="1310.0" y="468.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">9876543210</text>
+<rect x="1356" y="456" width="60" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="1386.0" y="468.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">AnyDesk</text>
+<rect x="1136" y="492" width="202.0" height="86" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1146" y="510" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Red flags + timeline</text>
+<rect x="1146" y="516" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="525" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="534" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="543" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="552" width="182.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1146" y="561" width="109.2" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1346.0" y="492" width="202.0" height="86" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1356.0" y="510" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Where to report</text>
+<text x="1356.0" y="528" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#1f7fb8" text-anchor="start">cybercrime.gov.in</text>
+<text x="1356.0" y="545" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#1f7fb8" text-anchor="start">Helpline 1930</text>
+<text x="1356.0" y="562" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="600" fill="#1f7fb8" text-anchor="start">Sanchar Saathi Chakshu</text>
+<rect x="40" y="690" width="470" height="470" rx="12" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="40" y="690" width="470" height="26" rx="12" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="40" y="704" width="470" height="12" rx="0" fill="#ececf3" stroke="none" stroke-width="1"/>
+<circle cx="54" cy="703" r="4" fill="#ff6b6b"/>
+<circle cx="67" cy="703" r="4" fill="#ffc145"/>
+<circle cx="80" cy="703" r="4" fill="#3ecf8e"/>
+<text x="98" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">3 · Scam ring radar</text>
+<text x="498" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">/#/app/rings</text>
+<text x="52" y="736" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">Same mule ID or same voice = same gang</text>
+<rect x="378" y="724" width="120" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="438.0" y="740" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Mule-ID feed (CSV)</text>
+<text x="52" y="776" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#232336" text-anchor="start">5</text>
+<text x="52" y="791" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">scam calls</text>
+<text x="164" y="776" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#d6337f" text-anchor="start">1</text>
+<text x="164" y="791" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">ring found</text>
+<text x="276" y="776" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#232336" text-anchor="start">3</text>
+<text x="276" y="791" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">calls linked</text>
+<text x="388" y="776" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#232336" text-anchor="start">4/5</text>
+<text x="388" y="791" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">known AI voice</text>
+<rect x="52" y="802" width="446" height="190" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="62" y="820" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Who is behind the calls</text>
+<text x="488" y="820" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">— mule ID   - - voice</text>
+<line x1="275.0" y1="850" x2="185.0" y2="938" stroke="#22a6c8" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="275.0" y1="850" x2="365.0" y2="938" stroke="#22a6c8" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="185.0" y1="938" x2="365.0" y2="938" stroke="#22a6c8" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="275.0" y="952" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#1d8fae" text-anchor="middle">same voice 0.96</text>
+<circle cx="275.0" cy="850" r="13" fill="#d6337f"/>
+<text x="275.0" y="878" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#232336" text-anchor="middle">Call 3 · KBC prize</text>
+<circle cx="185.0" cy="938" r="13" fill="#d6337f"/>
+<text x="185.0" y="966" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#232336" text-anchor="middle">Vijay Rathore · CBI</text>
+<circle cx="365.0" cy="938" r="13" fill="#d6337f"/>
+<text x="365.0" y="966" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="600" fill="#232336" text-anchor="middle">Rahul · SBI</text>
+<circle cx="100" cy="876" r="10" fill="#fff" stroke="#9a9aae" stroke-width="2"/>
+<text x="100" y="900" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="middle">Suresh (no link)</text>
+<rect x="52" y="1002" width="446" height="146" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="62" y="1020" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Ring 1: 3 calls</text>
+<text x="62" y="1034" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">Names used</text>
+<rect x="62" y="1040" width="46" height="17" rx="8.5" fill="#fff1cc" stroke="none" stroke-width="1"/>
+<text x="85.0" y="1052.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#8a6a10" text-anchor="middle">Rahul</text>
+<rect x="114" y="1040" width="86" height="17" rx="8.5" fill="#fff1cc" stroke="none" stroke-width="1"/>
+<text x="157.0" y="1052.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#8a6a10" text-anchor="middle">Vijay Rathore</text>
+<text x="62" y="1074" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">Mule IDs to freeze</text>
+<rect x="62" y="1080" width="76" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="100.0" y="1092.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">9000011112</text>
+<rect x="144" y="1080" width="112" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="200.0" y="1092.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">kbc.price2026@upi</text>
+<text x="62" y="1114" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">Scripts</text>
+<rect x="62" y="1120" width="84" height="17" rx="8.5" fill="#eeeef3" stroke="none" stroke-width="1"/>
+<text x="104.0" y="1132.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="middle">Digital arrest</text>
+<rect x="152" y="1120" width="66" height="17" rx="8.5" fill="#eeeef3" stroke="none" stroke-width="1"/>
+<text x="185.0" y="1132.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="middle">KYC block</text>
+<rect x="302" y="1116" width="60" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="332.0" y="1132" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Report</text>
+<rect x="368" y="1116" width="60" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="398.0" y="1132" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Report</text>
+<rect x="434" y="1116" width="58" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="463.0" y="1132" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">Report</text>
+<rect x="550" y="690" width="470" height="470" rx="12" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="550" y="690" width="470" height="26" rx="12" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="550" y="704" width="470" height="12" rx="0" fill="#ececf3" stroke="none" stroke-width="1"/>
+<circle cx="564" cy="703" r="4" fill="#ff6b6b"/>
+<circle cx="577" cy="703" r="4" fill="#ffc145"/>
+<circle cx="590" cy="703" r="4" fill="#3ecf8e"/>
+<text x="608" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">4 · AI-vs-AI arena</text>
+<text x="1008" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">/#/app/arena · testing</text>
+<text x="562" y="736" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">AI scammer (Timbre voice) calls AI Dadi</text>
+<rect x="562" y="748" width="446" height="92" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="572" y="766" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Match setup</text>
+<rect x="572" y="772" width="138" height="22" rx="5" fill="#f1f1f6" stroke="#d3d3de" stroke-width="1"/>
+<text x="580" y="787" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Scam script ▾</text>
+<rect x="718" y="772" width="138" height="22" rx="5" fill="#f1f1f6" stroke="#d3d3de" stroke-width="1"/>
+<text x="726" y="787" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Scammer voice ▾</text>
+<rect x="864" y="772" width="138" height="22" rx="5" fill="#f1f1f6" stroke="#d3d3de" stroke-width="1"/>
+<text x="872" y="787" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Noise: 10 dB babble ▾</text>
+<rect x="572" y="802" width="138" height="22" rx="5" fill="#f1f1f6" stroke="#d3d3de" stroke-width="1"/>
+<text x="580" y="817" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Mission ▾</text>
+<rect x="718" y="802" width="138" height="22" rx="5" fill="#f1f1f6" stroke="#d3d3de" stroke-width="1"/>
+<text x="726" y="817" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Grandmother ▾</text>
+<rect x="864" y="802" width="138" height="22" rx="5" fill="#f1f1f6" stroke="#d3d3de" stroke-width="1"/>
+<text x="872" y="817" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Turns ▾</text>
+<rect x="562" y="848" width="150" height="24" rx="7" fill="#d6337f" stroke="none" stroke-width="1"/>
+<text x="637.0" y="864" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">Start match</text>
+<text x="724" y="864" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">8 kHz phone band · Prisma transcribes every line</text>
+<rect x="562" y="882" width="276.52" height="208" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="572" y="900" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Call transcript</text>
+<text x="828.52" y="900" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">CER per line</text>
+<rect x="572" y="910" width="171.4424" height="22" rx="6" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="749.4424" y="925" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">CER .10</text>
+<rect x="657.0776" y="939" width="171.4424" height="22" rx="6" fill="#efe6fb" stroke="none" stroke-width="1"/>
+<rect x="572" y="968" width="171.4424" height="22" rx="6" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="749.4424" y="983" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">CER .16</text>
+<rect x="657.0776" y="997" width="171.4424" height="22" rx="6" fill="#efe6fb" stroke="none" stroke-width="1"/>
+<rect x="572" y="1026" width="171.4424" height="22" rx="6" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<text x="749.4424" y="1041" font-family="'Cascadia Mono', Consolas, 'JetBrains Mono', monospace" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">CER .22</text>
+<rect x="657.0776" y="1055" width="171.4424" height="22" rx="6" fill="#efe6fb" stroke="none" stroke-width="1"/>
+<rect x="846.52" y="882" width="161.48000000000002" height="150" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="856.52" y="900" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Scores</text>
+<text x="856.52" y="916" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="700" fill="#d6337f" text-anchor="start">0</text>
+<text x="856.52" y="929" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">persona breaks</text>
+<text x="856.52" y="946" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="700" fill="#d6337f" text-anchor="start">0</text>
+<text x="856.52" y="959" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">'I am a bot' admissions</text>
+<text x="856.52" y="976" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="700" fill="#232336" text-anchor="start">125–260 ms</text>
+<text x="856.52" y="989" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">Prisma per line</text>
+<text x="856.52" y="1006" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="700" fill="#232336" text-anchor="start">0.13</text>
+<text x="856.52" y="1019" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="8.5" font-weight="400" fill="#6b6b80" text-anchor="start">CER (8 Nov)</text>
+<rect x="846.52" y="1040" width="161.48000000000002" height="50" rx="8" fill="#fff3f8" stroke="#d6337f" stroke-width="1.3"/>
+<text x="856.52" y="1058" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#d6337f" text-anchor="start">Voice match 0.956</text>
+<text x="856.52" y="1075" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" fill="#6b6b80" text-anchor="start">Dadi teases him in character</text>
+<rect x="562" y="1100" width="446" height="48" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="572" y="1118" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Noise benchmark</text>
+<text x="998" y="1118" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end">clean · 20 · 10 · 0 dB</text>
+<rect x="572" y="1124" width="426" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="572" y="1133" width="255.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1060" y="690" width="240" height="470" rx="12" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="1060" y="690" width="240" height="26" rx="12" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="1060" y="704" width="240" height="12" rx="0" fill="#ececf3" stroke="none" stroke-width="1"/>
+<circle cx="1074" cy="703" r="4" fill="#ff6b6b"/>
+<circle cx="1087" cy="703" r="4" fill="#ffc145"/>
+<circle cx="1100" cy="703" r="4" fill="#3ecf8e"/>
+<text x="1118" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">5 · Check a message</text>
+<text x="1288" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end"></text>
+<text x="1072" y="736" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#232336" text-anchor="start">Paste an SMS / WhatsApp</text>
+<rect x="1072" y="746" width="216" height="78" rx="6" fill="#fbfbfd" stroke="#c9c9d6" stroke-width="1"/>
+<rect x="1080" y="758" width="200" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1080" y="767" width="200" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1080" y="776" width="200" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1080" y="785" width="120.0" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1072" y="832" width="130" height="17" rx="8.5" fill="#eeeef3" stroke="none" stroke-width="1"/>
+<text x="1137.0" y="844.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="middle">Sample: digital arrest</text>
+<rect x="1072" y="856" width="216" height="24" rx="7" fill="#d6337f" stroke="none" stroke-width="1"/>
+<text x="1180.0" y="872" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">Check</text>
+<rect x="1072" y="890" width="216" height="46" rx="8" fill="#ffe0ec" stroke="#d6337f" stroke-width="1"/>
+<text x="1082" y="908" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#d6337f" text-anchor="start">Verdict: SCAM</text>
+<text x="1082" y="926" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#232336" text-anchor="start">Electricity bill disconnection</text>
+<rect x="1072" y="944" width="216" height="58" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1082" y="962" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Red flags</text>
+<rect x="1082" y="968" width="196" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1082" y="977" width="196" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1082" y="986" width="117.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1072" y="1010" width="216" height="44" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1082" y="1028" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">IDs found</text>
+<rect x="1082" y="1030" width="36" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="1100.0" y="1042.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">UPI</text>
+<rect x="1124" y="1030" width="38" height="17" rx="8.5" fill="#ffe0ec" stroke="none" stroke-width="1"/>
+<text x="1143.0" y="1042.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#d6337f" text-anchor="middle">link</text>
+<rect x="1072" y="1062" width="216" height="40" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1082" y="1080" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">The true fact</text>
+<rect x="1082" y="1084" width="117.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1072" y="1110" width="216" height="40" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1082" y="1128" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Dadi's reply (copy)</text>
+<rect x="1082" y="1132" width="117.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1320" y="690" width="240" height="470" rx="12" fill="#ffffff" stroke="#232336" stroke-width="1.5"/>
+<rect x="1320" y="690" width="240" height="26" rx="12" fill="#ececf3" stroke="none" stroke-width="1"/>
+<rect x="1320" y="704" width="240" height="12" rx="0" fill="#ececf3" stroke="none" stroke-width="1"/>
+<circle cx="1334" cy="703" r="4" fill="#ff6b6b"/>
+<circle cx="1347" cy="703" r="4" fill="#ffc145"/>
+<circle cx="1360" cy="703" r="4" fill="#3ecf8e"/>
+<text x="1378" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#232336" text-anchor="start">6 · Intelligence</text>
+<text x="1548" y="707.5" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#6b6b80" text-anchor="end"></text>
+<text x="1332" y="736" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#232336" text-anchor="start">What scammers do</text>
+<text x="1332" y="764" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#232336" text-anchor="start">5</text>
+<text x="1332" y="778" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">calls</text>
+<text x="1432" y="764" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#232336" text-anchor="start">7</text>
+<text x="1432" y="778" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#6b6b80" text-anchor="start">mule IDs</text>
+<rect x="1332" y="788" width="216" height="110" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1342" y="806" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Who they pretend to be</text>
+<rect x="1342" y="814" width="176.4" height="10" rx="3" fill="#7c4ddb" stroke="none" stroke-width="1"/>
+<rect x="1342" y="834" width="117.6" height="10" rx="3" fill="#c7b6ef" stroke="none" stroke-width="1"/>
+<rect x="1342" y="854" width="88.2" height="10" rx="3" fill="#c7b6ef" stroke="none" stroke-width="1"/>
+<rect x="1342" y="874" width="58.8" height="10" rx="3" fill="#c7b6ef" stroke="none" stroke-width="1"/>
+<rect x="1332" y="906" width="216" height="70" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1342" y="924" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Scripts + pressure tactics</text>
+<rect x="1342" y="930" width="196" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1342" y="939" width="196" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1342" y="948" width="196" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1342" y="957" width="117.6" height="4" rx="2" fill="#d3d3de" stroke="none" stroke-width="1"/>
+<rect x="1332" y="984" width="216" height="164" rx="8" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1342" y="1002" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#232336" text-anchor="start">Freeze list for banks</text>
+<rect x="1342" y="1014" width="196" height="14" rx="3" fill="#e4dcf7" stroke="none" stroke-width="1"/>
+<rect x="1342" y="1032" width="196" height="14" rx="3" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="1342" y="1050" width="196" height="14" rx="3" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="1342" y="1068" width="196" height="14" rx="3" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="1342" y="1086" width="196" height="14" rx="3" fill="#f1f1f6" stroke="none" stroke-width="1"/>
+<rect x="1342" y="1112" width="60" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1372.0" y="1128" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">CSV</text>
+<rect x="1408" y="1112" width="60" height="24" rx="7" fill="#ffffff" stroke="#9a9aae" stroke-width="1"/>
+<text x="1438.0" y="1128" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#232336" text-anchor="middle">JSON</text>
+<path d="M680 110 L680 90 L1424 90 L1424 108" fill="none" stroke="#d6337f" stroke-width="2" marker-end="url(#ah)" stroke-linejoin="round"/>
+<rect x="638.8" y="81" width="282.4" height="19" rx="9.5" fill="#f6f6fa" stroke="#d6337f" stroke-width="1"/>
+<text x="780.0" y="95" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#d6337f" text-anchor="middle">hang up → complaint draft + sealed recording</text>
+<path d="M260 590 L260 688" fill="none" stroke="#d6337f" stroke-width="2" marker-end="url(#ah)" stroke-linejoin="round"/>
+<rect x="131.0" y="627" width="258.0" height="19" rx="9.5" fill="#f6f6fa" stroke="#d6337f" stroke-width="1"/>
+<text x="260.0" y="641" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#d6337f" text-anchor="middle">mule ID or voice fingerprint links calls</text>
+<path d="M550 940 L512 940" fill="none" stroke="#d6337f" stroke-width="2" marker-end="url(#ah)" stroke-linejoin="round"/>
+<text x="530.0" y="928" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#d6337f" text-anchor="middle">arena</text>
+<text x="530.0" y="958" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#d6337f" text-anchor="middle">calls</text>
+<path d="M930 690 L930 650 L1244 650 L1244 592" fill="none" stroke="#d6337f" stroke-width="2" marker-end="url(#ah)" stroke-linejoin="round"/>
+<rect x="1021.0" y="641" width="258.0" height="19" rx="9.5" fill="#f6f6fa" stroke="#d6337f" stroke-width="1"/>
+<text x="1150.0" y="655" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#d6337f" text-anchor="middle">every call, live or arena, gets a report</text>
+<path d="M1504 590 L1504 688" fill="none" stroke="#d6337f" stroke-width="2" marker-end="url(#ah)" stroke-linejoin="round"/>
+<rect x="1445.15" y="615" width="117.69999999999999" height="19" rx="9.5" fill="#f6f6fa" stroke="#d6337f" stroke-width="1"/>
+<text x="1504.0" y="629" font-family="'Segoe UI', Inter, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#d6337f" text-anchor="middle">IDs → freeze list</text></svg>
