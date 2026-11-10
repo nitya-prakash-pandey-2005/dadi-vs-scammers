@@ -12,7 +12,7 @@ from voice_core.audio import pcm16_to_float, pink_noise, resample
 from voice_core.config import Settings
 from voice_core.gnani import TtsCache
 
-from .personas import PERSONAS
+from .personas import FAMILY, HANDBACK_LINES, HANDOFF_LINES, PERSONAS
 
 log = logging.getLogger(__name__)
 
@@ -36,9 +36,12 @@ async def load_or_make_fillers(settings: Settings, cache_dir: Path) -> dict[str,
     """text -> PCM16 at settings.sample_rate, for every persona's greeting and fillers. Never raises."""
     cache = TtsCache(cache_dir)
     out: dict[str, bytes] = {}
-    for p in PERSONAS.values():
+    people = {**PERSONAS, **{r.key: r for r in FAMILY.values()}}
+    for p in people.values():
         kw = _render_kwargs(p, settings.sample_rate)
-        for text in [p.greeting, *p.fillers]:
+        # the family hand-off lines too, each in its speaker's voice, so the hand-off is instant
+        family = [text for who, text in (*HANDOFF_LINES, *HANDBACK_LINES) if who == p.key]
+        for text in dict.fromkeys([p.greeting, *p.fillers, *family]):
             key = cache.key(text, **kw)
             hit = cache.get(key)
             if hit is None and settings.gnani_api_key:

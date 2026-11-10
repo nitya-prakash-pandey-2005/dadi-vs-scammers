@@ -11,9 +11,9 @@ from voice_core.types import Turn
 from .brain import DadiBrain
 from .intel import ID_FIELDS, IntelReport, extract_intel, intel_json, merge_intel
 from .intel_rules import find_entities
-from .personas import PERSONAS, Persona, persona_for_language
+from .personas import FAMILY, HANDBACK_LINES, HANDOFF_LINES, PERSONAS, Persona, persona_for_language
 from .store import Store
-from .tactics import CallState, mission_done
+from .tactics import BUNTY_TURNS, CallState, Tactic, family_step, mission_done
 from .taxonomy import SCAM_KEYTERMS
 
 AUTO_STT_HINT = "hi-IN,en-IN,ta-IN,bn-IN,kn-IN,te-IN"
@@ -39,19 +39,35 @@ class DadiAgent:
         self.call_id = store.create_call(self.persona.key)
         self.keyterms = SCAM_KEYTERMS
         self.stt_language_code = AUTO_STT_HINT if self.auto else self.persona.stt_hint
+        # family hand-off (tactics.family_step): Bunty shares Dadi's fake wallet (same seed), never a real one
+        self.speaker: Persona = self.persona  # who is holding the phone right now: voice settings follow them
+        self.bunty_brain: DadiBrain | None = None
+        self._family_event: str | None = None  # "handoff" / "handback" on the turn it happened
+        self._segments: list[dict] = []  # [{persona, name, text}] of the last reply, when two people spoke in it
 
-    # voice settings follow the current persona
+    @property
+    def family(self) -> bool:
+        return self.state.family
+
+    @family.setter
+    def family(self, on: bool) -> None:
+        self.state.family = bool(on)
+
+    # voice settings follow whoever is speaking (Dadi, or Bunty after the hand-off), sentence by sentence
     @property
     def voice(self) -> str:
-        return self.persona.voice
+        return self.speaker.voice
 
     @property
     def tts_language(self) -> str:
-        return self.persona.language
+        return self.speaker.language
 
     @property
     def speed(self) -> float:
-        return self.persona.speed
+        return self.speaker.speed
+
+    def _relative(self) -> Persona | None:
+        return FAMILY.get(self.persona.key)
 
     def session_info(self) -> dict:
         return {"call_id": self.call_id, "persona": self.persona.key, "persona_name": self.persona.name,
@@ -61,12 +77,12 @@ class DadiAgent:
         return self.persona.greeting
 
     def filler_texts(self) -> list[str]:
-        return self.persona.fillers
+        return self.speaker.fillers  # pre-rendered in the voice of whoever holds the phone
 
     def fallback_texts(self) -> list[str]:
         """Said when a reply fails (LLM down or slow): the "say that again?" fillers, which are pre-rendered."""
-        asks = [f for f in self.persona.fillers if f.rstrip(" .…").endswith("?")]
-        return asks or list(self.persona.fillers)
+        asks = [f for f in self.speaker.fillers if f.rstrip(" .…").endswith("?")]
+        return asks or list(self.speaker.fillers)
 
     def on_language(self, code: str | None) -> dict | None:
         if not self.auto:
@@ -75,6 +91,7 @@ class DadiAgent:
         if new.key == self.persona.key:
             return None
         self.persona = new
+        self.speaker = new
         self.brain.persona = new
         self.brain.story = random.Random(self.seed).choice(new.stories) if new.stories else None
         self.store.set_persona(self.call_id, new.key)
@@ -83,12 +100,47 @@ class DadiAgent:
     async def reply_sentences(self, history: list[Turn]) -> AsyncIterator[str]:
         last = next((t.text for t in reversed(history) if t.speaker == self.user_label), "")
         self.state.last_scammer_text = last
+        self._family_event, self._segments = None, []
+        relative = self._relative()
+        step = family_step(self.state) if relative else None
+        if step == "bunty":
+            self.state.bunty_left -= 1
+            self.speaker = relative
+            if self.bunty_brain is None:
+                self.bunty_brain = DadiBrain(self.brain.llm, relative, seed=self.seed)  # same seed: same fake wallet
+            async for s in self.bunty_brain.reply_sentences(history, self.state, self.rng):
+                yield s
+            return
+        if step in ("handoff", "handback"):
+            # fixed, pre-rendered lines (assets.py): instant, no LLM call; each sentence in its speaker's voice
+            if step == "handoff":
+                self.state.handoff_turn, self.state.bunty_left = self.state.turn, BUNTY_TURNS
+            else:
+                self.state.handed_back = True
+            self.state.turn += 1
+            self.state.recent_moves.append(step)
+            self.brain.last_tactic = Tactic(phase="family", move=step, instruction="")
+            self._family_event = step
+            people = {self.persona.key: self.persona, relative.key: relative}
+            for who, text in (HANDOFF_LINES if step == "handoff" else HANDBACK_LINES):
+                self.speaker = people[who]
+                self._segments.append({"persona": who, "name": self.speaker.name, "text": text})
+                yield text
+            return
+        self.speaker = self.persona
         async for s in self.brain.reply_sentences(history, self.state, self.rng):
             yield s
 
     def turn_meta(self) -> dict:
-        t = self.brain.last_tactic
+        bunty = self.speaker.key != self.persona.key and self._family_event is None
+        brain = self.bunty_brain if bunty and self.bunty_brain else self.brain
+        t = brain.last_tactic
         meta = {"tactic": t.move, "phase": t.phase} if t else {}
+        meta["speaker_persona"] = self.speaker.key
+        meta["speaker_name"] = self.speaker.name
+        if self._family_event:
+            meta["family"] = self._family_event
+            meta["segments"] = list(self._segments)
         if self.brain.known_caller:
             meta["recognised"] = True
         return meta

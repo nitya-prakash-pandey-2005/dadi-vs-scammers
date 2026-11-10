@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from dadi import assets, fake_mode
-from dadi.personas import PERSONAS
+from dadi.personas import BUNTY, HANDBACK_LINES, HANDOFF_LINES, PERSONAS
 from voice_core.audio import pcm16_to_float
 from voice_core.config import Settings
 from voice_core.gnani import tts as tts_mod
@@ -99,6 +99,7 @@ async def test_fillers_are_rendered_once_then_served_from_cache(tmp_path, fake_t
     settings = Settings(sample_rate=SR, cache_dir=tmp_path, gnani_api_key="k")
     first = await assets.load_or_make_fillers(settings, tmp_path)
     expected = {t for p in PERSONAS.values() for t in [p.greeting, *p.fillers]}
+    expected |= {BUNTY.greeting, *BUNTY.fillers, *(t for _, t in HANDOFF_LINES + HANDBACK_LINES)}  # family hand-off
     assert set(first) == expected
     n = len(fake_timbre)
     assert n == len(expected)

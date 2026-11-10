@@ -261,6 +261,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             sess.half_duplex = bool(first.get("speakerphone"))
         if first.get("mission") in MISSIONS:
             agent.state.mission = first["mission"]
+        if hasattr(agent, "family"):  # family hand-off to grandson Bunty: on unless the start message says false
+            agent.family = first.get("family", True) is not False
 
         async def on_repeat_caller(match: dict):
             if hasattr(agent, "recognise"):

@@ -27,6 +27,15 @@ MOVES: dict[str, str] = {
     "ask_name_badge": "Respectfully ask their full name, designation and badge/employee number 'for your diary'.",
     "ask_whatsapp": "Ask for their WhatsApp number so your grandson can send the 'documents' there.",
     "ask_police_station": "Ask which police station / office and city they are calling from, and their senior's name.",
+    # Bunty, the grandson (family hand-off): eager to pay, hopeless with apps, always needs it spelled out
+    "spell_upi": "Say you are ready to pay right now, but the app says 'invalid UPI ID': ask him to spell his UPI ID "
+                 "letter by letter, then read it back with one letter wrong so he has to correct you.",
+    "spell_account": "Say UPI is failing 'for security', so you'll do a bank transfer: ask for the account number "
+                     "and IFSC, character by character, 'for the payment to go through'; repeat the IFSC back slowly.",
+    "app_fumble": "You opened the wrong app (Instagram / the calculator / the cricket app); narrate the fumble and "
+                  "ask him to repeat what exactly to press, and where the money goes.",
+    "beneficiary_name": "The bank app asks for the beneficiary name and branch before it allows the transfer: ask him "
+                        "for the full account-holder name and bank branch.",
 }
 
 POOLS: dict[str, list[str]] = {
@@ -36,6 +45,7 @@ POOLS: dict[str, list[str]] = {
     "extract": ["ask_upi", "ask_account_ifsc", "ask_whatsapp", "ask_name_badge"],
     "loop": ["repeat_please", "wrong_button", "grandson", "health_tangent", "tv_serial", "neighbour",
              "ask_whatsapp", "ask_account_ifsc", "ask_upi"],
+    "bunty": ["spell_upi", "spell_account", "app_fumble", "beneficiary_name"],
 }
 
 MISSIONS: dict[str, dict] = {  # operator-set goal for a call: which intel to get first
@@ -56,7 +66,27 @@ PHASE_GOALS = {
     "stall_pay": "You are 'trying' to do what they ask, but keep failing at it in believable ways.",
     "extract": "You are ready to pay or share details, but you need THEIR details first, said slowly.",
     "loop": "You already wrote down their payment details; keep them on the line: confirm wrongly, ask again, drift.",
+    "bunty": "You are Bunty, the grandson: Dadi handed you the phone. You want to pay quickly, but you need every "
+             "detail spelled out 'for the payment to go through'.",
 }
+
+# Family hand-off: once per call, when the pressure peaks, Dadi passes the phone to her grandson for BUNTY_TURNS
+# scammer turns, then he gives it back. More time wasted, and Bunty asks for every payment detail letter by letter.
+HANDOFF_MIN_TURN = 3  # Dadi replies before the earliest hand-off (she must have been on the line a while)
+HANDOFF_LATEST_TURN = 7  # if the pressure never peaks, she still hands over at this reply
+BUNTY_TURNS = 3  # Bunty's own (LLM) replies; he also speaks first in the hand-back turn
+_PRESSURE = re.compile(
+    r"\b(?:pay\w*|transfer\w*|bhej\w*|paise|paisa|rupa?y\w*|rupees?|rs\.?|fees?|fine|jurmana|deposit|"
+    r"arrest\w*|police|jail|fir|warrant|block\w*|freez\w*|seiz\w*|court|case|giraftaar\w*)\b"
+    r"|₹|पैस|रुपय|रुपए|पेमेंट|ट्रांसफर|भेज|जमा|फीस|जुर्माना|गिरफ़?्तार|पुलिस|जेल|वारंट|ब्लॉक|फ्रीज़?|केस|कोर्ट|अरेस्ट",
+    re.I,
+)
+
+
+def pressure(text: str) -> bool:
+    """A payment demand or a threat in the caller's line: the moment Dadi 'can't cope' and calls Bunty."""
+    return bool(_PRESSURE.search(text or ""))
+
 
 _FAKE_PATTERNS = [
     ("aadhaar", re.compile(r"aadha+r|आधार|ஆதார்|আধার|ಆಧಾರ್|ఆధార్", re.I)),
@@ -89,6 +119,23 @@ class CallState:
     mission: str | None = None
     mission_done: bool = False
     fake_served: dict[str, int] = field(default_factory=dict)  # fake field -> turn it was last read out
+    family: bool = True  # the family hand-off is allowed on this call (start message "family": false turns it off)
+    handoff_turn: int | None = None  # Dadi's reply number when she passed the phone to Bunty
+    bunty_left: int = 0  # Bunty replies still to come before he hands back
+    handed_back: bool = False
+
+
+def family_step(state: CallState) -> str | None:
+    """Who answers this turn in the family hand-off: "handoff" (Dadi passes the phone), "bunty" (Bunty answers),
+    "handback" (Bunty gives it back to Dadi), or None (Dadi as usual). Pure: DadiAgent applies the transition."""
+    if state.handoff_turn is not None:
+        if state.bunty_left > 0:
+            return "bunty"
+        return None if state.handed_back else "handback"
+    if state.family and state.turn >= HANDOFF_MIN_TURN and (
+            pressure(state.last_scammer_text) or state.turn >= HANDOFF_LATEST_TURN):
+        return "handoff"
+    return None
 
 
 @dataclass
@@ -101,6 +148,8 @@ class Tactic:
 
 
 def _phase(state: CallState) -> str:
+    if state.handoff_turn is not None and not state.handed_back:  # Bunty holds the phone
+        return "bunty"
     if state.turn <= 1:
         return "confused"
     if state.turn <= 3:
