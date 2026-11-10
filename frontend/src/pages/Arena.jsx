@@ -7,7 +7,7 @@ import { MISSION_OPTIONS } from "../components/Phone";
 import SpeechText from "../components/SpeechText";
 import { SCAM_TYPE_LABELS, TACTIC_LABELS, mmss } from "../lib/labels";
 import { DEMO, hasDemoFile } from "../demo";
-import { DemoSocket } from "../demo/DemoSocket";
+import { DemoSocket, normaliseTimeline } from "../demo/DemoSocket";
 
 const SCAMS = [
   { value: "digital_arrest", label: "Digital arrest" },
@@ -61,6 +61,21 @@ export default function Arena() {
   const feedRef = useRef(null);
 
   useEffect(() => () => wsRef.current?.close(), []);
+  // demo build: start with the controls set the way the recorded run was made, so the replay matches what is shown
+  useEffect(() => {
+    if (!DEMO || !hasDemoFile("/demo/ws-arena.json")) return;
+    let live = true;
+    fetch("/demo/ws-arena.json").then((r) => r.json()).then((raw) => {
+      const s = normaliseTimeline(raw).find((e) => e.msg.type === "arena_done")?.msg.summary;
+      if (!live || !s) return;
+      if (SCAMS.some((o) => o.value === s.scam_type)) setScam(s.scam_type);
+      setNoise(s.snr_db == null ? "off" : String(s.snr_db));
+      if (VOICES.some((o) => o.value === s.scammer_voice)) setVoice(s.scammer_voice);
+      if (TURNS.some((o) => o.value === s.turns)) setTurns(s.turns);
+      setMission(s.mission || "");
+    }).catch(() => {});
+    return () => { live = false; };
+  }, []);
   useEffect(() => { feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: "smooth" }); }, [feed]);
 
   const onEvent = (m) => {
