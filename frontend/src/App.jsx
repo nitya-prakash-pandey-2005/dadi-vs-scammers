@@ -36,12 +36,23 @@ const TITLES = [
   ["/app", "Live scam line", "Gnani Prisma + Timbre"],
 ];
 
+// [tone, full text, short text for phones]
+function healthState(h) {
+  if (!h) return ["muted", "Server offline", "Offline"];
+  if (h.fake) return ["amber", "Fake mode: no API keys", "Fake mode"];
+  if (!h.gnani_key || !h.llm_key) return ["rose", "API keys missing", "Keys missing"];
+  if (!h.fillers_ready) return ["cyan", "Warming up voices…", "Warming up…"];
+  const model = h.llm_provider === "groq" && h.groq_model ? ` ${h.groq_model}` : "";
+  return ["green", `Gnani live · ${h.llm_provider || "LLM"}${model}`, "Gnani live"];
+}
+
 function HealthPill({ health }) {
-  if (!health) return <Badge tone="muted" dot>Server offline</Badge>;
-  if (health.fake) return <Badge tone="amber" dot>Fake mode: no API keys</Badge>;
-  if (!health.gnani_key || !health.llm_key) return <Badge tone="rose" dot>API keys missing</Badge>;
-  if (!health.fillers_ready) return <Badge tone="cyan" dot>Warming up voices…</Badge>;
-  return <Badge tone="green" dot>Gnani live · {health.llm_provider}</Badge>;
+  const [tone, text, short] = healthState(health);
+  return (
+    <span className="health-pill" title={text} role="status" aria-label={text}>
+      <Badge tone={tone} dot><span className="long">{text}</span><span className="short">{short}</span></Badge>
+    </span>
+  );
 }
 
 export default function App() {
@@ -53,13 +64,12 @@ export default function App() {
   const [totals, setTotals] = useState(null);
   const refreshTotals = useCallback(() => { getJSON("/api/totals").then(setTotals).catch(() => {}); }, []);
   useEffect(refreshTotals, [refreshTotals]);
+  // keep the pill honest: poll every 10 s (every 3 s while the voices warm up), also while the server is offline
+  const warming = !!health && !health.fake && !health.fillers_ready;
   useEffect(() => {
-    if (health && !health.fake && !health.fillers_ready) {
-      const id = setTimeout(reloadHealth, 3000);
-      return () => clearTimeout(id);
-    }
-    return undefined;
-  }, [health, reloadHealth]);
+    const id = setInterval(() => { if (!document.hidden) reloadHealth(); }, warming ? 3000 : 10000);
+    return () => clearInterval(id);
+  }, [warming, reloadHealth]);
 
   const call = useCall({ onEnded: refreshTotals });
   const [personaKey, setPersonaKey] = useState("auto");
