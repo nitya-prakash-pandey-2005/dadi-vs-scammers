@@ -1,10 +1,11 @@
 // Scam ring radar: calls linked by a shared mule ID or by the scammer's voice fingerprint (Gnani clone embedding).
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, AudioWaveform, Download, Network, RefreshCw } from "lucide-react";
 import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
 import ApiLink from "../components/ApiLink";
 import { SCAM_TYPE_LABELS } from "../lib/labels";
+import { useForceDrag } from "../components/viz/useForceDrag";
 
 const W = 800, H = 440;
 const short = (n) => (n.names?.[0] || n.id.slice(0, 6)).split(" ").slice(0, 2).join(" ");
@@ -65,15 +66,17 @@ function useNarrow(px) {
 }
 
 function Graph({ data, narrow }) {
-  const { pos, w, h } = layout(data, narrow);
+  const { pos: home, w, h } = layout(data, narrow);
+  const svgRef = useRef(null);
+  const { pos, onPointerDown, wasDragged } = useForceDrag(home, data.links, svgRef);
   const byId = Object.fromEntries(data.nodes.map((n) => [n.id, n]));
   const ringOf = {};
   data.rings.forEach((r, i) => r.calls.forEach((id) => { ringOf[id] = i; }));
   // rings of 4+ calls: one caption in the middle instead of a label on every link (they would pile up)
   const big = (i) => i != null && data.rings[i].calls.length > 3;
-  const open = (id) => { window.location.hash = `/app/report?id=${id}`; };
+  const open = (id) => { if (!wasDragged()) window.location.hash = `/app/report?id=${id}`; };
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className={`ring-graph ${narrow ? "narrow" : ""}`} role="img" aria-label="Graph of linked scam calls">
+    <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} className={`ring-graph ${narrow ? "narrow" : ""}`} role="img" aria-label="Graph of linked scam calls">
       {data.links.map((l, i) => {
         if (!pos[l.source] || !pos[l.target]) return null;
         const [x1, y1, cx, cy] = pos[l.source], [x2, y2] = pos[l.target];
@@ -101,7 +104,7 @@ function Graph({ data, narrow }) {
         const y1 = up ? y - r - 22 : y + r + 16, y2 = up ? y - r - 8 : y + r + 31;
         return (
           <g key={id} className={`ring-node ${n.ring ? "hot" : ""}`} role="link" tabIndex={0} aria-label={`Report for call ${id.slice(0, 6)} (${short(n)})`}
-            onClick={() => open(id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(id); } }}>
+            onPointerDown={onPointerDown(id)} onClick={() => open(id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(id); } }}>
             <circle cx={x} cy={y} r={r} />
             <text x={x} y={y1}>{short(n)}</text>
             {n.synthetic && <text x={x} y={y2} className="ring-synth">AI voice? ({n.synthetic.voice})</text>}
