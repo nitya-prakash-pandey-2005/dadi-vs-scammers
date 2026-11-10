@@ -218,3 +218,21 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
 /* freeze list: bank icon stays on the line with the bank name */
 table.freeze td:nth-child(3) { white-space: nowrap; }
 table.freeze td svg { display: inline-block; vertical-align: -2px; margin-right: 4px; }
+/* Guardian: big calm risk meter, warnings, reasons, transcript */
+.guard-meter { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 360px; margin: 0 auto; text-align: center; }
+.guard-score { font-size: 46px; font-weight: 700; font-family: var(--font-display, inherit); }
+.guard-of { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.guard-level { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 20px; font-weight: 650; }
+.guard-sub { font-size: 14px; }
+.guard-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.guard-actions .btn { justify-content: center; white-space: normal; text-align: center; min-height: 44px; height: auto; padding: 8px 10px; }
+.guard-actions .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.guard-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.guard-list li { display: flex; gap: 10px; align-items: baseline; min-width: 0; overflow-wrap: anywhere; }
+.guard-warning { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line, rgba(255, 255, 255, 0.1)); font-size: 16px; line-height: 1.5; }
+.guard-warning.lv-stop { border-color: rgba(251, 113, 133, 0.45); background: var(--rose-a, rgba(251, 113, 133, 0.08)); }
+.guard-warning.lv-caution { border-color: rgba(251, 191, 36, 0.4); }
+.guard-reason b { min-width: 34px; font-variant-numeric: tabular-nums; }
+.guard-transcript { max-height: 320px; overflow-y: auto; }
+.guard-t { flex: none; min-width: 30px; white-space: nowrap; }
+@media (max-width: 520px) { .guard-actions { grid-template-columns: minmax(0, 1fr); } }

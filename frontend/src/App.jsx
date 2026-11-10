@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { BarChart3, FileText, MessageSquareWarning, Network, PhoneCall, Swords } from "lucide-react";
+import { BarChart3, FileText, MessageSquareWarning, Network, PhoneCall, ShieldCheck, Swords } from "lucide-react";
 import { useRoute } from "./lib/router";
 import AppShell from "./shell/AppShell";
 import { Badge, Toasts } from "./ui";
@@ -12,12 +12,14 @@ import Arena from "./pages/Arena";
 import Rings from "./pages/Rings";
 import Intel from "./pages/Intel";
 import Check from "./pages/Check";
+import Guardian from "./pages/Guardian";
 import { DEMO } from "./demo";
 import DemoBanner from "./demo/DemoBanner";
 
 const NAV = [
   { group: "Scam line", items: [
     { to: "/app", label: "Live call", short: "Call", icon: PhoneCall, exact: true },
+    { to: "/app/guardian", label: "Guardian (protect an elder)", short: "Guardian", icon: ShieldCheck },
     { to: "/app/check", label: "Check a message", short: "Check", icon: MessageSquareWarning },
     { to: "/app/history", label: "Calls & reports", short: "Reports", icon: FileText },
     { to: "/app/intel", label: "Scam intelligence", short: "Intel", icon: BarChart3 },
@@ -27,11 +29,12 @@ const NAV = [
     { to: "/app/arena", label: "AI-vs-AI arena", short: "Arena", icon: Swords },
   ] },
 ];
-const MOBILE_TABS = NAV.flatMap((g) => g.items).filter((i) => ["/app", "/app/check", "/app/intel", "/app/rings", "/app/arena"].includes(i.to));
+const MOBILE_TABS = NAV.flatMap((g) => g.items).filter((i) => ["/app", "/app/guardian", "/app/check", "/app/intel", "/app/rings"].includes(i.to));
 const TITLES = [
   ["/app/report", "Complaint report", "Draft for cybercrime.gov.in / 1930"],
   ["/app/history", "Calls & reports", "Every call Dadi took"],
   ["/app/check", "Check a message", "SMS, WhatsApp or 'notice'"],
+  ["/app/guardian", "Guardian", "Protects a real elder on her own call"],
   ["/app/intel", "Scam intelligence", "For banks, telcos and police"],
   ["/app/rings", "Scam ring radar", "Same mule ID or same voice = same gang"],
   ["/app/arena", "AI-vs-AI arena", "Noisy phone line stress test"],
@@ -87,6 +90,7 @@ export default function App() {
   else if (route.path === "/app/rings") page = <Rings />;
   else if (route.path === "/app/intel") page = <Intel />;
   else if (route.path === "/app/check") page = <Check />;
+  else if (route.path === "/app/guardian") page = <Guardian />;
   else page = (
     <CallRoom call={call} personas={personas || []} totals={totals} personaKey={personaKey} setPersonaKey={setPersonaKey} noise={noise} setNoise={setNoise} />
   );
