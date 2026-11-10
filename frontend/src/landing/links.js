@@ -10,4 +10,4 @@ export const PUKAAR_URL = "https://pukaar-snowy.vercel.app/";
 export const PUKAAR_REPO = `${GH}/pukaar`;
 export const AWAAZ_URL = "https://apni-awaaz-kappa.vercel.app/";
 export const AWAAZ_REPO = `${GH}/apni-awaaz`;
-export const APP_HREF = "#/app";
+export const APP_HREF = "#/app?play=1"; // demo build: the recorded call starts on arrival (pages/CallRoom.jsx)

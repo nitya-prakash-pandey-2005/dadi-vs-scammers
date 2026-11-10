@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import { PhoneCall, PhoneOff, Radar } from "lucide-react";
 import { PageHead } from "../ui";
-import Phone from "../components/Phone";
+import Phone, { noiseToDb } from "../components/Phone";
 import WarRoom from "../components/WarRoom";
 import { useNow } from "../state/useCall";
 import { mmss } from "../lib/labels";
+import { DEMO } from "../demo";
+
+// Demo build: the landing page's "Try the live demo" link (#/app?play=1) starts the recorded call straight away.
+// Only right after that click, when the browser allows sound; a direct visit keeps the normal Call button.
+let autoPlayed = false;
+function takePlayFlag() {
+  if (!DEMO || autoPlayed) return false;
+  const [path, qs] = window.location.hash.replace(/^#/, "").split("?");
+  if (new URLSearchParams(qs || "").get("play") !== "1") return false;
+  autoPlayed = true;
+  window.history.replaceState(null, "", `${window.location.pathname}#${path}`); // a refresh doesn't replay
+  return navigator.userActivation?.hasBeenActive === true;
+}
 
 // Phones only (CSS): the war room tab keeps a small call bar, so the caller can watch the transcript and still hang up.
 function MiniCallBar({ call }) {
@@ -30,6 +43,9 @@ export default function CallRoom({ call, personas, totals, personaKey, setPerson
   const [tab, setTab] = useState("phone"); // only used under 900px
   // on a phone, jump to the war room once the call connects (the call bar there still has "Hang up")
   useEffect(() => { if (call.phase === "live") setTab("war"); }, [call.phase]);
+  useEffect(() => {
+    if (call.phase === "idle" && takePlayFlag()) call.start(personaKey, noiseToDb(noise), null, { family: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- once, on arrival from the landing page
   return (
     <>
       <PageHead
