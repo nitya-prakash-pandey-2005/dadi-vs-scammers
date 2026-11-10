@@ -22,7 +22,9 @@ import markdown
 from pypdf import PdfReader
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC, OUT = ROOT / "PITCH.md", ROOT / "PITCH.pdf"
+SRC = Path(os.environ.get("PITCH_SRC", ROOT / "PITCH.md"))  # PITCH_SRC/PITCH_OUT/PITCH_KICKER: render another page
+OUT = Path(os.environ.get("PITCH_OUT", ROOT / "PITCH.pdf"))
+KICKER = os.environ.get("PITCH_KICKER", "Dadi vs Scammers · AI scam-baiter")
 LOGO = ROOT / "docs" / "brand" / "logo.svg"
 CHROME_CANDIDATES = [
     os.environ.get("CHROME", ""),
@@ -74,7 +76,7 @@ def build_html(md_text: str, pt: float) -> str:
     return (
         f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{title}</title>'
         f"<style>{CSS.replace('__PT__', f'{pt:.1f}')}</style></head><body>"
-        f"<header>{logo}<h1><small>Dadi vs Scammers · AI scam-baiter</small>{title}</h1></header>"
+        f"<header>{logo}<h1><small>{KICKER}</small>{title}</h1></header>"
         f"{body}</body></html>"
     )
 

@@ -27,7 +27,7 @@
 | **Pukaar** | A flood emergency line that answers overflow calls in the caller's own language and puts every caller on a rescue map | [pukaar-snowy.vercel.app](https://pukaar-snowy.vercel.app/) | [PDF](https://github.com/nitya-prakash-pandey-2005/pukaar/blob/main/PITCH.pdf) | [GitHub](https://github.com/nitya-prakash-pandey-2005/pukaar) |
 | **Apni Awaaz** | Gives people who lost their voice to cancer, stroke or ALS their own voice back, in 10 Indian languages | [apni-awaaz-kappa.vercel.app](https://apni-awaaz-kappa.vercel.app/) | [PDF](https://github.com/nitya-prakash-pandey-2005/apni-awaaz/blob/main/PITCH.pdf) | [GitHub](https://github.com/nitya-prakash-pandey-2005/apni-awaaz) |
 
-**Demo videos (all three, about 3 minutes each):** *[videos folder link]* &nbsp;·&nbsp; **All three on one page:** [docs/THREE-PRODUCTS.md](docs/THREE-PRODUCTS.md)
+**Demo videos (all three, about 3 minutes each):** *[videos folder link]* &nbsp;·&nbsp; **All three on one page:** [THREE-PRODUCTS.pdf](docs/THREE-PRODUCTS.pdf)
 
 ## Contents
 
