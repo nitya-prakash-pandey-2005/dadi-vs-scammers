@@ -36,20 +36,21 @@ const TITLES = [
   ["/app", "Live scam line", "Gnani Prisma + Timbre"],
 ];
 
-// [tone, full text, short text for phones]
+// [tone, full text, short text for phones, tooltip]
 function healthState(h) {
   if (!h) return ["muted", "Server offline", "Offline"];
   if (h.fake) return ["amber", "Fake mode: no API keys", "Fake mode"];
   if (!h.gnani_key || !h.llm_key) return ["rose", "API keys missing", "Keys missing"];
+  if (h.llm_ready === false && h.llm_last_error) return ["amber", "LLM error", "LLM error", `LLM error: ${h.llm_last_error}`];
   if (!h.fillers_ready) return ["cyan", "Warming up voices…", "Warming up…"];
-  const model = h.llm_provider === "groq" && h.groq_model ? ` ${h.groq_model}` : "";
-  return ["green", `Gnani live · ${h.llm_provider || "LLM"}${model}`, "Gnani live"];
+  const model = h.llm_model || [h.llm_provider, h.llm_provider === "groq" ? h.groq_model : null].filter(Boolean).join(" ") || "LLM";
+  return ["green", `Gnani live · ${model}`, "Gnani live"];
 }
 
 function HealthPill({ health }) {
-  const [tone, text, short] = healthState(health);
+  const [tone, text, short, tip = text] = healthState(health);
   return (
-    <span className="health-pill" title={text} role="status" aria-label={text}>
+    <span className="health-pill" title={tip} role="status" aria-label={tip}>
       <Badge tone={tone} dot><span className="long">{text}</span><span className="short">{short}</span></Badge>
     </span>
   );

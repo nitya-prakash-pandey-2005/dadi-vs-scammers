@@ -18,6 +18,7 @@ export function useCall({ onEnded } = {}) {
   const [startedAt, setStartedAt] = useState(null);
   const [wasted, setWasted] = useState(0);
   const [repeat, setRepeat] = useState(null); // earlier call with the same voice (Gnani voice fingerprint)
+  const [frozenAt, setFrozenAt] = useState(null); // hang-up time: timers stop here while the server wraps up
   const refs = useRef({ call: null, mic: null, player: null, onEnded });
   refs.current.onEnded = onEnded;
 
@@ -85,6 +86,7 @@ export function useCall({ onEnded } = {}) {
     setMission(missionKey ? { key: missionKey, done: false } : null);
     setRepeat(null);
     setWasted(0);
+    setFrozenAt(null);
     setCallId(null);
     setSpeaking(false);
     setStt("connecting");
@@ -105,9 +107,12 @@ export function useCall({ onEnded } = {}) {
         if (!current()) return;
         if (m.type === "session_started") session.started = true;
         if (m.type === "call_ended") session.live = false;
+        // after hang-up the server may still send intel/turns (up to ~3 s) before call_ended: keep those, but Dadi
+        // must not start "speaking" again
+        if (m.type === "agent_speaking" && !session.live) return;
         onEvent(m);
       },
-      onAudio: (ab) => { if (current()) player.play(ab); },
+      onAudio: (ab) => { if (current() && session.live) player.play(ab); },
       onClose: () => {
         if (!current()) return;
         session.live = false;
@@ -150,7 +155,8 @@ export function useCall({ onEnded } = {}) {
     if (s?.live) {
       s.live = false;
       s.sock.hangup();
-      setPhase("ending");
+      setFrozenAt(Date.now());
+      setPhase("ending"); // stays "ending" until the server's call_ended (or the socket closes)
     }
   }, []);
 
@@ -165,7 +171,7 @@ export function useCall({ onEnded } = {}) {
     refs.current.player?.close();
   }, []);
 
-  return { phase, callId, persona, mission, turns, intel, repeat, stt, speaking, startedAt, wasted, start, hangup, setNoise, playerLevel, micLevel };
+  return { phase, callId, persona, mission, turns, intel, repeat, stt, speaking, startedAt, frozenAt, wasted, start, hangup, setNoise, playerLevel, micLevel };
 }
 
 export function useNow(active, every = 250) {

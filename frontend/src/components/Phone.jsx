@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Headphones, PhoneCall, PhoneOff, ShieldAlert, Speaker, Target } from "lucide-react";
+import { AlertTriangle, Headphones, PhoneCall, PhoneOff, ShieldAlert, Speaker, Target } from "lucide-react";
 import { Badge, Card, Hud, Seg, Toggle, hueOf, initials } from "../ui";
 import { DISCLAIMER, MIX_LABEL, PERSONA_HUE, mmss } from "../lib/labels";
 import { useNow } from "../state/useCall";
@@ -37,7 +37,7 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
   const setSpeaker = (on) => { setSpeakerState(on); saveSpeaker(on); };
   const live = ["connecting", "live", "ending"].includes(call.phase);
   const now = useNow(live);
-  const elapsed = live && call.startedAt ? (now - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
+  const elapsed = live && call.startedAt ? ((call.frozenAt || now) - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
   const ringRef = useRef(null);
 
   const chosen = personas.find((p) => p.key === (personaKey === "auto" ? "dadi" : personaKey));
@@ -106,6 +106,13 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
         <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null, { speakerphone: speaker })}>
           <PhoneCall size={18} /> Call {personaKey === "auto" ? "Dadi" : SHORT[personaKey] || "Dadi"}
         </button>
+      )}
+
+      {live && call.stt === "error" && (
+        <div className="callout stt-error" role="alert">
+          <AlertTriangle size={18} className="flex-none" />
+          <span><b>Dadi can't hear the line any more.</b> The speech service stopped. Hang up, then call again.</span>
+        </div>
       )}
 
       {call.mission && (

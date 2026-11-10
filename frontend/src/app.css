@@ -204,3 +204,7 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
   .arena-grid .arena-feed { order: 2; }
   .arena-grid .chat { max-height: 60vh; }
 }
+
+/* final speech-service error during a call: calm, clear, points at "Hang up" */
+.callout.stt-error { background: var(--rose-a); border-color: var(--rose); color: var(--text); }
+.callout.stt-error svg { color: var(--rose); }

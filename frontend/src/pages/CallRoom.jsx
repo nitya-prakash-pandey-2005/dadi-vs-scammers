@@ -11,13 +11,13 @@ function MiniCallBar({ call }) {
   const live = ["connecting", "live", "ending"].includes(call.phase);
   const now = useNow(live);
   if (!live) return null;
-  const secs = call.startedAt ? (now - call.startedAt) / 1000 : 0;
+  const secs = call.startedAt ? ((call.frozenAt || now) - call.startedAt) / 1000 : 0;
   const who = call.persona?.name || "Dadi";
   return (
     <div className="minibar" role="status">
       <span className="pulse-dot" />
       <span className="grow">
-        {call.phase === "connecting" ? "Ringing…" : `${call.speaking ? `${who} speaking` : "On call"} · ${mmss(secs)}`}
+        {call.phase === "connecting" ? "Ringing…" : call.stt === "error" ? "Speech service stopped · hang up" : `${call.speaking ? `${who} speaking` : "On call"} · ${mmss(secs)}`}
       </span>
       <button className="btn danger sm" onClick={call.hangup} disabled={call.phase === "ending"} aria-label="Hang up">
         <PhoneOff size={15} /> {call.phase === "ending" ? "Hanging up…" : "Hang up"}

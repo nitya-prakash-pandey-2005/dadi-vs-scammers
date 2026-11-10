@@ -46,7 +46,8 @@ export function openCall({ persona = "auto", noiseSnrDb = null, mission = null, 
     hangup() {
       if (ws.readyState === WebSocket.CONNECTING) aborted = true; // onopen closes it without starting a session
       else if (isOpen()) ws.send(JSON.stringify({ type: "hangup" }));
-      setTimeout(() => { try { ws.close(); } catch { /* already closed */ } }, 5000);
+      // the server sends call_ended within ~3 s (pending intel finishes first); close anyway if it never comes
+      setTimeout(() => { try { ws.close(); } catch { /* already closed */ } }, 8000);
     },
     close() {
       aborted = true;
