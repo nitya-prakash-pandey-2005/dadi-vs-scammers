@@ -37,9 +37,24 @@ All under `frontend/public/demo/` (copied to `/demo/` in the build):
 | `api/...` | REST snapshots: health, personas, calls, reports, rings, insights, freeze list, CSV feeds, recordings, evidence packs, checker verdicts for the sample messages |
 
 The timeline loader also accepts `{ "events": [...] }`, `data`/`message` instead of `msg`, a JSON string as the
-message, and epoch or millisecond times. Binary frames in a capture are skipped.
+message, and epoch or millisecond times. Binary frames in a capture are skipped. Two replay rules:
+
+- The arena emits each turn as soon as it is computed, so its timestamps are bunched up or stalled. The replay
+  re-times it to a reading pace (each turn 2.5 to 4 s after the previous one; intel, mission and repeat-caller
+  messages within 1.2 s after the turn before them, in recorded order). The live call keeps its real timing,
+  because its audio has to stay in sync.
+- A call capture without `call_ended` gets one 1 s after its last message. The committed capture had none (it
+  stopped at the last turn), so `call_ended` was added at 95.26 s, the end of the recording, where the hang-up was.
+
+The data committed on 10 Nov 2026: live call `2c5705e9410b` (95 s, featured report with the sealed recording and
+evidence pack), the arena rematch (lottery script, Harshad voice, 10 dB, mission UPI, repeat caller), 5 calls in
+total, and real checker verdicts for the 3 sample messages.
 
 ## Refresh the snapshots from real data
+
+The quickest way is a backend that is already running on the real database: its GET endpoints make no Gnani or
+Groq calls, so `--base` can point at it; the only paid calls are the 3 checker POSTs (Groq, once per run). Never
+run `--capture-*` against it. Otherwise:
 
 1. Start the backend on the database you want to show (`cache/dadi.db` of that checkout) **without keys**, so it
    only reads the database. An empty key in the environment falls back to the repo's `.env`, so either start it
