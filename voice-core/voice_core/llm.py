@@ -169,8 +169,9 @@ class LLM:
                 else:
                     st = pending.find("<think>")
                     if st == -1:
-                        # keep a short tail in case a tag is split across chunks
-                        safe = len(pending) - 7 if "<" in pending[-7:] else len(pending)
+                        # keep a short tail in case a tag is split across chunks (max(0, ...): a buffer shorter
+                        # than the tag, such as "<thi", must be held back whole, not sliced from the end)
+                        safe = max(0, len(pending) - 7) if "<" in pending[-7:] else len(pending)
                         out, pending = out + pending[:safe], pending[safe:]
                         break
                     out, pending, in_think = out + pending[:st], pending[st + 7 :], True
