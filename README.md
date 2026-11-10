@@ -8,6 +8,7 @@
 ![Gnani Timbre v3.0](https://img.shields.io/badge/Gnani-Timbre_v3.0_TTS-8b5cf6)
 ![Gnani voice cloning](https://img.shields.io/badge/Gnani-voice_cloning_as_fingerprint-22d3ee)
 ![Tests](https://img.shields.io/badge/tests-256_passing-34d399)
+[![CI](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers/actions/workflows/ci.yml/badge.svg)](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers/actions/workflows/ci.yml)
 ![Languages](https://img.shields.io/badge/speaks-5_Indian_code--mixed_languages-fbbf24)
 
 **Live demo:** *[live demo link]* &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
