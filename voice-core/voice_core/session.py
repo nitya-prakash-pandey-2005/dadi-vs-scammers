@@ -65,7 +65,7 @@ class VoiceAgentSession:
         self.sr = settings.sample_rate
         self.stt_factory = stt_factory or (lambda: default_stt_factory(settings, agent))
         self.tts_fn = tts_fn or tts_stream
-        self.filler_audio = filler_audio or {}
+        self.filler_audio = filler_audio if filler_audio is not None else {}  # keep the caller's dict: it may fill later
         self.noise = noise
         self.snr_db: float | None = None
         self.rng = rng or random.Random()

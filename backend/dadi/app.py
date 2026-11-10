@@ -65,7 +65,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             st.ready = True
         else:
             async def warm():
-                st.fillers = await load_or_make_fillers(settings, settings.cache_dir)
+                st.fillers.update(await load_or_make_fillers(settings, settings.cache_dir))  # in place: live calls share it
                 st.babble = await load_or_make_babble(settings, settings.cache_dir)
                 st.ready = True
                 log.info("assets ready: %d filler clips", len(st.fillers))

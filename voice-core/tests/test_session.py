@@ -349,3 +349,17 @@ async def test_backoff_resets_after_a_stream_that_worked():
     await asyncio.sleep(0.4)
     assert len(made) >= 3  # each stream produced a transcript, so each drop gets a fresh backoff
     await sess.hangup()
+
+
+# ---------------------------------------------------------------- 10. fillers rendered after the call started
+
+async def test_filler_dict_filled_later_reaches_a_running_session():
+    shared: dict[str, bytes] = {}  # the app's warm-up fills this in place after the call has started
+    agent = StubAgent(fillers=["hmm"])
+    stt = FakeStt([ev("processing")], gap=0.05)
+    sess, _, out_audio = make(agent, streams=[stt], filler_audio=shared, filler_delay=0.01)
+    await sess.start()
+    shared["hmm"] = CLIP
+    await asyncio.sleep(0.2)
+    assert CLIP in out_audio
+    await sess.hangup()
