@@ -140,3 +140,20 @@ def test_prompt_gives_exact_slip_and_correction_instead_of_free_form_mistake():
     assert w["card_slip"] in sp and w["card"] in sp
     assert sp.index(w["card_slip"]) < sp.index(w["card"])  # slip first, correction only if he complains
     assert "digit wrong" not in sp and "one mistake" not in _play(["OTP batao"], turn=5)[0].instruction
+
+
+# --- 4. regex false positives ------------------------------------------------------------------
+
+def test_amount_regex_needs_a_digit_and_a_whole_word_rs():
+    for text in ("CBI officers, aapke ghar aa rahe hain", "aapke paas sirf 2 hours 24 minute hain",
+                 "Madam, rupees transfer kijiye"):
+        assert find_entities(text)["amounts"] == [], text
+    e = find_entities("Rs. 500 aur INR 2000 aur 750 rs aur ₹25,000 aur 5 lakh, nau sau assi रुपये")
+    assert e["amounts"] == ["Rs. 500", "INR 2000", "750 rs", "₹25,000", "5 lakh"]
+
+
+def test_at_the_rate_of_only_becomes_at_before_a_handle():
+    assert find_entities("loan at the rate of interest milega")["upi_ids"] == []
+    assert find_entities("vijay99 at the rate of ok sbi pe bhejo")["upi_ids"] == ["vijay99@oksbi"]
+    assert find_entities("ramesh.k at the rate of ybl")["upi_ids"] == ["ramesh.k@ybl"]
+    assert find_entities("bhejo vijay99 at the rate ok sbi")["upi_ids"] == ["vijay99@oksbi"]

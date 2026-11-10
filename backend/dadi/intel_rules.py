@@ -12,15 +12,17 @@ _UPI = re.compile(r"(?<![\w.@-])([a-zA-Z0-9][a-zA-Z0-9._-]{1,255}@[a-zA-Z]{2,64}
 _IFSC = re.compile(r"\b([A-Za-z]{4}0[A-Za-z0-9]{6})\b")
 _URL = re.compile(r"(https?://\S+|\b[a-z0-9-]+\.(?:com|in|net|org|xyz|top|online|site|app|co|info|live|ly|icu|click|shop|buzz|link|cc|gd|gy)\b(?:/\S*)?)", re.I)
 _DIGIT_GROUPS = re.compile(r"(?:\+?91[\s-]?)?\d+(?:(?:[\s-]|,\s)\d+)*")
-_AMOUNT = re.compile(
-    r"(₹\s?[\d,]+(?:\.\d+)?|(?:rs\.?|inr)\s?[\d,]+|[\d,]+(?:\.\d+)?\s?(?:rupees|rupaye|rupay|rs|lakh|lac|crore|hazaar|hazar|thousand|रुपये|रुपए|रुपया|हजार|हज़ार|लाख))",
+_AMOUNT = re.compile(  # needs a digit, and "rs" as a whole word (not "office-rs," or "hou-rs 24")
+    r"(₹\s?\d[\d,]*(?:\.\d+)?|\b(?:rs\.?|inr)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:rupees|rupaye|rupay|rs\b|lakh|lac|crore|hazaar|hazar|thousand|रुपये|रुपए|रुपया|हजार|हज़ार|लाख))",
     re.I,
 )
 _APPS = {
     "anydesk": "AnyDesk", "any desk": "AnyDesk", "teamviewer": "TeamViewer", "team viewer": "TeamViewer",
     "quicksupport": "QuickSupport", "quick support": "QuickSupport", "rustdesk": "RustDesk", "rust desk": "RustDesk",
 }
-_AT_RATE = re.compile(r"\s*(?:at the rate(?: of)?|attherate|एट द रेट)\s*", re.I)
+_AT_RATE = re.compile(r"\s*(?:at\s+the\s+rate(\s+of)?|attherate|एट द रेट)\s*", re.I)
+_NEXT_WORDS = re.compile(r"([a-zA-Z]+)(?:\s+([a-zA-Z]+))?")
+_MAIL_DOMAINS = ("gmail", "yahoo", "hotmail", "outlook", "rediffmail")
 _DOT = re.compile(r"\s+(?:dot|डॉट)\s+", re.I)
 UPI_HANDLES = [
     "okaxis", "oksbi", "okhdfcbank", "okicici", "ybl", "ibl", "axl", "paytm", "upi", "apl", "ptyes", "ptaxis",
@@ -45,6 +47,21 @@ def _repair_handle(m: re.Match) -> str:
         return "@" + prefixed[0] + (sep + two if two else "")
     hit = difflib.get_close_matches(one, UPI_HANDLES, n=1, cutoff=0.8)
     return "@" + hit[0] + (sep + two if two else "") if hit else m.group(0)
+
+
+def _at_rate(m: re.Match) -> str:
+    """'at the rate' -> '@'. 'at the rate of' is also plain English ('loan at the rate of interest'), so it
+    becomes '@' only when a UPI handle or mail domain follows ('vijay at the rate of ok sbi')."""
+    if not m.group(1):
+        return "@"
+    nxt = _NEXT_WORDS.match(m.string, m.end())
+    if nxt:
+        one, two = nxt.group(1).lower(), (nxt.group(2) or "").lower()
+        if (one in _MAIL_DOMAINS or two == "dot"
+                or difflib.get_close_matches(one, UPI_HANDLES, n=1, cutoff=0.8)
+                or (two and difflib.get_close_matches(one + two, UPI_HANDLES, n=1, cutoff=0.8))):
+            return "@"
+    return m.group(0)
 
 
 def _dedupe(items: list[str]) -> list[str]:
@@ -89,7 +106,7 @@ def _numbers(parts: list[str], has_cc: bool) -> list[str]:
 
 
 def _prep(t: str) -> str:
-    t = _AT_RATE.sub("@", t)
+    t = _AT_RATE.sub(_at_rate, t)
     t = _DOT.sub(".", t)
     return _HANDLE.sub(_repair_handle, t)
 
