@@ -77,7 +77,8 @@ def is_echo(text: str, recent_agent_lines: list[str], threshold: float = 0.6) ->
             continue
         if SequenceMatcher(None, t, a).ratio() >= threshold:
             return True
-        if len(t.split()) >= 3 and (t in a or a in t):
+        # contained either way; a short agent line ("अच्छा।") inside a long transcript is not an echo of it
+        if len(t.split()) >= 3 and (t in a or (a in t and len(a.split()) >= 3 and len(a) >= 0.6 * len(t))):
             return True
     # an echo that spans several of the agent's lines (speakerphone): nearly all of it appears, in order, in her text
     if len(t.split()) >= 3:

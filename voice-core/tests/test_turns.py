@@ -68,3 +68,11 @@ def test_is_echo_ignores_spelling_variants_and_spans_lines():
     for scammer in ["मैडम आपके नाम पे एफआईआर है", "आप अभी पैसे भेजिए वरना गिरफ्तार होंगी", "मैं सीबीआई से बोल रहा हूं",
                     "अभी के अभी पैसे भेजो मैडम", "rathore.cbi@okaxis पे भेजिए"]:
         assert not is_echo(scammer, agent), scammer
+
+
+def test_short_agent_line_inside_a_long_transcript_is_not_echo():
+    from voice_core.turns import is_echo
+
+    assert not is_echo("अच्छा मैडम आपका आधार नंबर बताइए", ["अच्छा।"])
+    assert not is_echo("haan madam aapka account block hai", ["haan?"])
+    assert is_echo("haan beta ek minute ruko zara", ["haan beta ek minute"])  # agent line + a little extra
