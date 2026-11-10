@@ -65,7 +65,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             st.ready = True
         else:
             async def warm():
-                st.fillers = await load_or_make_fillers(settings, settings.cache_dir)
+                st.fillers.update(await load_or_make_fillers(settings, settings.cache_dir))  # in place: live calls share it
                 st.babble = await load_or_make_babble(settings, settings.cache_dir)
                 st.ready = True
                 log.info("assets ready: %d filler clips", len(st.fillers))
@@ -83,9 +83,14 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
                                      stt_factory=lambda: ScriptedStt(), tts_fn=tone_tts, noise=st.babble)
         else:
-            agent = DadiAgent(store=store, llm=LLM(settings), intel_llm=LLM(settings, purpose="intel"), persona_key=persona)
+            # realtime: no SDK retries (a 429 Retry-After means minutes of silence) and a first-token limit (5 s on
+            # Groq, 12 s on a self-hosted Evon); the session then says a pre-rendered "say that again?" line instead
+            llm = LLM(settings, max_retries=0)
+            llm.first_token_timeout = 5.0 if llm.provider == "groq" else 12.0
+            agent = DadiAgent(store=store, llm=llm, intel_llm=LLM(settings, purpose="intel"), persona_key=persona)
             sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
-                                     filler_audio=st.fillers, noise=st.babble)
+                                     filler_audio=st.fillers, noise=st.babble,
+                                     first_sentence_timeout=llm.first_token_timeout + 3.0)
         return sess, agent
 
     factory = session_factory or default_factory
@@ -93,10 +98,16 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
     # ------------------------------------------------------------------ REST
     @app.get("/api/health")
     async def health():
+        llm_key = bool(settings.groq_api_key or settings.evon_base_url)
+        last = LLM.last_status  # outcome of the most recent LLM call in this process (no extra request)
         return {
             "gnani_key": bool(settings.gnani_api_key),
-            "llm_key": bool(settings.groq_api_key or settings.evon_base_url),
+            "llm_key": llm_key,
             "llm_provider": settings.llm_provider,
+            "groq_model": settings.groq_model,
+            "llm_model": "fake" if fake else LLM(settings).model,
+            "llm_ready": (llm_key or fake) and last.get("ok", True) is not False,
+            "llm_last_error": last.get("error"),
             "intel_llm_provider": settings.intel_llm_provider,
             "stt_mode": settings.stt_mode,
             "fillers_ready": st.ready,
@@ -233,6 +244,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             await ws.close(code=1008)
             return
         sess, agent = factory(send_json, send_audio, first.get("persona") or "auto")
+        if hasattr(sess, "half_duplex"):  # speakerphone (laptop speakers): Dadi must not interrupt herself
+            sess.half_duplex = bool(first.get("speakerphone"))
         if first.get("mission") in MISSIONS:
             agent.state.mission = first["mission"]
 
@@ -245,10 +258,10 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
                            embed_fn=voice_embed_fn, api_key=settings.gnani_api_key, on_match=on_repeat_caller,
                            speech_filter=all_audio if fake else speech_only)
         t0["v"] = time.monotonic()
-        await sess.start()
-        if first.get("noise_snr_db") is not None:
-            await sess.set_noise(float(first["noise_snr_db"]))
         try:
+            await sess.start()
+            if first.get("noise_snr_db") is not None:
+                await sess.set_noise(float(first["noise_snr_db"]))
             while True:
                 msg = await ws.receive()
                 if msg.get("type") == "websocket.disconnect":
@@ -267,6 +280,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
                         await sess.set_noise(None if snr is None else float(snr))
         except (WebSocketDisconnect, RuntimeError):
             pass
+        except Exception as e:  # never lose the call row, recording or voiceprint because of one bad message
+            log.warning("call loop failed: %r", e)
         finally:
             res = await sess.hangup()
             call_store = getattr(agent, "store", store)

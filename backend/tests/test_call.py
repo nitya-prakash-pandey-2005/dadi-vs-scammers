@@ -141,3 +141,40 @@ async def test_speaking_flag_follows_playback_and_barge_in(tmp_path):
     assert sess.speaking
     await sess._barge_in()
     assert not sess.speaking
+
+
+def test_fallback_texts_are_prerenderable_fillers(tmp_path):
+    store = Store(tmp_path / "fb.db")
+    for key, p in PERSONAS.items():
+        agent = DadiAgent(store=store, llm=FakeLLM([]), intel_llm=FakeLLM([]), persona_key=key, seed=1)
+        fb = agent.fallback_texts()
+        assert fb and set(fb) <= set(p.fillers), key
+
+
+async def test_dadi_llm_failure_is_not_dead_air(tmp_path):
+    out_json, out_audio = [], []
+
+    class DeadLLM:
+        async def stream(self, *a, **k):
+            raise RuntimeError("Groq 429")
+            yield ""  # pragma: no cover
+
+    store = Store(tmp_path / "d.db")
+    agent = DadiAgent(store=store, llm=DeadLLM(), intel_llm=FakeLLM([]), persona_key="dadi", seed=1)
+    fillers = {t: b"\x00\x01" * 800 for t in PERSONAS["dadi"].fillers}
+
+    async def sj(m):
+        out_json.append(m)
+
+    async def sa(b):
+        out_audio.append(b)
+
+    stt = FakeStt([ev("transcript", "Hello madam CBI se bol raha hoon")], gap=0.01)
+    sess = VoiceAgentSession(agent, send_json=sj, send_audio=sa, settings=Settings(sample_rate=8000),
+                             stt_factory=lambda: stt, tts_fn=fake_tts, filler_audio=fillers, rng=random.Random(0))
+    await sess.start()
+    await asyncio.sleep(0.1)
+    await sess.wait_idle()
+    dadi = turns_of(out_json, "dadi")
+    assert len(dadi) == 2 and dadi[-1]["text"] in agent.fallback_texts() and dadi[-1].get("fallback")
+    await sess.hangup()

@@ -207,3 +207,116 @@ def test_call_recording_evidence_pack_and_mule_feed(tmp_path):
     assert "rathore.cbi@okaxis" in z.read("transcript.txt").decode("utf-8")
     assert feed_csv.status_code == 200 and feed_csv.text.splitlines()[0].startswith("kind,value,calls")
     assert any(r["value"] == "rathore.cbi@okaxis" and r["kind"] == "upi_id" for r in feed_json["rows"])
+
+
+def test_ws_call_survives_stt_connect_failure(tmp_path):
+    import json
+
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache")
+    holder = {}
+
+    class FailingStt:
+        connected = False
+
+        async def connect(self):
+            raise OSError("getaddrinfo failed")
+
+    def factory(send_json, send_audio, persona):
+        store = holder.setdefault("s", Store(tmp_path / "t.db"))
+        agent = DadiAgent(store=store, llm=FakeLLM(["हाँ बेटा।"]), intel_llm=FakeLLM([]), persona_key="dadi", seed=1)
+        holder["agent"] = agent
+        sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
+                                 stt_factory=FailingStt, tts_fn=fake_tts, rng=random.Random(0),
+                                 reconnect_delays=(0.01,))
+        return sess, agent
+
+    with TestClient(create_app(settings, session_factory=factory)) as c:
+        with c.websocket_connect("/ws/call") as ws:
+            ws.send_json({"type": "start", "persona": "dadi"})
+            msgs = []
+            for _ in range(60):
+                m = ws.receive()
+                if m.get("type") == "websocket.close":
+                    break
+                if m.get("text"):
+                    msgs.append(json.loads(m["text"]))
+                    if msgs[-1].get("type") == "status" and msgs[-1].get("stt") == "error":
+                        ws.send_json({"type": "hangup"})
+                    if msgs[-1].get("type") == "call_ended":
+                        break
+    kinds = [m["type"] for m in msgs]
+    assert kinds[0] == "session_started" and "call_ended" in kinds
+    assert any(m["type"] == "turn" and m["speaker"] == "dadi" for m in msgs)  # the greeting still played
+    assert holder["s"].get_call(holder["agent"].call_id)["ended_at"] is not None
+
+
+def test_ws_start_speakerphone_sets_half_duplex(tmp_path):
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache")
+    made = []
+
+    def factory(send_json, send_audio, persona):
+        agent = DadiAgent(store=Store(tmp_path / f"t{len(made)}.db"), llm=FakeLLM([]), intel_llm=FakeLLM([]),
+                          persona_key="dadi", seed=1)
+        sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
+                                 stt_factory=lambda: FakeStt([ev("connected")]), tts_fn=fake_tts, rng=random.Random(0))
+        made.append(sess)
+        return sess, agent
+
+    with TestClient(create_app(settings, session_factory=factory)) as c:
+        for flag in (True, False, None):
+            with c.websocket_connect("/ws/call") as ws:
+                start = {"type": "start", "persona": "dadi"}
+                if flag is not None:
+                    start["speakerphone"] = flag
+                ws.send_json(start)
+                assert ws.receive_json()["type"] == "session_started"
+                ws.send_json({"type": "hangup"})
+                for _ in range(50):
+                    m = ws.receive()
+                    if m.get("type") == "websocket.close" or '"call_ended"' in (m.get("text") or ""):
+                        break
+    assert [s.half_duplex for s in made] == [True, False, False]
+
+
+def test_health_shows_the_live_model_and_llm_state(tmp_path, monkeypatch):
+    from voice_core.llm import LLM
+
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache", groq_api_key="g", groq_model="qwen/test-model")
+    monkeypatch.setattr(LLM, "last_status", {})
+    with TestClient(create_app(settings, session_factory=lambda *a: None)) as c:
+        h = c.get("/api/health").json()
+        assert h["groq_model"] == "qwen/test-model" and h["llm_model"] == "qwen/test-model"
+        assert h["llm_ready"] is True and h["llm_last_error"] is None
+        monkeypatch.setattr(LLM, "last_status", {"ok": False, "error": "404 model_not_found"})
+        h = c.get("/api/health").json()
+        assert h["llm_ready"] is False and "404" in h["llm_last_error"]
+
+
+def test_real_mode_call_uses_realtime_llm_settings(tmp_path, monkeypatch):
+    """default_factory (no DADI_FAKE): no SDK retries, a first-token limit, and the shared filler dict."""
+    import dadi.app as app_mod
+
+    monkeypatch.delenv("DADI_FAKE", raising=False)
+    made = []
+
+    class Sess(VoiceAgentSession):
+        def __init__(self, agent, **kw):
+            kw.update(stt_factory=lambda: FakeStt([ev("connected")]), tts_fn=fake_tts)
+            super().__init__(agent, **kw)
+            made.append(self)
+
+    monkeypatch.setattr(app_mod, "VoiceAgentSession", Sess)
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache", groq_api_key="", gnani_api_key="")
+    with TestClient(create_app(settings, voice_embed_fn=None)) as c:
+        with c.websocket_connect("/ws/call") as ws:
+            ws.send_json({"type": "start", "persona": "dadi", "speakerphone": True})
+            assert ws.receive_json()["type"] == "session_started"
+            ws.send_json({"type": "hangup"})
+            for _ in range(50):
+                m = ws.receive()
+                if m.get("type") == "websocket.close" or '"call_ended"' in (m.get("text") or ""):
+                    break
+    sess = made[0]
+    llm = sess.agent.brain.llm
+    assert llm.max_retries == 0 and llm.first_token_timeout == 5.0 and sess.first_sentence_timeout == 8.0
+    assert sess.half_duplex is True
