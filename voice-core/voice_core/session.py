@@ -56,6 +56,7 @@ class VoiceAgentSession:
         first_sentence_timeout: float | None = 8.0,
         hangup_grace: float = 3.0,
         half_duplex: bool = False,
+        stable_after: float = 10.0,
     ):
         self.agent = agent
         self.send_json = send_json
@@ -75,6 +76,8 @@ class VoiceAgentSession:
         # speakerphone: the mic hears the agent, so only a non-echo transcript may interrupt her (no speech_start
         # barge-in) and VAD events during her speech and its echo tail are ignored
         self.half_duplex = half_duplex
+        self.stable_after = stable_after  # a stream that lived this long (or gave a transcript) resets the backoff
+        self._reconnect_attempt = 0
 
         self.history: list[Turn] = []
         self.started_at = 0.0
@@ -189,21 +192,29 @@ class VoiceAgentSession:
         self._stt_task = asyncio.create_task(self._stt_loop(stt))
 
     async def _stt_loop(self, stt) -> None:
+        opened, heard = time.monotonic(), False
         try:
             async for ev in stt.events():
                 if ev.type == "closed":
                     break
+                heard = heard or ev.type == "transcript"
                 await self._on_stt_event(ev)
         except asyncio.CancelledError:
             raise
         except Exception as e:
             log.warning("stt loop error: %r", e)
+        # only a stream that really worked resets the backoff: a server that accepts and closes at once must not
+        # cause a reconnect every 0.5 s forever
+        if heard or time.monotonic() - opened >= self.stable_after:
+            self._reconnect_attempt = 0
         if not self._closing:
             await self._reconnect()
 
     async def _reconnect(self) -> None:
         await self._safe_json({"type": "status", "stt": "reconnecting"})
-        for delay in self.reconnect_delays:
+        while self._reconnect_attempt < len(self.reconnect_delays):
+            delay = self.reconnect_delays[self._reconnect_attempt]
+            self._reconnect_attempt += 1
             await asyncio.sleep(delay)
             if self._closing:
                 return
@@ -213,6 +224,7 @@ class VoiceAgentSession:
                 return
             except Exception as e:
                 log.info("reconnect failed: %r", e)
+        log.warning("STT gave up after %d reconnect attempts", len(self.reconnect_delays))
         await self._safe_json({"type": "status", "stt": "error", "message": "speech recognition unavailable"})
 
     def _said(self, text: str) -> None:

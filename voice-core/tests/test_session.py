@@ -316,3 +316,36 @@ async def test_analysis_coalesces_while_one_is_running():
     await sess.wait_idle(timeout=2.0)
     await sess.hangup()
     assert seen[0] == 1 and seen[-1] == 4 and len(seen) == 2, seen
+
+
+# ---------------------------------------------------------------- 7. reconnect storm
+
+async def test_immediately_closing_stt_backs_off_then_reports_error():
+    made = []
+
+    def factory():
+        made.append(FakeStt([], end="close"))
+        return made[-1]
+
+    sess, out_json, _ = make(StubAgent(), factory=factory, delays=(0.01, 0.02, 0.03))
+    await sess.start()
+    await asyncio.sleep(0.5)
+    assert len(made) == 4, len(made)  # the first connect + one per delay, then stop
+    statuses = [m["stt"] for m in out_json if m.get("type") == "status"]
+    assert statuses[-1] == "error"
+    await sess.hangup()
+
+
+async def test_backoff_resets_after_a_stream_that_worked():
+    made = []
+
+    def factory():
+        made.append(FakeStt([ev("transcript", f"baat number {len(made)} suniye")], gap=0.01, end="close"))
+        return made[-1]
+
+    agent = StubAgent([["achha."]] * 10)
+    sess, out_json, _ = make(agent, factory=factory, delays=(0.01,))
+    await sess.start()
+    await asyncio.sleep(0.4)
+    assert len(made) >= 3  # each stream produced a transcript, so each drop gets a fresh backoff
+    await sess.hangup()
