@@ -1,6 +1,6 @@
 # Dadi vs Scammers: don't block scammers, route them to Dadi
 
-**Team:** Nitya Prakash Pandey & Dilavesh Kanz Nidooli · Built on Gnani **Prisma v3.0** (speech-to-text), **Timbre v3.0** (text-to-speech) and **Gnani voice cloning** · **Live demo:** [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) · **Video:** *[video link]* · Code: [github.com/nitya-prakash-pandey-2005/dadi-vs-scammers](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers)
+**Team:** Nitya Prakash Pandey & Dilavesh Kanz Nidooli · Built on Gnani **Prisma v3.0** (speech-to-text), **Timbre v3.0** (text-to-speech) and **Gnani voice cloning** · **Live demo:** [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) · **Video:** [Google Drive](https://drive.google.com/drive/folders/1byHuJr_KoofV7NTVx1sCutXupmnX0D_S?usp=sharing) · Code: [github.com/nitya-prakash-pandey-2005/dadi-vs-scammers](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers)
 
 ## Problem
 

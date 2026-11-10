@@ -11,7 +11,7 @@
 [![CI](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers/actions/workflows/ci.yml/badge.svg)](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers/actions/workflows/ci.yml)
 ![Languages](https://img.shields.io/badge/speaks-5_Indian_code--mixed_languages-fbbf24)
 
-**Live demo:** [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
+**Live demo:** [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) &nbsp;·&nbsp; **Video:** [Google Drive](https://drive.google.com/drive/folders/1byHuJr_KoofV7NTVx1sCutXupmnX0D_S?usp=sharing) &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
 
 <img src="docs/screenshots/live/08-live-call-warroom-1440.png" alt="Live call: the scammer's words transcribed by Gnani Prisma, Dadi's replies, the intel card with his UPI ID, red flags and the time-wasted counter" width="100%">
 
@@ -27,7 +27,7 @@
 | **Pukaar** | A flood emergency line that answers overflow calls in the caller's own language and puts every caller on a rescue map | [pukaar-snowy.vercel.app](https://pukaar-snowy.vercel.app/) | [PDF](https://github.com/nitya-prakash-pandey-2005/pukaar/blob/main/PITCH.pdf) | [GitHub](https://github.com/nitya-prakash-pandey-2005/pukaar) |
 | **Apni Awaaz** | Gives people who lost their voice to cancer, stroke or ALS their own voice back, in 10 Indian languages | [apni-awaaz-kappa.vercel.app](https://apni-awaaz-kappa.vercel.app/) | [PDF](https://github.com/nitya-prakash-pandey-2005/apni-awaaz/blob/main/PITCH.pdf) | [GitHub](https://github.com/nitya-prakash-pandey-2005/apni-awaaz) |
 
-**Demo videos (all three, about 3 minutes each):** *[videos folder link]* &nbsp;·&nbsp; **All three on one page:** [THREE-PRODUCTS.pdf](docs/THREE-PRODUCTS.pdf)
+**Demo videos (all three, about 3 minutes each):** [Google Drive folder](https://drive.google.com/drive/folders/1byHuJr_KoofV7NTVx1sCutXupmnX0D_S?usp=sharing) &nbsp;·&nbsp; **All three on one page:** [THREE-PRODUCTS.pdf](docs/THREE-PRODUCTS.pdf)
 
 ## Contents
 
@@ -211,7 +211,7 @@ To our knowledge, as of Nov 2026, no publicly reported scam-baiting voice agent 
 - **Prisma v3.0 streaming STT** (WebSocket, `codemix`, single locale or `indic-auto`, scam keyterms, 8 kHz) for live calls; **Prisma REST** for the arena and the noise benchmark.
 - **Timbre v3.0 streaming TTS** (WebSocket) with audio tags (`<coughs>`, `<sigh>`, `<laugh>`…), 13 v3 voices; Timbre v2.5 as automatic fallback; Timbre REST for pre-rendered greetings, fillers and call-centre babble.
 - **Gnani voice cloning** (`/voice-clone/embeddings`): used as a **speaker fingerprint** for repeat-caller detection, the ring radar and the AI-voice flag.
-- **Evon v3.3**: supported through the same OpenAI-compatible adapter (`LLM_PROVIDER=evon`, see `docs/EVON-HOSTING.md`), but Evon has no hosted API and needs an 80 GB GPU, so **the demo's dialogue and extraction run on Groq (`qwen/qwen3.8-27b`)**.
+- **Evon v3.3**: supported through the same OpenAI-compatible adapter (`LLM_PROVIDER=evon`, see `docs/EVON-HOSTING.md`), but Evon has no hosted API and needs an 80 GB GPU, so **the demo's dialogue and extraction run on Groq (`qwen/qwen3.8-27b`)**. Our attempt to run Evon on a free Colab T4, with a Groq baseline on the same prompts: [docs/evon-eval.md](docs/evon-eval.md).
 
 ## Measured results
 
