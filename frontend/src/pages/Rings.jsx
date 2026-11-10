@@ -4,48 +4,77 @@ import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
 import { SCAM_TYPE_LABELS } from "../lib/labels";
 
-const W = 800, H = 420;
+const W = 800, H = 440;
 const short = (n) => (n.names?.[0] || n.id.slice(0, 6)).split(" ").slice(0, 2).join(" ");
+const plain = (reason) => String(reason || "").replace(/\s*\([^)]*\)\s*$/, ""); // "same voice (1.00)" -> "same voice"
 
 // pos[id] = [x, y, cx, cy]: node position plus its ring centre (labels and link text go on the outer side)
+const heightOf = (data) => (data.rings.length ? H : 130); // no rings yet: one short row of calls, not a big empty box
+
+// first node angle: 2 calls stacked vertically, even rings turned half a step, so no node sits on the left/right
+// edge where its name would collide with the neighbouring ring
+const startAngle = (n) => (n === 2 ? -Math.PI / 2 : n % 2 === 0 ? -Math.PI / 2 + Math.PI / n : -Math.PI / 2);
+
 function layout(data) {
   const pos = {};
+  const ly = data.rings.length ? H - 55 : 60; // row of calls that are not in a ring
   const rings = data.rings;
   rings.forEach((r, i) => {
-    const cx = (W / (rings.length + 1)) * (i + 1), cy = 165, rad = r.calls.length === 2 ? 110 : 95;
+    const n = r.calls.length;
+    const cx = (W / (rings.length + 1)) * (i + 1), cy = 170, rad = n === 2 ? 105 : 95;
     r.calls.forEach((id, j) => {
-      const a = (2 * Math.PI * j) / r.calls.length + (r.calls.length === 2 ? Math.PI : -Math.PI / 2);
+      const a = (2 * Math.PI * j) / n + startAngle(n);
       pos[id] = [cx + rad * Math.cos(a), cy + rad * Math.sin(a), cx, cy];
     });
   });
   const lone = data.nodes.filter((n) => !n.ring);
-  lone.forEach((n, i) => { const x = (W / (lone.length + 1)) * (i + 1); pos[n.id] = [x, H - 60, x, H - 200]; });
+  lone.forEach((n, i) => {
+    const x = (W / (lone.length + 1)) * (i + 1);
+    // many calls in one row: alternate labels above / below so names don't overlap
+    const flip = lone.length > 5 && i % 2 === 1;
+    pos[n.id] = [x, ly, x, flip ? ly + 140 : ly - 140];
+  });
   return pos;
 }
 
 function Graph({ data }) {
   const pos = layout(data);
   const byId = Object.fromEntries(data.nodes.map((n) => [n.id, n]));
+  const ringOf = {};
+  data.rings.forEach((r, i) => r.calls.forEach((id) => { ringOf[id] = i; }));
+  // rings of 4+ calls: one caption in the middle instead of a label on every link (they would pile up)
+  const big = (i) => i != null && data.rings[i].calls.length > 3;
+  const open = (id) => { window.location.hash = `/app/report?id=${id}`; };
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="ring-graph" role="img" aria-label="Graph of linked scam calls">
+    <svg viewBox={`0 0 ${W} ${heightOf(data)}`} className="ring-graph" role="img" aria-label="Graph of linked scam calls">
       {data.links.map((l, i) => {
+        if (!pos[l.source] || !pos[l.target]) return null;
         const [x1, y1, cx, cy] = pos[l.source], [x2, y2] = pos[l.target];
+        const same = ringOf[l.source] === ringOf[l.target];
         const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, d = Math.hypot(mx - cx, my - cy) || 1;
-        const off = l.source && pos[l.source][2] === pos[l.target][2] && d > 1 ? 16 : 0;
+        const off = same && d > 1 ? 16 : 0;
         const tx = mx + ((mx - cx) / d) * off, ty = (d > 1 ? my + ((my - cy) / d) * off : my - 8) + 4;
         return (
           <g key={i}>
             <line x1={x1} y1={y1} x2={x2} y2={y2} className={`ring-link ${l.kind}`} />
-            <text x={tx} y={ty} className="ring-reason">{l.reason}</text>
+            {!(same && big(ringOf[l.source])) && <text x={tx} y={ty} className="ring-reason">{l.reason}</text>}
           </g>
         );
       })}
+      {data.rings.map((r, i) => {
+        if (!big(i)) return null;
+        const [, , cx, cy] = pos[r.calls[0]];
+        const reasons = [...new Set(data.links.filter((l) => ringOf[l.source] === i && ringOf[l.target] === i).map((l) => plain(l.reason)))];
+        return <text key={`c${i}`} x={cx} y={cy + 4} className="ring-reason ring-caption">{reasons.slice(0, 2).join(" · ")}</text>;
+      })}
       {Object.entries(pos).map(([id, [x, y, , cy]]) => {
         const n = byId[id];
+        if (!n) return null;
         const up = y < cy - 1, r = n.ring ? 16 : 10;
         const y1 = up ? y - r - 22 : y + r + 16, y2 = up ? y - r - 8 : y + r + 31;
         return (
-          <g key={id} className={`ring-node ${n.ring ? "hot" : ""}`} onClick={() => { window.location.hash = `/app/report?id=${id}`; }}>
+          <g key={id} className={`ring-node ${n.ring ? "hot" : ""}`} role="link" tabIndex={0} aria-label={`Report for call ${id.slice(0, 6)} (${short(n)})`}
+            onClick={() => open(id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(id); } }}>
             <circle cx={x} cy={y} r={r} />
             <text x={x} y={y1}>{short(n)}</text>
             {n.synthetic && <text x={x} y={y2} className="ring-synth">AI voice? ({n.synthetic.voice})</text>}
@@ -84,7 +113,8 @@ export default function Rings() {
         <Stat value={`${synth.length}/${d.nodes.filter((n) => n.voiceprint).length}`} label="Voices matching a known AI voice" tone="cyan" />
       </div>
       <Card icon={Network} title="Who is behind the calls" right={<span className="ring-legend"><i className="id" /> same mule ID <i className="voice" /> same voice</span>}>
-        {d.nodes.length ? <Graph data={d} /> : <div className="empty">No calls yet. Run two arena calls with the same scammer voice and different scripts.</div>}
+        {d.nodes.length ? <div className="ring-graph-wrap"><Graph data={d} /></div> : <div className="empty">No calls yet. Run two arena calls with the same scammer voice and different scripts.</div>}
+        {d.nodes.length > 0 && !d.rings.length && <div className="pill-src ring-hint">No links yet: calls join a ring when they share a mule ID or the same voice.</div>}
       </Card>
       <div className="grid g2" style={{ marginTop: 16 }}>
         {d.rings.map((r, i) => (
