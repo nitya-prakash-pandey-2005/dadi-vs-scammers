@@ -66,12 +66,13 @@ def is_meaningful(text: str) -> bool:
 
 
 def is_echo(text: str, recent_agent_lines: list[str], threshold: float = 0.6) -> bool:
-    """True when a transcript is (mostly) the agent's own recent speech picked up by the mic. Compares with each of
-    the last two lines and, for 3+ words, with all the given lines joined (pass the last few seconds of speech)."""
+    """True when a transcript is (mostly) the agent's own recent speech picked up by the mic. Pass the lines she said
+    in the last few seconds: compares with each of them (at most the last 12) and, for 3+ words, with all of them
+    joined (an echo spanning several lines)."""
     t = _norm(text)
     if not t:
         return False
-    for line in recent_agent_lines[-2:]:
+    for line in recent_agent_lines[-12:]:
         a = _norm(line)
         if not a:
             continue

@@ -38,7 +38,7 @@ All audio inside the engine is **PCM16 little-endian mono**. Default sample rate
 - `voice_core.testing.FakeLLM(replies: list[str])`, `FakeStt(events: list[SttEvent])`, `fake_tts(text, **kw)` (two 320-byte chunks), for offline tests
 
 ## `voice_core.turns`
-- `is_meaningful(text) -> bool`, `is_echo(text, recent_agent_lines, threshold=0.6) -> bool` (ignores nukta / chandrabindu spelling variants; checks each of the last two lines, and for 3+ words whether ≥ 80 % of the transcript appears in order in all the given lines joined)
+- `is_meaningful(text) -> bool`, `is_echo(text, recent_agent_lines, threshold=0.6) -> bool` (ignores nukta / chandrabindu spelling variants; checks each given line (pass the last few seconds; at most the last 12 are used), and for 3+ words whether ≥ 80 % of the transcript appears in order in all the given lines joined)
 - `split_sentences(buf) -> (list[str], remainder)` (splits on `. ! ? । ॥ …` or a newline)
 - `TurnBasedStt(api_key, **kw)`: the same `events()` interface as `PrismaStream`, using an energy VAD plus `transcribe_rest`. This is the fallback when the account allows only one active Gnani request at a time.
 

@@ -76,3 +76,11 @@ def test_short_agent_line_inside_a_long_transcript_is_not_echo():
     assert not is_echo("अच्छा मैडम आपका आधार नंबर बताइए", ["अच्छा।"])
     assert not is_echo("haan madam aapka account block hai", ["haan?"])
     assert is_echo("haan beta ek minute ruko zara", ["haan beta ek minute"])  # agent line + a little extra
+
+
+def test_short_echo_of_an_earlier_line_in_the_window():
+    from voice_core.turns import is_echo
+
+    window = ["हाँ बेटा…", "<coughs> रुको ज़रा…", "अभी चश्मा ढूँढ के बताती हूँ।"]  # one reply, split into sentences
+    assert is_echo("हां बेटा", window)
+    assert not is_echo("हाँ हाँ", ["हाँ हाँ, सुन रही हूँ…", "अच्छा बेटा, बताओ।"])
