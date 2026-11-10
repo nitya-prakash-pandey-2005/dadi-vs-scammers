@@ -7,7 +7,7 @@
 ![Gnani Prisma v3.0](https://img.shields.io/badge/Gnani-Prisma_v3.0_STT-ff4d9d)
 ![Gnani Timbre v3.0](https://img.shields.io/badge/Gnani-Timbre_v3.0_TTS-8b5cf6)
 ![Gnani voice cloning](https://img.shields.io/badge/Gnani-voice_cloning_as_fingerprint-22d3ee)
-![Tests](https://img.shields.io/badge/tests-174_passing-34d399)
+![Tests](https://img.shields.io/badge/tests-241_passing-34d399)
 ![Languages](https://img.shields.io/badge/speaks-5_Indian_code--mixed_languages-fbbf24)
 
 **Live demo:** *[live demo link]* &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
@@ -241,7 +241,7 @@ uv run python -m uvicorn dadi.app:create_app --factory --port 8765
 
 ## Tests
 
-`uv run python -m pytest -q` runs **190 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, Guardian mode (risk rules, one warning per level, six languages, `/ws/guard`, browser/backend scoring parity), and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
+`uv run python -m pytest -q` runs **241 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, Guardian mode (risk rules, one warning per level, six languages, `/ws/guard`, browser/backend scoring parity), and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
 
 ## Team
 
