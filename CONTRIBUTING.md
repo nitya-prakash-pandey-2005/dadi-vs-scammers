@@ -83,11 +83,11 @@ CI (`.github/workflows/ci.yml`) runs the same checks on every push and pull requ
 
 We use [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): summary` in the imperative,
 lower case, no full stop. Common types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `ci`. Scopes we use
-include `engine`, `app`, `ui`, `api`, `lint`, `voice-core`, `backend`. Examples:
+include `core` (voice-core), `dadi` (backend), `web` (frontend), `intel`, `tactics`, `arena` and `readme`. Examples:
 
 ```text
-fix(engine): free the Gnani gate when a Timbre stream stalls
-test(backend): evidence pack hashes match the files in the zip
+fix(core): free the Gnani gate when a Timbre stream stalls
+test(dadi): evidence pack hashes match the files in the zip
 docs(api): document the arena benchmark messages
 ```
 
