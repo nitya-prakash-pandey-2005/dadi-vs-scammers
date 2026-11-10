@@ -10,7 +10,7 @@ from .numwords import words_to_digits
 
 _UPI = re.compile(r"(?<![\w.@-])([a-zA-Z0-9][a-zA-Z0-9._-]{1,255}@[a-zA-Z]{2,64})(?![\w@]|\.[a-zA-Z])")
 _IFSC = re.compile(r"\b([A-Za-z]{4}0[A-Za-z0-9]{6})\b")
-_URL = re.compile(r"(https?://\S+|\b[a-z0-9-]+\.(?:com|in|net|org|xyz|top|online|site|app|co|info|live)\b(?:/\S*)?)", re.I)
+_URL = re.compile(r"(https?://\S+|\b[a-z0-9-]+\.(?:com|in|net|org|xyz|top|online|site|app|co|info|live|ly|icu|click|shop|buzz|link|cc|gd|gy)\b(?:/\S*)?)", re.I)
 _DIGIT_GROUPS = re.compile(r"(?:\+?91[\s-]?)?\d+(?:(?:[\s-]|,\s)\d+)*")
 _AMOUNT = re.compile(
     r"(₹\s?[\d,]+(?:\.\d+)?|(?:rs\.?|inr)\s?[\d,]+|[\d,]+(?:\.\d+)?\s?(?:rupees|rupaye|rupay|rs|lakh|lac|crore|hazaar|hazar|thousand|रुपये|रुपए|रुपया|हजार|हज़ार|लाख))",
@@ -39,6 +39,9 @@ def _repair_handle(m: re.Match) -> str:
         hit = difflib.get_close_matches(one + two.lower(), UPI_HANDLES, n=1, cutoff=0.8)
         if hit:
             return "@" + hit[0]
+    prefixed = [h for h in UPI_HANDLES if len(one) >= 2 and h.startswith(one)]
+    if len(prefixed) == 1:
+        return "@" + prefixed[0] + (sep + two if two else "")
     hit = difflib.get_close_matches(one, UPI_HANDLES, n=1, cutoff=0.8)
     return "@" + hit[0] + (sep + two if two else "") if hit else m.group(0)
 

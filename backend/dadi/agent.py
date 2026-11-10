@@ -11,10 +11,10 @@ from .brain import DadiBrain
 from .intel import IntelReport, extract_intel, intel_json
 from .personas import PERSONAS, Persona, persona_for_language
 from .store import Store
-from .tactics import CallState
+from .tactics import CallState, mission_done
 from .taxonomy import SCAM_KEYTERMS
 
-AUTO_STT_HINT = "hi-IN,en-IN,ta-IN,bn-IN"
+AUTO_STT_HINT = "hi-IN,en-IN,ta-IN,bn-IN,kn-IN,te-IN"
 
 
 class DadiAgent:
@@ -66,6 +66,7 @@ class DadiAgent:
             return None
         self.persona = new
         self.brain.persona = new
+        self.brain.story = random.Random(self.seed).choice(new.stories) if new.stories else None
         self.store.set_persona(self.call_id, new.key)
         return {"type": "persona", "persona": new.key, "persona_name": new.name, "city": new.city, "language": code}
 
@@ -91,7 +92,10 @@ class DadiAgent:
         self.intel = await extract_intel(self.intel_llm, history, self.intel)
         self.store.save_intel(self.call_id, self.intel)
         self.state.captured = {k for k in ("upi_ids", "accounts", "phones") if getattr(self.intel, k)}
-        return {"type": "intel", "call_id": self.call_id, "intel": intel_json(self.intel)}
+        data = intel_json(self.intel)
+        self.state.mission_done = self.state.mission_done or mission_done(self.state.mission, data)
+        return {"type": "intel", "call_id": self.call_id, "intel": data,
+                "mission": {"key": self.state.mission, "done": self.state.mission_done} if self.state.mission else None}
 
     async def record(self, turn: Turn) -> None:
         self.store.add_turn(self.call_id, turn)

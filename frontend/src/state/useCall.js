@@ -10,6 +10,7 @@ export function useCall({ onEnded } = {}) {
   const [phase, setPhase] = useState("idle"); // idle | connecting | live | ending | ended
   const [callId, setCallId] = useState(null);
   const [persona, setPersona] = useState(null); // { key, name, city }
+  const [mission, setMission] = useState(null); // { key, done }
   const [turns, setTurns] = useState([]);
   const [intel, setIntel] = useState(null);
   const [stt, setStt] = useState("idle");
@@ -49,6 +50,7 @@ export function useCall({ onEnded } = {}) {
         break;
       case "intel":
         setIntel(m.intel);
+        if (m.mission) setMission((old) => { if (m.mission.done && !old?.done) toast("Mission complete!", "info"); return m.mission; });
         break;
       case "repeat_caller":
         setRepeat(m.match);
@@ -71,10 +73,11 @@ export function useCall({ onEnded } = {}) {
     }
   }, []);
 
-  const start = useCallback(async (personaKey = "auto", noiseDb = null) => {
+  const start = useCallback(async (personaKey = "auto", noiseDb = null, missionKey = null) => {
     if (refs.current.call) return;
     setTurns([]);
     setIntel(null);
+    setMission(missionKey ? { key: missionKey, done: false } : null);
     setRepeat(null);
     setWasted(0);
     setCallId(null);
@@ -88,6 +91,7 @@ export function useCall({ onEnded } = {}) {
     refs.current.call = openCall({
       persona: personaKey,
       noiseSnrDb: noiseDb,
+      mission: missionKey,
       onEvent,
       onAudio: (ab) => player.play(ab),
       onClose: () => {
@@ -126,7 +130,7 @@ export function useCall({ onEnded } = {}) {
     refs.current.player?.close();
   }, []);
 
-  return { phase, callId, persona, turns, intel, repeat, stt, speaking, startedAt, wasted, start, hangup, setNoise, playerLevel, micLevel };
+  return { phase, callId, persona, mission, turns, intel, repeat, stt, speaking, startedAt, wasted, start, hangup, setNoise, playerLevel, micLevel };
 }
 
 export function useNow(active, every = 250) {

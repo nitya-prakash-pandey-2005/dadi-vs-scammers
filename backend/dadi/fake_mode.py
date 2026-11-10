@@ -35,9 +35,12 @@ class CyclingLLM:
     model = "fake"
 
     def __init__(self, lines: list[str]):
+        self._lines = lines
         self._it = itertools.cycle(lines)
 
     async def complete(self, messages, **kw) -> str:
+        if self._lines:  # dialogue LLM: next scripted line; intel LLM (no lines): canned JSON
+            return next(self._it)
         return '{"scam_type": "digital_arrest", "scam_confidence": 0.9, "agencies_claimed": ["CBI"], "names": ["Vijay Rathore"]}'
 
     async def stream(self, messages, **kw):

@@ -4,7 +4,7 @@ import { useApi } from "../lib/api";
 import { PERSONA_HUE, SCAM_TYPE_LABELS, identifierCount, mmss } from "../lib/labels";
 import { Totals } from "../components/WarRoom";
 
-const NAMES = { dadi: "Kamla Devi (Dadi)", paati: "Meenakshi (Paati)", thakuma: "Bela Rani (Thakuma)" };
+const NAMES = { dadi: "Kamla Devi (Dadi)", paati: "Meenakshi (Paati)", thakuma: "Bela Rani (Thakuma)", ajji: "Shantamma (Ajji)", ammamma: "Sarojini (Ammamma)" };
 
 export default function History() {
   const { data: calls, loading, error } = useApi("/api/calls");

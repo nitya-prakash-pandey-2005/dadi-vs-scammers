@@ -35,9 +35,12 @@ from .evidence import CallRecorder, build_evidence_pack, feed_csv, mule_feed
 from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, all_audio, echo_stt, fake_embed, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
+from .checker import check_message
+from .insights import freeze_csv, freeze_list, insights
 from .report import build_report
-from .rings import build_rings, speech_only
+from .rings import build_rings, speech_only, tts_catalog
 from .scammer_scripts import SCAMMER_VOICE
+from .tactics import MISSIONS
 from .store import Store
 from .voicewatch import VoiceWatch
 
@@ -105,6 +108,10 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
         return [{"key": p.key, "name": p.name, "age": p.age, "city": p.city, "language": p.language, "voice": p.voice}
                 for p in PERSONAS.values()]
 
+    @app.get("/api/missions")
+    async def missions():
+        return [{"key": k, "label": v["label"]} for k, v in MISSIONS.items()]
+
     @app.get("/api/totals")
     async def totals():
         return store.totals()
@@ -168,7 +175,30 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
 
     @app.get("/api/rings")
     async def rings():
-        return build_rings(store.list_calls(500), store.voiceprints())
+        return build_rings(store.list_calls(500), store.voiceprints(), catalog=tts_catalog())
+
+    @app.post("/api/check")
+    async def check(body: dict):
+        text = str(body.get("text") or "").strip()
+        if not text:
+            raise HTTPException(400, "text is required")
+        if fake:
+            return await check_message(text, intel_llm=CyclingLLM([]), llm=CyclingLLM(DADI_LINES), calls=store.list_calls(500))
+        return await check_message(text, intel_llm=LLM(settings, purpose="intel"), llm=LLM(settings),
+                                   calls=store.list_calls(500))
+
+    @app.get("/api/insights")
+    async def get_insights():
+        return insights(store.list_calls(500))
+
+    @app.get("/api/freeze-list")
+    async def get_freeze_list(format: str = "json"):
+        calls = store.list_calls(500)
+        rows = freeze_list(calls, build_rings(calls, store.voiceprints()))
+        if format == "csv":
+            return Response(freeze_csv(rows), media_type="text/csv",
+                            headers={"Content-Disposition": "attachment; filename=dadi-freeze-list.csv"})
+        return rows
 
     # ------------------------------------------------------------------ WebSocket call
     @app.websocket("/ws/call")
@@ -203,6 +233,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             await ws.close(code=1008)
             return
         sess, agent = factory(send_json, send_audio, first.get("persona") or "auto")
+        if first.get("mission") in MISSIONS:
+            agent.state.mission = first["mission"]
 
         async def on_repeat_caller(match: dict):
             if hasattr(agent, "recognise"):
@@ -285,6 +317,7 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
                     intel_llm=CyclingLLM([]) if fake else LLM(settings, purpose="intel"),
                     emit=emit, noise=st.babble, persona_key=req.get("persona") or "dadi",
                     scammer_voice=req.get("scammer_voice") or SCAMMER_VOICE, store=store,
+                    mission=req.get("mission") if req.get("mission") in MISSIONS else None,
                     embed_fn=None if fake else voice_embed_fn, **fakes,
                 )
         except (WebSocketDisconnect, RuntimeError):

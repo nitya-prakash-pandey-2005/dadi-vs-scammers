@@ -1,13 +1,13 @@
 // WebSocket client for /ws/call (protocol: backend/dadi/app.py).
 // openCall({ persona, noiseSnrDb, onEvent, onAudio, onClose }) -> { sendAudio, setNoise, hangup, close }
 
-export function openCall({ persona = "auto", noiseSnrDb = null, onEvent, onAudio, onClose } = {}) {
+export function openCall({ persona = "auto", noiseSnrDb = null, mission = null, onEvent, onAudio, onClose } = {}) {
   const proto = window.location.protocol === "https:" ? "wss" : "ws";
   const ws = new WebSocket(`${proto}://${window.location.host}/ws/call`);
   ws.binaryType = "arraybuffer";
   let closed = false;
 
-  ws.onopen = () => ws.send(JSON.stringify({ type: "start", persona, noise_snr_db: noiseSnrDb }));
+  ws.onopen = () => ws.send(JSON.stringify({ type: "start", persona, noise_snr_db: noiseSnrDb, mission }));
   ws.onmessage = (e) => {
     if (typeof e.data === "string") {
       try { onEvent?.(JSON.parse(e.data)); } catch { /* ignore malformed */ }

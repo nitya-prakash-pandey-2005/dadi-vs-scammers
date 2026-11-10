@@ -15,6 +15,17 @@ DISCLAIMER = ("Simulated scam call: scammer played by an actor or our AI. Draft 
 WHERE = ["cybercrime.gov.in", "Helpline 1930", "Sanchar Saathi – Chakshu (sancharsaathi.gov.in)"]
 
 
+CHAKSHU_CATEGORY = {  # suggested Chakshu category per scam type (the reporter picks the final one)
+    "digital_arrest": "Impersonation as Government official / Police",
+    "courier_parcel": "Impersonation as Government official / Police",
+    "kyc_bank_block": "KYC update of bank / electricity / gas / insurance",
+    "electricity_bill": "KYC update of bank / electricity / gas / insurance",
+    "lottery_prize": "Online job / lottery / gift / loan offers",
+    "job_task": "Online job / lottery / gift / loan offers",
+    "investment": "Illegal loan / financial fraud",
+}
+
+
 def _mmss(sec: float) -> str:
     sec = int(round(sec))
     return f"{sec // 60}:{sec % 60:02d}"
@@ -55,4 +66,10 @@ def build_report(call: dict, turns: list[Turn], intel: IntelReport) -> dict:
         ],
         "transcript_excerpt": [{"speaker": t.speaker, "text": t.text, "t": t.t} for t in turns[:12]],
         "where_to_report": WHERE,
+        "chakshu": {
+            "medium": "Call",
+            "category": CHAKSHU_CATEGORY.get(intel.scam_type, "Others"),
+            "date_time": datetime.fromtimestamp(started, tz=timezone.utc).isoformat() if started else None,
+            "description": summary[:1000],
+        },
     }

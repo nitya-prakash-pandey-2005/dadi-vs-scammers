@@ -1,8 +1,9 @@
 // Arena: AI scammer vs AI Dadi over a simulated noisy 8 kHz phone line, plus the Prisma noise benchmark.
 import { useEffect, useRef, useState } from "react";
-import { Activity, AlertTriangle, Bot, Gauge as GaugeIcon, Network, Play, Swords } from "lucide-react";
+import { Activity, AlertTriangle, Bot, Gauge as GaugeIcon, Network, Play, Swords, Target } from "lucide-react";
 import { Badge, Card, Hud, PageHead, Progress, Seg, Stat, toast } from "../ui";
 import { IntelCard, RepeatCaller } from "../components/WarRoom";
+import { MISSION_OPTIONS } from "../components/Phone";
 import SpeechText from "../components/SpeechText";
 import { SCAM_TYPE_LABELS, TACTIC_LABELS, mmss } from "../lib/labels";
 
@@ -11,6 +12,7 @@ const SCAMS = [
   { value: "kyc_bank_block", label: "KYC block" },
   { value: "electricity_bill", label: "Electricity" },
   { value: "lottery_prize", label: "Lottery" },
+  { value: "bot_test", label: "\"Are you a bot?\"" },
 ];
 const NOISE = [
   { value: "off", label: "Clean" },
@@ -43,6 +45,7 @@ export default function Arena() {
   const [noise, setNoise] = useState("10");
   const [turns, setTurns] = useState(6);
   const [voice, setVoice] = useState("Harshad");
+  const [mission, setMission] = useState("");
   const [running, setRunning] = useState(null); // "arena" | "bench" | null
   const [feed, setFeed] = useState([]);
   const [intel, setIntel] = useState(null);
@@ -59,6 +62,7 @@ export default function Arena() {
     if (m.type === "arena_turn") setFeed((f) => [...f, m]);
     else if (m.type === "intel") setIntel(m.intel);
     else if (m.type === "arena_done") setSummary(m.summary);
+    else if (m.type === "mission") toast(`Mission complete in ${m.turn} turns`, "info");
     else if (m.type === "repeat_caller") setRepeat(m.match);
     else if (m.type === "bench_row") setBench((b) => ({ ...b, rows: [...b.rows, m] }));
     else if (m.type === "bench_done") setBench((b) => ({ ...b, bySnr: m.by_snr }));
@@ -68,7 +72,7 @@ export default function Arena() {
   const runArena = () => {
     setFeed([]); setIntel(null); setSummary(null); setRepeat(null); setRunning("arena");
     wsRef.current = openArena(
-      { type: "arena", scam_type: scam, turns, snr_db: noise === "off" ? null : Number(noise), persona: "dadi", scammer_voice: voice },
+      { type: "arena", scam_type: scam, turns, snr_db: noise === "off" ? null : Number(noise), persona: "dadi", scammer_voice: voice, mission: mission || null },
       onEvent, () => setRunning(null));
   };
   const runBench = () => {
@@ -97,6 +101,7 @@ export default function Arena() {
               <label className="field">Scam script<Seg options={SCAMS} value={scam} onChange={setScam} /></label>
               <label className="field">Call-centre noise (SNR)<Seg options={NOISE} value={noise} onChange={setNoise} /></label>
               <label className="field">Scammer's voice (Timbre)<Seg options={VOICES} value={voice} onChange={setVoice} /></label>
+              <label className="field">Dadi's mission<Seg options={MISSION_OPTIONS} value={mission} onChange={setMission} /></label>
               <label className="field">Length<Seg options={TURNS} value={turns} onChange={setTurns} /></label>
               <button className="btn primary block" disabled={!!running} onClick={runArena}>
                 <Play size={16} /> {running === "arena" ? "Call in progress…" : "Start AI-vs-AI call"}
@@ -113,8 +118,17 @@ export default function Arena() {
                 <Stat value={pctTxt(summary.entity_recall_mean)} label="Payment IDs that survived the noisy line" tone="green" />
                 <Stat value={pctTxt(summary.cer_mean)} label="Character error rate (Prisma)" />
                 <Stat value={summary.persona_breaks} label="Times Dadi broke character" tone={summary.persona_breaks ? "rose" : "green"} />
+                {summary.admitted_ai != null && <Stat value={summary.admitted_ai} label="Times Dadi admitted being AI" tone={summary.admitted_ai ? "rose" : "green"} />}
               </div>
               <div className="pill-src" style={{ marginTop: 10 }}>{SCAM_TYPE_LABELS[summary.scam_type] || summary.scam_type} · noise {snrLabel(summary.snr_db)}</div>
+              {summary.mission && (
+                <div className={`mission-pill ${summary.mission_turn ? "done" : ""}`}>
+                  <Target size={15} /> Mission {MISSION_OPTIONS.find((o) => o.value === summary.mission)?.label}: {summary.mission_turn ? `complete in ${summary.mission_turn} turns` : "not completed"}
+                </div>
+              )}
+              {summary.synthetic_voice && (
+                <div className="mission-pill"><Bot size={15} /> Scammer's voice matches the AI voice "{summary.synthetic_voice.voice}" ({summary.synthetic_voice.score}): likely synthetic</div>
+              )}
               {summary.ring_links?.length > 0 && (
                 <a className="ring-alert" href="#/app/rings">
                   <Network size={16} /> Linked to {summary.ring_links.length} earlier call{summary.ring_links.length > 1 ? "s" : ""}: {summary.ring_links.map((l) => l.reason).join(" · ")}

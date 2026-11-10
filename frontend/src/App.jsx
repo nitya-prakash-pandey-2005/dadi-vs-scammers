@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FileText, Network, PhoneCall, Swords } from "lucide-react";
+import { BarChart3, FileText, MessageSquareWarning, Network, PhoneCall, Swords } from "lucide-react";
 import { useRoute } from "./lib/router";
 import AppShell from "./shell/AppShell";
 import { Badge, Toasts } from "./ui";
@@ -10,20 +10,27 @@ import History from "./pages/History";
 import Report from "./pages/Report";
 import Arena from "./pages/Arena";
 import Rings from "./pages/Rings";
+import Intel from "./pages/Intel";
+import Check from "./pages/Check";
 
 const NAV = [
   { group: "Scam line", items: [
     { to: "/app", label: "Live call", short: "Call", icon: PhoneCall, exact: true },
+    { to: "/app/check", label: "Check a message", short: "Check", icon: MessageSquareWarning },
     { to: "/app/history", label: "Calls & reports", short: "Reports", icon: FileText },
+    { to: "/app/intel", label: "Scam intelligence", short: "Intel", icon: BarChart3 },
     { to: "/app/rings", label: "Scam ring radar", short: "Rings", icon: Network },
   ] },
   { group: "Testing", items: [
     { to: "/app/arena", label: "AI-vs-AI arena", short: "Arena", icon: Swords },
   ] },
 ];
+const MOBILE_TABS = NAV.flatMap((g) => g.items).filter((i) => ["/app", "/app/check", "/app/intel", "/app/rings", "/app/arena"].includes(i.to));
 const TITLES = [
   ["/app/report", "Complaint report", "Draft for cybercrime.gov.in / 1930"],
   ["/app/history", "Calls & reports", "Every call Dadi took"],
+  ["/app/check", "Check a message", "SMS, WhatsApp or 'notice'"],
+  ["/app/intel", "Scam intelligence", "For banks, telcos and police"],
   ["/app/rings", "Scam ring radar", "Same mule ID or same voice = same gang"],
   ["/app/arena", "AI-vs-AI arena", "Noisy phone line stress test"],
   ["/app", "Live scam line", "Gnani Prisma + Timbre"],
@@ -63,6 +70,8 @@ export default function App() {
   else if (route.path === "/app/history") page = <History />;
   else if (route.path === "/app/arena") page = <Arena />;
   else if (route.path === "/app/rings") page = <Rings />;
+  else if (route.path === "/app/intel") page = <Intel />;
+  else if (route.path === "/app/check") page = <Check />;
   else page = (
     <CallRoom call={call} personas={personas || []} totals={totals} personaKey={personaKey} setPersonaKey={setPersonaKey} noise={noise} setNoise={setNoise} />
   );
@@ -73,6 +82,7 @@ export default function App() {
         path={route.path}
         brand={{ name: "Dadi vs Scammers", sub: "AI scam-baiter · Gnani", logo: "/icons/icon.svg", href: "#/app" }}
         nav={NAV}
+        mobileTabs={MOBILE_TABS}
         titles={TITLES}
         topRight={<HealthPill health={health} />}
         footer={<div className="pill-src">Built on Gnani AI: Prisma v3.0 (STT) · Timbre v3.0 (TTS) · Evon v3.3 (LLM, when hosted)</div>}

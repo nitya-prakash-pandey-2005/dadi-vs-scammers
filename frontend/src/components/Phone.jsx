@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Headphones, PhoneCall, PhoneOff, ShieldAlert } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Headphones, PhoneCall, PhoneOff, ShieldAlert, Target } from "lucide-react";
 import { Badge, Card, Hud, Seg, hueOf, initials } from "../ui";
 import { DISCLAIMER, MIX_LABEL, PERSONA_HUE, mmss } from "../lib/labels";
 import { useNow } from "../state/useCall";
@@ -18,11 +18,16 @@ const STT_BADGE = {
   reconnecting: ["amber", "Reconnecting…"],
   error: ["rose", "Speech service error"],
 };
-const SHORT = { dadi: "Dadi", paati: "Paati", thakuma: "Thakuma" };
+const SHORT = { dadi: "Dadi", paati: "Paati", thakuma: "Thakuma", ajji: "Ajji", ammamma: "Ammamma" };
 
+export const MISSION_OPTIONS = [
+  { value: "", label: "Free play" }, { value: "upi", label: "UPI" }, { value: "account", label: "Account" },
+  { value: "whatsapp", label: "WhatsApp" }, { value: "identity", label: "Name + badge" },
+];
 export const noiseToDb = (v) => (v === "off" ? null : Number(v));
 
 export default function Phone({ call, personas, personaKey, setPersonaKey, noise, setNoise }) {
+  const [mission, setMission] = useState("");
   const live = ["connecting", "live", "ending"].includes(call.phase);
   const now = useNow(live);
   const elapsed = live && call.startedAt ? (now - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
@@ -91,10 +96,21 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
           <PhoneOff size={18} /> {call.phase === "ending" ? "Hanging up…" : "Hang up"}
         </button>
       ) : (
-        <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise))}>
+        <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null)}>
           <PhoneCall size={18} /> Call {personaKey === "auto" ? "Dadi" : SHORT[personaKey] || "Dadi"}
         </button>
       )}
+
+      {call.mission && (
+        <div className={`mission-pill ${call.mission.done ? "done" : ""}`}>
+          <Target size={15} /> Mission: {MISSION_OPTIONS.find((o) => o.value === call.mission.key)?.label} · {call.mission.done ? "complete" : "in progress"}
+        </div>
+      )}
+
+      <div className="field">
+        <span>Dadi's mission</span>
+        <div className={live ? "locked" : ""}><Seg options={MISSION_OPTIONS} value={mission} onChange={setMission} /></div>
+      </div>
 
       <div className="field">
         <span>Who picks up</span>

@@ -1,16 +1,21 @@
 """Scam Ring Radar: links calls that share a mule ID (UPI, phone, account) or the same scammer voice.
 
-The voice fingerprint is Gnani's voice-clone speaker embedding (768-d). Live check, 8 Nov, 8 kHz phone band:
-same voice on different sentences 0.93-0.95 cosine, different voices <= 0.63.
+The voice fingerprint is Gnani's voice-clone speaker embedding (768-d). Live checks, 8 Nov, 8 kHz phone band:
+same voice, same line conditions 0.93-0.96; different clean Timbre voices up to 0.777 (Shubham/Yashraj);
+same voice across clean vs 10 dB-noise conditions only 0.76-0.80, but still the top match (6/6).
 """
 
 from __future__ import annotations
 
 import base64
+import json
+from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 
-VOICE_MATCH = 0.8
+VOICE_MATCH = 0.85
+SYNTH_FLOOR, SYNTH_MARGIN = 0.75, 0.05
 ID_KINDS = {"upi_ids": "UPI", "phones": "phone", "accounts": "account"}
 
 
@@ -30,11 +35,27 @@ def speech_only(pcm16: bytes, sr: int, *, frame_ms: int = 30, max_s: float = 25.
     return keep.reshape(-1)[: int(max_s * sr)].astype("<i2").tobytes()
 
 
+@lru_cache(maxsize=1)
+def tts_catalog() -> dict[str, np.ndarray]:
+    """Fingerprints of the 13 Timbre v3.0 voices (scripts/build_tts_voiceprints.py)."""
+    data = json.loads((Path(__file__).parent / "data" / "tts_voiceprints.json").read_text())
+    return {k: np.frombuffer(base64.b64decode(b), "<f4") for k, b in data["voices"].items()}
+
+
+def synthetic_voice(vec: np.ndarray, catalog: dict[str, np.ndarray]) -> dict | None:
+    """A known TTS voice that is clearly the closest match, else None. Catalogue match only, not deepfake detection."""
+    ranked = sorted(((_cos(vec, v), k) for k, v in catalog.items() if len(v) == len(vec)), reverse=True)
+    if len(ranked) < 2 or ranked[0][0] < SYNTH_FLOOR or ranked[0][0] - ranked[1][0] < SYNTH_MARGIN:
+        return None
+    return {"voice": ranked[0][1], "score": round(ranked[0][0], 3)}
+
+
 def _cos(a: np.ndarray, b: np.ndarray) -> float:
     return float(a @ b / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-9))
 
 
-def build_rings(calls: list[dict], prints: dict[str, np.ndarray], threshold: float = VOICE_MATCH) -> dict:
+def build_rings(calls: list[dict], prints: dict[str, np.ndarray], threshold: float = VOICE_MATCH,
+                catalog: dict[str, np.ndarray] | None = None) -> dict:
     """calls: [{id, intel}] -> {nodes, links: [{source, target, reason, kind}], rings: [{calls, aliases, ids, scam_types}]}."""
     ids = {c["id"]: {(k, str(v).lower()) for k in ID_KINDS for v in (c.get("intel") or {}).get(k, [])} for c in calls}
     links = []
@@ -76,6 +97,7 @@ def build_rings(calls: list[dict], prints: dict[str, np.ndarray], threshold: flo
     rings.sort(key=lambda r: -len(r["calls"]))
     ring_of = {cid: n for n, r in enumerate(rings, 1) for cid in r["calls"]}
     nodes = [{"id": c["id"], "ring": ring_of.get(c["id"]), "voiceprint": c["id"] in prints,
+              "synthetic": synthetic_voice(prints[c["id"]], catalog) if catalog and c["id"] in prints else None,
               "names": (c.get("intel") or {}).get("names", []), "scam_type": (c.get("intel") or {}).get("scam_type"),
               "ids": sorted(v for _, v in ids[c["id"]])} for c in calls]
     return {"nodes": nodes, "links": links, "rings": rings}

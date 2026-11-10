@@ -32,7 +32,7 @@ def app_client(tmp_path):
 def test_health_and_personas(app_client):
     h = app_client.get("/api/health")
     assert h.status_code == 200 and "gnani_key" in h.json()
-    assert {p["key"] for p in app_client.get("/api/personas").json()} == {"dadi", "paati", "thakuma"}
+    assert {p["key"] for p in app_client.get("/api/personas").json()} == {"dadi", "paati", "thakuma", "ajji", "ammamma"}
     assert app_client.get("/api/totals").json()["calls"] == 0
 
 
@@ -79,6 +79,18 @@ def test_ws_arena_fake_mode(tmp_path, monkeypatch):
                 break
         assert sum(1 for m in msgs if m["type"] == "arena_turn") == 4
         assert msgs[-1]["type"] == "arena_done"
+
+
+def test_intelligence_routes(app_client):
+    assert app_client.get("/api/insights").json()["calls"] == 0
+    assert app_client.get("/api/freeze-list").json() == []
+    r = app_client.get("/api/freeze-list?format=csv")
+    assert r.status_code == 200 and r.text.startswith("kind,id,bank") and "attachment" in r.headers["content-disposition"]
+    assert app_client.get("/api/rings").json()["rings"] == []
+
+
+def test_check_route_needs_text(app_client):
+    assert app_client.post("/api/check", json={"text": " "}).status_code == 400
 
 
 def test_second_call_from_the_same_voice_is_flagged_live(tmp_path):

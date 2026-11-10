@@ -20,8 +20,14 @@ The plan with the exact interfaces and tests is in `docs/04-build-plan.md`.
 | 10 | Arena: AI vs AI and noise benchmark (P1) | CL | main | done (live run pending keys) |
 | 11 | README, interview prep, demo and post kit | CL | main | interview prep + demo kit done; README pending results |
 | R | Scam Ring Radar: link calls by mule ID or voice fingerprint (Gnani clone embedding) | TM | feat/tm-dadi-live | done, live-tested |
+| I | Intel board + freeze-list CSV + Chakshu fields | TM | dilavesh | done |
+| C | Scam message checker (SMS/WhatsApp/notice) | TM | dilavesh | done, live-tested |
+| M | Mission mode (UPI/account/WhatsApp/identity) | TM | dilavesh | done, live-tested |
+| B | "Are you a bot?" arena script + AI-admission metric | TM | dilavesh | done, live-tested |
+| V | AI-voice flag (Timbre voice catalogue) | TM | dilavesh | done, live-tested |
 | E | Host Evon (`docs/EVON-HOSTING.md`) | TM | feat/tm-evon | todo |
 
 ## Log
 - Sun 8 Nov 10:30: repo skeleton, docs and playbook (CL).
 - Sun 8 Nov 17:40: arena live run, UPI/number fixes, Scam Ring Radar (TM).
+- Sun 8 Nov 20:10: competitor gap analysis (docs/07); intel board, message checker, mission mode, bot test, AI-voice flag (TM, branch dilavesh).

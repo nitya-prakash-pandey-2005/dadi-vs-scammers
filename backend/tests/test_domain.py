@@ -59,6 +59,8 @@ def test_find_entities_repairs_misheard_upi_handles():
     # Prisma at 10 dB heard "@okaxis" as "@okax.in" (live arena, 8 Nov)
     assert find_entities("transfer kar do rathore.cbi@okax.in")["upi_ids"] == ["rathore.cbi@okaxis"]
     assert find_entities("bhejo vijay99 at the rate ok sbi")["upi_ids"] == ["vijay99@oksbi"]
+    assert find_entities("turant bijli.office@pa। A white")["upi_ids"] == ["bijli.office@paytm"]  # cut short
+    assert find_entities("vijay@ok pe bhejo")["upi_ids"] == ["vijay@ok"]  # ambiguous prefix: left alone
     e = find_entities("mail boss@gmail.com, site fedex-help.in")
     assert e["upi_ids"] == [] and "fedex-help.in" in e["urls"]
 
@@ -95,11 +97,14 @@ def test_moves_do_not_repeat_within_three():
 
 
 def test_personas_and_language():
-    assert set(PERSONAS) == {"dadi", "paati", "thakuma"}
+    assert set(PERSONAS) == {"dadi", "paati", "thakuma", "ajji", "ammamma"}
     for p in PERSONAS.values():
         assert len(p.fillers) >= 6 and p.greeting and p.voice
     assert persona_for_language("ta-IN").key == "paati"
     assert persona_for_language("bn-IN").key == "thakuma"
+    assert persona_for_language("kn-IN").key == "ajji" and persona_for_language("te-IN").key == "ammamma"
+    assert words_to_digits("ಒಂಬತ್ತು ಎಂಟು ಏಳು ಆರು") == "9876" and words_to_digits("తొమ్మిది ఎనిమిది ఏడు ఆరు") == "9876"
+    assert words_to_digits("೯೮ ౭౬") == "9876"
     assert persona_for_language(None).key == "dadi"
 
 
@@ -107,3 +112,18 @@ def test_taxonomy():
     assert "digital_arrest" in SCAM_TYPES and "other" in SCAM_TYPES
     assert "threat_of_arrest" in RED_FLAGS
     assert 10 <= len(SCAM_KEYTERMS) <= 40
+
+
+def test_mission_steers_tactics_until_done():
+    from dadi.tactics import MISSIONS, mission_done
+    rng = random.Random(0)
+    st = CallState(mission="account")
+    moves = []
+    for _ in range(8):
+        t = next_tactic(st, rng)
+        moves.append(t.move)
+        st.recent_moves.append(t.move)
+        st.turn += 1
+    assert moves.count("ask_account_ifsc") >= 3 and moves[0] != "ask_account_ifsc"  # still confused at first
+    assert "account" in MISSIONS and mission_done("account", {"accounts": ["123456789012"]})
+    assert not mission_done("identity", {"upi_ids": ["a@ybl"]}) and mission_done("identity", {"names": ["Rahul"]})
