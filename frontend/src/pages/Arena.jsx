@@ -6,6 +6,8 @@ import { IntelCard, RepeatCaller } from "../components/WarRoom";
 import { MISSION_OPTIONS } from "../components/Phone";
 import SpeechText from "../components/SpeechText";
 import { SCAM_TYPE_LABELS, TACTIC_LABELS, mmss } from "../lib/labels";
+import { DEMO, hasDemoFile } from "../demo";
+import { DemoSocket } from "../demo/DemoSocket";
 
 const SCAMS = [
   { value: "digital_arrest", label: "Digital arrest" },
@@ -27,12 +29,15 @@ const VOICES = [
   { value: "Yashraj", label: "Yashraj" },
 ];
 const TURNS = [{ value: 4, label: "4 turns" }, { value: 6, label: "6 turns" }, { value: 8, label: "8 turns" }];
+// demo build: the benchmark replays only if a run was recorded (public/demo/ws-bench.json)
+const BENCH_OFF = DEMO && !hasDemoFile("/demo/ws-bench.json");
 const pctTxt = (v) => (v == null ? "–" : `${Math.round(v * 100)}%`);
 const snrLabel = (s) => (s == null ? "Clean" : `${s} dB`);
 
 function openArena(payload, onEvent, onDone) {
   const proto = window.location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${window.location.host}/ws/arena`);
+  const url = `${proto}://${window.location.host}/ws/arena`;
+  const ws = DEMO ? new DemoSocket(url) : new WebSocket(url); // demo: replays a recorded run
   ws.onopen = () => ws.send(JSON.stringify(payload));
   ws.onmessage = (e) => { try { onEvent(JSON.parse(e.data)); } catch { /* ignore */ } };
   ws.onerror = () => onEvent({ type: "error", message: "Could not reach the Dadi server" });
@@ -106,6 +111,7 @@ export default function Arena() {
               <button className="btn primary block" disabled={!!running} onClick={runArena}>
                 <Play size={16} /> {running === "arena" ? "Call in progress…" : "Start AI-vs-AI call"}
               </button>
+              {DEMO && <div className="pill-src">Demo: replays one run recorded on Gnani's live servers, whatever you pick above.</div>}
             </div>
           </Card>
 
@@ -169,12 +175,13 @@ export default function Arena() {
           </Card>
 
           <Card icon={GaugeIcon} title="Noise benchmark: can Prisma still hear the UPI ID?"
-            right={<button className="btn sm" disabled={!!running} onClick={runBench}>{running === "bench" ? "Running…" : "Run benchmark"}</button>}>
+            right={<span title={BENCH_OFF ? "The benchmark runs live on Gnani: run Dadi locally with your own keys" : undefined}>
+              <button className="btn sm" disabled={!!running || BENCH_OFF} onClick={runBench}>{running === "bench" ? "Running…" : "Run benchmark"}</button></span>}>
             <div className="small text-2" style={{ marginBottom: 12 }}>
               6 scam lines containing UPI IDs and phone numbers, spoken by Timbre, played through an 8 kHz phone band with
               call-centre babble at each noise level, transcribed by Prisma v3.0. Uses about 30 short Gnani requests (audio is cached).
             </div>
-            {!bench.rows.length && !bench.bySnr && <div className="empty">No benchmark run yet.</div>}
+            {!bench.rows.length && !bench.bySnr && <div className="empty">{BENCH_OFF ? "Not in this online demo: the benchmark sends 30 clips to Gnani live. Run Dadi locally with your own keys to try it." : "No benchmark run yet."}</div>}
             {bench.rows.length > 0 && !bench.bySnr && <Hud tone="cyan">{bench.rows.length} / 30 clips transcribed…</Hud>}
             {bench.bySnr && (
               <div className="list">

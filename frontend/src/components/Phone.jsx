@@ -3,6 +3,7 @@ import { AlertTriangle, Headphones, PhoneCall, PhoneOff, ShieldAlert, Speaker, T
 import { Badge, Card, Hud, Seg, Toggle, hueOf, initials } from "../ui";
 import { DISCLAIMER, MIX_LABEL, PERSONA_HUE, mmss } from "../lib/labels";
 import { useNow } from "../state/useCall";
+import { DEMO } from "../demo";
 
 const NOISE_OPTIONS = [
   { value: "off", label: "Off" },
@@ -106,6 +107,10 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
         <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null, { speakerphone: speaker })}>
           <PhoneCall size={18} /> Call {personaKey === "auto" ? "Dadi" : SHORT[personaKey] || "Dadi"}
         </button>
+      )}
+
+      {DEMO && call.phase === "idle" && (
+        <span className="pill-src demo-call-note">Demo: replays one real call recorded on Gnani's live servers, with its audio. No microphone needed; turn your sound on.</span>
       )}
 
       {live && call.stt === "error" && (

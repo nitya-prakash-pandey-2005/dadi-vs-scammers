@@ -10,10 +10,11 @@
 //   topRight={<YourButtons />}    // optional; right side of the top bar
 //   footer={<YourSidebarFooter />} // optional; bottom of the sidebar
 //   fab={{ label: "Demo", icon: FlaskConical, onClick }} // optional floating button
+//   banner={<Notice />}           // optional; slim bar above the top bar
 // >{page}</AppShell>
 import { Hud } from "../ui";
 
-export default function AppShell({ path, brand, nav, titles = [], mobileTabs, topRight, footer, fab, children }) {
+export default function AppShell({ path, brand, nav, titles = [], mobileTabs, topRight, footer, fab, banner, children }) {
   const active = (it) => (it.exact ? path === it.to : path === it.to || path.startsWith(it.to + "/"));
   const [title, sub] = (titles.find(([p]) => path === p || path.startsWith(p + "/")) || [null, brand?.name, ""]).slice(1);
   const tabs = (mobileTabs || nav.flatMap((g) => g.items)).slice(0, 5);
@@ -40,6 +41,7 @@ export default function AppShell({ path, brand, nav, titles = [], mobileTabs, to
       </aside>
 
       <div className="main">
+        {banner}
         <header className="topbar">
           <a href={brand?.href || "#/"} className="mobile-only" aria-label={brand?.name}>{brand?.logo && <img src={brand.logo} width="30" height="30" alt="" />}</a>
           <div className="title grow"><b>{title}</b><span>{sub}</span></div>

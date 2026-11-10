@@ -1,13 +1,11 @@
 // Scam Message Checker: paste a suspicious SMS / WhatsApp / "notice", get a verdict and a Dadi reply to bait the sender.
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Copy, MessageSquareWarning, Network, Search, Share2, ShieldAlert, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, Info, MessageSquareWarning, Network, Search, Share2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Badge, Card, PageHead, toast } from "../ui";
+import { postJSON } from "../lib/api";
+import { SAMPLES } from "../lib/checkSamples";
+import { REPO_URL } from "../demo";
 
-const SAMPLES = [
-  { label: "Digital arrest (Hinglish)", text: "CBI Mumbai: aapke Aadhaar se ek parcel mein drugs mile hain. Aap digital arrest mein hain, kisi ko mat batana. Jaanch ke liye turant 50,000 rupaye safe account rathore.cbi@okaxis par bhejo." },
-  { label: "Bijli kat jayegi (Hindi)", text: "प्रिय उपभोक्ता, आपका बिजली कनेक्शन आज रात 9:30 बजे काट दिया जाएगा क्योंकि पिछला बिल अपडेट नहीं है। तुरंत बिजली अधिकारी से 98765 43210 पर संपर्क करें।" },
-  { label: "KYC block (Tamil)", text: "உங்கள் SBI கணக்கு இன்று முடக்கப்படும். KYC update செய்ய இந்த link-ஐ click செய்யுங்கள்: sbi-kyc-update.top மற்றும் OTP-ஐ பகிருங்கள்." },
-];
 const VERDICT = {
   scam: { tone: "rose", icon: ShieldAlert, text: "Scam. Do not pay, do not reply with real details." },
   suspicious: { tone: "amber", icon: AlertTriangle, text: "Suspicious. Check with the real organisation first." },
@@ -24,13 +22,12 @@ export default function Check() {
   const run = async () => {
     setBusy(true); setR(null);
     try {
-      const res = await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-      if (!res.ok) throw new Error(await res.text());
-      setR(await res.json());
+      setR(await postJSON("/api/check", { text }));
     } catch { toast("Could not check the message", "warn"); }
     setBusy(false);
   };
   const v = r && VERDICT[r.verdict];
+  const note = r?.demo_note; // demo build: free text has no recorded verdict
 
   return (
     <>
@@ -51,7 +48,19 @@ export default function Check() {
         </div>
         <div className="span-7 stack">
           {!r && <Card icon={ShieldCheck} title="Result"><div className="empty">Paste a message or pick a sample.</div></Card>}
-          {r && (
+          {note && (
+            <Card icon={Info} title="Try a sample message in this demo">
+              <div className="stack" style={{ gap: 10 }}>
+                <p className="text-2">
+                  This online demo replays verdicts recorded from the live backend, so it can check the sample
+                  messages. Pick one of them. To check any message, run Dadi locally with your own keys.
+                </p>
+                <div className="chips">{SAMPLES.map((s) => <button key={s.label} className="btn sm" onClick={() => { setText(s.text); setR(null); }}>{s.label}</button>)}</div>
+                <a className="btn sm" href={REPO_URL} target="_blank" rel="noreferrer">How to run it locally (GitHub)</a>
+              </div>
+            </Card>
+          )}
+          {r && !note && (
             <>
               <Card icon={v.icon} title={v.text} className={r.verdict === "scam" ? "bad" : r.verdict === "no_signs" ? "good" : ""}
                 right={<Badge tone={v.tone}>{r.scam_type_label}</Badge>}>

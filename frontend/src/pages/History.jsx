@@ -3,6 +3,7 @@ import { Avatar, Badge, Card, PageHead } from "../ui";
 import { useApi } from "../lib/api";
 import { PERSONA_HUE, SCAM_TYPE_LABELS, identifierCount, mmss } from "../lib/labels";
 import { Totals } from "../components/WarRoom";
+import ApiLink from "../components/ApiLink";
 
 const NAMES = { dadi: "Kamla Devi (Dadi)", paati: "Meenakshi (Paati)", thakuma: "Bela Rani (Thakuma)", ajji: "Shantamma (Ajji)", ammamma: "Sarojini (Ammamma)" };
 
@@ -15,7 +16,7 @@ export default function History() {
         kicker="Calls & reports"
         title="Every scam call Dadi took"
         sub="Open any call for its complaint draft, recording and evidence pack."
-        right={<a className="btn sm" href="/api/feed/mule-ids.csv" download><Download size={15} /> Mule-ID feed for banks (CSV)</a>}
+        right={<ApiLink className="btn sm" href="/api/feed/mule-ids.csv" download><Download size={15} /> Mule-ID feed for banks (CSV)</ApiLink>}
       />
       <div className="grid">
         <Totals totals={totals} />

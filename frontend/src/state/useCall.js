@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPcmPlayer, startMic } from "@voice/index.js";
 import { openCall } from "../net/callSocket";
 import { toast } from "../ui";
+import { DEMO, DEMO_CALL_AUDIO } from "../demo";
+import { createDemoPlayer } from "../demo/demoPlayer";
 
 const RATE = 8000; // phone-quality audio both ways (Prisma is trained on 8 kHz calls)
 
@@ -92,7 +94,8 @@ export function useCall({ onEnded } = {}) {
     setStt("connecting");
     setPhase("connecting");
     refs.current.player?.close();
-    const player = createPcmPlayer({ sampleRate: RATE }); // created inside the click, so audio is allowed
+    // created inside the click, so audio is allowed (demo: the real recording of the replayed call)
+    const player = DEMO ? createDemoPlayer(DEMO_CALL_AUDIO) : createPcmPlayer({ sampleRate: RATE });
     refs.current.player = player;
     const t0 = Date.now();
     const session = { live: true, started: false, sock: null };
@@ -105,7 +108,10 @@ export function useCall({ onEnded } = {}) {
       speakerphone,
       onEvent: (m) => {
         if (!current()) return;
-        if (m.type === "session_started") session.started = true;
+        if (m.type === "session_started") {
+          session.started = true;
+          player.start?.(); // demo: the recording starts with the call (t = 0)
+        }
         if (m.type === "call_ended") session.live = false;
         // after hang-up the server may still send intel/turns (up to ~3 s) before call_ended: keep those, but Dadi
         // must not start "speaking" again
@@ -131,6 +137,7 @@ export function useCall({ onEnded } = {}) {
         });
       },
     });
+    if (DEMO) return; // a replay needs no microphone (and must never ask for one)
     let mic;
     try {
       mic = await startMic({ targetRate: RATE, onFrame: (ab) => { if (current() && session.live) session.sock.sendAudio(ab); } });
@@ -150,6 +157,7 @@ export function useCall({ onEnded } = {}) {
   const hangup = useCallback(() => {
     stopMic();
     refs.current.player?.flush();
+    refs.current.player?.stop?.(); // demo recording
     setSpeaking(false);
     const s = refs.current.call;
     if (s?.live) {
