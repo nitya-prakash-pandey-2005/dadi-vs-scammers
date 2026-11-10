@@ -190,7 +190,10 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
 .ring-node:focus-visible { outline: none; }
 .ring-node:focus-visible circle { stroke: var(--cyan); stroke-width: 4; }
 @media (max-width: 900px) {
-  table.freeze a { display: inline-block; padding: 8px 2px; }
+  /* the table scrolls inside its card; wide enough columns keep rows short */
+  table.freeze a { display: inline-block; padding: 6px 3px; }
+  table.freeze td:nth-child(5) { min-width: 220px; }
+  table.freeze td:nth-child(6) { min-width: 120px; }
 }
 @media (max-width: 600px) {
   .list > button.li .s { white-space: normal; }
@@ -212,3 +215,6 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
 /* icons inside buttons never get squeezed to a dot when a button row is tight (report header on phones) */
 .btn svg { flex: none; }
 .page-head .row { flex-wrap: wrap; }
+/* freeze list: bank icon stays on the line with the bank name */
+table.freeze td:nth-child(3) { white-space: nowrap; }
+table.freeze td svg { display: inline-block; vertical-align: -2px; margin-right: 4px; }
