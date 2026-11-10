@@ -20,7 +20,7 @@
 
 ## Contents
 
-[She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
+[She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Guardian mode](#guardian-mode) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
 
 ## She remembers him
 
@@ -62,7 +62,21 @@ Blocking a scam call costs the scammer nothing: he dials the next number. **Rout
 | **Scam Ring Radar** | Links calls that share a mule ID **or the same voice**: two "different officers" with different scripts and numbers turn out to be one gang. A known-TTS-voice catalogue also flags callers who use an AI voice. |
 | **Bank freeze list** | All mule IDs across calls, with first/last seen, aliases, scam types and ring, as CSV/JSON for a bank's fraud team or I4C. |
 | **Check a message** | Paste an SMS/WhatsApp "notice" in any script: verdict, red flags, IDs, the true fact, and a Dadi reply that baits the sender. |
+| **Guardian mode** | Protects a real elder on her own call: she puts it on speaker next to the Guardian page, Prisma transcribes the caller, a rule-based score (0–100, no LLM) rises with each red flag, and Timbre calmly warns her in her language at "be careful" (40) and "stop" (70), once each. Then: "Alert my family" (WhatsApp/SMS) and report on 1930 / cybercrime.gov.in. [More below](#guardian-mode). |
 | **Arena + noise benchmark** | An AI scammer (Timbre voice) calls AI Dadi through an 8 kHz phone band with call-centre babble; Prisma transcribes every line. Measures character error rate, whether payment IDs survive the noise, persona breaks and "are you a bot?" admissions. |
+
+## Guardian mode
+
+Dadi wastes a scammer's time on a decoy line. **Guardian protects the person he actually calls.** An elder puts a suspicious call on speaker next to a phone or laptop running the Guardian page (*Scam line → Guardian*). Guardian runs on the same voice engine (Prisma hears, Timbre speaks) but never speaks to the caller and stores nothing (no call row, no recording, no voiceprint):
+
+- **Live risk score, 0–100**, updated on every caller turn by fixed rules (`backend/dadi/guardian.py`, instant and free, no LLM): impersonating police/CBI/bank (+30), arrest threat (+30), secrecy (+25), "safe account" transfer (+35), remote-access app (+35), OTP/PIN ask (+35), Aadhaar/PAN (+15), urgency (+10), a UPI ID or account number to pay into (+25). Each flag counts once and they combine with diminishing returns (`100 × (1 − Π(1 − w/100))`), so every reason shows the points it really added ("+21: threatens arrest or a criminal case · heard "drugs"").
+- **Spoken warnings to her**, from a fixed, approved set in Hindi, Tamil, Bengali, Kannada, Telugu and English, e.g. "रुकिए। CBI या पुलिस कभी फ़ोन पर पैसे नहीं माँगती। फ़ोन काट दीजिए।" Each level is said once; a warning is never cut off by the caller (voice-core's new `listen_only` agent flag: no fillers, no fallback lines, no barge-in).
+- **Family alert and reporting:** at "stop", one tap opens WhatsApp or SMS with a short message for the family, next to "Report on 1930" and cybercrime.gov.in.
+- **Demo build:** "Play a recorded call" replays the caller's side of the call recorded on Gnani's live servers through the same rules in the browser (`frontend/src/lib/guardian.js`; the rules JSON is shared and a test runs both scorers on the same lines and checks they agree). The demo shows the warnings as text; the live app speaks them with Timbre.
+
+Tested with fakes and the replay (`backend/tests/test_guardian.py`: scoring and explanations, one warning per level, all six warning sets, the agent through `VoiceAgentSession`, `/ws/guard` end to end, web/backend parity). It has not yet been tried on a real elder's call.
+
+<img src="docs/screenshots/dadi/guardian-demo-1440.png" alt="Guardian replaying the recorded call: risk 91 of 100, stop, two warnings spoken in Hindi, eight reasons with points" width="900">
 
 ## Screens
 
@@ -201,6 +215,7 @@ On Gnani's live servers; details in [`docs/test-log.md`](docs/test-log.md).
 
 | Next step | What exists today | Why it matters |
 |---|---|---|
+| **Guardian on the elder's own phone** | Guardian works today as a web page next to a call on speaker; the score and warnings are rules (tested with fakes and a recorded call). | Elders will not open a laptop during a scary call. An Android call-screening companion (with consent) could run the same rules on the call itself and alert the family automatically. |
 | **A real phone line** | A Twilio Media Streams and Exotel Voicebot bridge is prototyped on branch `feat/cl-phone-line` (G.711 mu-law codec, 20 ms frames, "clear" on barge-in, one call runner shared with the browser call, its own tests). Not merged yet. | Scammers call phones, not browsers. A number people can forward a suspected scam call to is the product. |
 | **Evon v3.3 for extraction** | The adapter already speaks to Evon (`LLM_PROVIDER=evon`); `docs/EVON-HOSTING.md` has the hosting recipe (vLLM on an 80 GB GPU, or a 4-bit GGUF on 24 GB). | The full Gnani stack (Prisma hears, Evon thinks, Timbre speaks), and no free-tier cap: Groq's 1,000 output tokens per minute forced us to run the intel LLM at most every 30 s. |
 | **Telecom routing of flagged calls** | Operators already label suspected spam on the network. | Labelling still leaves the scammer free to call the next person. With the subscriber's consent, a flagged call could be offered to Dadi instead, under DoT/TRAI rules. |
@@ -226,7 +241,7 @@ uv run python -m uvicorn dadi.app:create_app --factory --port 8765
 
 ## Tests
 
-`uv run python -m pytest -q` runs **174 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
+`uv run python -m pytest -q` runs **190 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, Guardian mode (risk rules, one warning per level, six languages, `/ws/guard`, browser/backend scoring parity), and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
 
 ## Team
 

@@ -30,8 +30,8 @@ All under `frontend/public/demo/` (copied to `/demo/` in the build):
 
 | File | Used for |
 | --- | --- |
-| `ws-call.json` | "Call Dadi": the recorded `/ws/call` messages, `[{ "t": seconds, "msg": {...} }]` |
-| `call.wav` | the real recording of that same call (stereo, starts with `session_started`) |
+| `ws-call.json` | "Call Dadi": the recorded `/ws/call` messages, `[{ "t": seconds, "msg": {...} }]`. Guardian's "Play a recorded call" also reads it: only the scammer's `turn` lines, scored in the browser by `frontend/src/lib/guardian.js` (no `/ws/guard` replay) |
+| `call.wav` | the real recording of that same call (stereo, starts with `session_started`); Guardian plays only its left channel (the caller) at real-time speed |
 | `ws-arena.json` | "Start AI-vs-AI call": a recorded `/ws/arena` run (`arena_turn`, `intel`, `repeat_caller`, `arena_done`) |
 | `ws-bench.json` | optional: a recorded noise benchmark; without it the button is disabled with a note |
 | `api/...` | REST snapshots: health, personas, calls, reports, rings, insights, freeze list, CSV feeds, recordings, evidence packs, checker verdicts for the sample messages |
