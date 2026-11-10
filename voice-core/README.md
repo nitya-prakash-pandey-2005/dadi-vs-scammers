@@ -59,6 +59,7 @@ async def record(self, turn: Turn) -> None                            # persiste
 ```
 `VoiceAgentSession(agent, *, send_json, send_audio, settings, stt_factory=None, tts_fn=None, filler_audio=None, noise=None, rng=None, filler_delay=0.25, reconnect_delays=(0.5, 1, 2, 4, 8), first_sentence_timeout=8.0, hangup_grace=3.0, half_duplex=False, stable_after=10.0)`:
 - `start()`, `on_audio(pcm16)`, `set_noise(snr_db | None)`, `hangup() -> {"session_seconds": float}`, `.started_at`
+- `filler_audio` (text -> PCM16) is used by reference: an app may fill the same dict in place after the session started (warm-up).
 - `half_duplex=True` (speakerphone / laptop speakers; settable as `.half_duplex` before `start()`): `speech_start` never barges in, `processing` is ignored while the agent is busy and for 0.8 s after her audio ends, and only a transcript that is not echo interrupts her. Echo is checked against everything the agent said in the last 8 s (longer while audio is still queued). Default `False` = earphones, full-duplex barge-in.
 - `hangup()` stops speech and STT at once, then waits up to `hangup_grace` (default 3 s) for pending `on_user_turn` analysis (its event is still sent) before `agent.end()` and `session_ended`; `session_seconds` excludes that wait.
 - Sends JSON events: `session_started`, `turn` {speaker, text, t, lang, latency_ms}, `agent_speaking` {on}, `stop_audio`, `status` {stt: connected|reconnecting|error}, `session_ended`, plus whatever `on_user_turn` returns. Sends binary PCM16 for agent speech.

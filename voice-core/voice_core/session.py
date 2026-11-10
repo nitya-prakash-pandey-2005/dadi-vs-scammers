@@ -111,9 +111,8 @@ class VoiceAgentSession:
         info = self.agent.session_info() if hasattr(self.agent, "session_info") else {}
         await self.send_json({"type": "session_started", "started_at": self.started_at, **info})
         greeting = self.agent.greeting()
-        if greeting:
+        if greeting:  # starts at once, even before (or without) STT
             self._said(greeting)
-        if greeting:
             self._speak_task = asyncio.create_task(self._speak_fixed(greeting))
         try:
             await self._open_stt()
