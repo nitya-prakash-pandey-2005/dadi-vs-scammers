@@ -41,7 +41,7 @@ const TITLES = [
 // [tone, full text, short text for phones, tooltip]
 function healthState(h) {
   if (!h) return ["muted", "Server offline", "Offline"];
-  if (h.demo) return ["cyan", "Demo replay · recorded on Gnani", "Demo replay", "Replays calls recorded on Gnani's live servers: no server, no API keys"];
+  if (h.demo) return ["cyan", "Demo · recorded on Gnani live", "Demo replay", "Replays calls recorded on Gnani's live servers: no server, no API keys"];
   if (h.fake) return ["amber", "Fake mode: no API keys", "Fake mode"];
   if (!h.gnani_key || !h.llm_key) return ["rose", "API keys missing", "Keys missing"];
   if (h.llm_ready === false && h.llm_last_error) return ["amber", "LLM error", "LLM error", `LLM error: ${h.llm_last_error}`];

@@ -28,6 +28,22 @@ export function normaliseTimeline(raw) {
   return out.sort((a, b) => a.t - b.t);
 }
 
+// The arena emits each turn as soon as it is computed (fast or slow, depending on the network), so a recording of it
+// flashes by or stalls. Replay it at a reading pace: each turn 2.5 to 4 s after the previous one (longer text, longer
+// gap); intel, mission and repeat-caller messages follow the turn before them within 1.2 s, in their recorded order.
+export function paceArena(events) {
+  let lastOrig = null;
+  let lastNew = 1.2; // the first line takes a moment, like a real call connecting
+  return events.map((e) => {
+    if (e.msg.type === "arena_turn") {
+      if (lastOrig != null) lastNew += Math.min(4, 2.5 + String(e.msg.text || "").length / 80);
+      lastOrig = e.t;
+      return { ...e, t: lastNew };
+    }
+    return { ...e, t: lastOrig == null ? e.t : lastNew + Math.min(1.2, Math.max(0, e.t - lastOrig)) };
+  });
+}
+
 export class DemoSocket {
   static CONNECTING = 0;
   static OPEN = 1;
@@ -78,6 +94,13 @@ export class DemoSocket {
       this.finish();
       return;
     }
+    const started = events.find((e) => e.msg.type === "session_started")?.msg;
+    if (kind === "start" && started && !events.some((e) => e.msg.type === "call_ended")) {
+      // a capture cut before the hang-up: end it the way the server does
+      const t = events[events.length - 1].t + 1;
+      events.push({ t, msg: { type: "call_ended", call_id: started.call_id, wasted_seconds: Math.round(t * 10) / 10 } });
+    }
+    if (kind === "arena") events = paceArena(events);
     this.events = events;
     this.t0 = performance.now();
     for (const e of events) this.timers.push(setTimeout(() => this.emit(e.msg), e.t * 1000));
