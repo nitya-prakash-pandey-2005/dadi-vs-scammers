@@ -54,6 +54,7 @@ def fallback_texts(self) -> list[str]                                  # OPTIONA
 def on_language(self, code: str | None) -> None                       # first meaningful turn: switch persona or language
 async def reply_sentences(self, history: list[Turn]) -> AsyncIterator[str]
 async def on_user_turn(self, history: list[Turn]) -> dict | None      # background analysis; returns an event to send, e.g. {"type":"intel",...}
+                                                                      # coalesced: never two at once; turns that arrive meanwhile get ONE more call with the latest history
 async def record(self, turn: Turn) -> None                            # persistence hook
 ```
 `VoiceAgentSession(agent, *, send_json, send_audio, settings, stt_factory=None, tts_fn=None, filler_audio=None, noise=None, rng=None, filler_delay=0.25, reconnect_delays=(0.5, 1, 2, 4, 8), first_sentence_timeout=8.0, hangup_grace=3.0, half_duplex=False)`:

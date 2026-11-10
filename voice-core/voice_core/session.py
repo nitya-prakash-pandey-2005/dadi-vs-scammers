@@ -84,6 +84,8 @@ class VoiceAgentSession:
         self._speak_task: asyncio.Task | None = None
         self._filler_task: asyncio.Task | None = None
         self._analysis_lock = asyncio.Lock()
+        self._analysis_task: asyncio.Task | None = None
+        self._analysis_dirty = False
         self._bg: set[asyncio.Task] = set()
         self._recent_agent_lines: list[str] = []
         self._said_at: list[tuple[float, str]] = []  # (monotonic time, text) of the agent's recent lines
@@ -289,7 +291,7 @@ class VoiceAgentSession:
             await self._barge_in()
         self._reply_audio_started = False
         self._speak_task = asyncio.create_task(self._reply())
-        self._spawn(self._analyse())
+        self._request_analysis()
 
     # ------------------------------------------------------------------ speaking
     def _schedule_filler(self) -> None:
@@ -458,6 +460,21 @@ class VoiceAgentSession:
         await self._safe_json({"type": "agent_speaking", "on": False})
 
     # ------------------------------------------------------------------ analysis + utils
+    def _request_analysis(self) -> None:
+        """Coalesce: while an analysis runs, newer turns only mark it dirty; it then runs once more on the latest
+        history. Never a queue of LLM calls (a chatty caller would burn the LLM's tokens-per-minute budget)."""
+        if self._analysis_task is not None and not self._analysis_task.done():
+            self._analysis_dirty = True
+            return
+        self._analysis_task = self._spawn(self._analysis_loop())
+
+    async def _analysis_loop(self) -> None:
+        while True:
+            self._analysis_dirty = False
+            await self._analyse()
+            if not self._analysis_dirty:
+                return
+
     async def _analyse(self) -> None:
         async with self._analysis_lock:
             try:
@@ -468,10 +485,11 @@ class VoiceAgentSession:
             if isinstance(evt, dict):
                 await self._safe_json(evt)
 
-    def _spawn(self, coro) -> None:
+    def _spawn(self, coro) -> asyncio.Task:
         t = asyncio.create_task(coro)
         self._bg.add(t)
         t.add_done_callback(self._bg.discard)
+        return t
 
     async def _record(self, turn: Turn) -> None:
         try:

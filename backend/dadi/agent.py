@@ -8,7 +8,8 @@ from typing import AsyncIterator
 from voice_core.types import Turn
 
 from .brain import DadiBrain
-from .intel import IntelReport, extract_intel, intel_json
+from .intel import ID_FIELDS, IntelReport, extract_intel, intel_json, merge_intel
+from .intel_rules import find_entities
 from .personas import PERSONAS, Persona, persona_for_language
 from .store import Store
 from .tactics import CallState, mission_done
@@ -30,6 +31,7 @@ class DadiAgent:
         self.store = store
         self.state = CallState()
         self.intel = IntelReport()
+        self._intel_llm_at: int | None = None  # scammer-turn count at the last intel LLM call
         self.rng = random.Random(self.seed)
         self.call_id = store.create_call(self.persona.key)
         self.keyterms = SCAM_KEYTERMS
@@ -93,8 +95,23 @@ class DadiAgent:
         self.brain.known_caller = match
         return {"type": "repeat_caller", "call_id": self.call_id, "match": match}
 
+    def _regex_intel(self, scammer: list[Turn]) -> tuple[IntelReport, bool]:
+        """Free, instant identifiers from all of the scammer's lines, and whether any of them is new."""
+        found = find_entities(" \n ".join(t.text for t in scammer))
+        rx = IntelReport(**found, validated={k: v for k, v in found.items() if k in ID_FIELDS and v})
+        new = any(str(v).lower() not in {str(x).lower() for x in getattr(self.intel, k, [])}
+                  for k, vals in found.items() for v in vals)
+        return rx, new
+
     async def on_user_turn(self, history: list[Turn]) -> dict | None:
-        self.intel = await extract_intel(self.intel_llm, history, self.intel)
+        # Groq free tier is ~8k tokens/min and a reply + an intel call cost ~1.5k: run the regex on every turn, the
+        # intel LLM only on the first turn, when the regex found a new identifier, or every 2nd scammer turn
+        scammer = [t for t in history if t.speaker == self.user_label]
+        rx, new = self._regex_intel(scammer)
+        self.intel = merge_intel(self.intel, rx)
+        if self._intel_llm_at is None or new or len(scammer) - self._intel_llm_at >= 2:
+            self._intel_llm_at = len(scammer)
+            self.intel = await extract_intel(self.intel_llm, history, self.intel)
         self.store.save_intel(self.call_id, self.intel)
         self.state.captured = {k for k in ("upi_ids", "accounts", "phones") if getattr(self.intel, k)}
         data = intel_json(self.intel)

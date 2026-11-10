@@ -296,3 +296,23 @@ async def test_full_duplex_speech_start_still_barges_in():
     await sess.wait_idle()
     assert any(m["type"] == "stop_audio" for m in out_json)
     await sess.hangup()
+
+
+# ---------------------------------------------------------------- 6. analyses are coalesced, never queued
+
+async def test_analysis_coalesces_while_one_is_running():
+    seen = []
+
+    async def analyse(history):
+        seen.append(len([t for t in history if t.speaker == "caller"]))
+        await asyncio.sleep(0.2)
+        return {"type": "intel", "n": seen[-1]}
+
+    agent = StubAgent([["a."], ["b."], ["c."], ["d."]], analyse=analyse)
+    stt = FakeStt([ev("transcript", f"line number {i} hai ji") for i in range(4)], gap=0.02)
+    sess, out_json, _ = make(agent, streams=[stt])
+    await sess.start()
+    await asyncio.sleep(0.15)
+    await sess.wait_idle(timeout=2.0)
+    await sess.hangup()
+    assert seen[0] == 1 and seen[-1] == 4 and len(seen) == 2, seen
