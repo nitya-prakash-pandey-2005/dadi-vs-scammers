@@ -26,7 +26,7 @@ All audio inside the engine is **PCM16 little-endian mono**. Default sample rate
 - `PrismaStream(api_key, **header_kwargs)`: `connect()`, `send_audio(pcm16)`, `send_pcm_realtime(pcm16, sample_rate)`, `commit()`, `events()` (async iterator; ends with "closed"), `close()`, `.connected`
 - `transcribe_rest(api_key, wav, *, language_code="hi-IN,en-IN", model="prisma-v3.0", fmt="codemix", keyterms=None) -> SttEvent`
 - `build_tts_body(text, *, voice, model="timbre-v3.0", language="hi-IN", speed=1.0, sample_rate=8000, container="raw") -> dict`
-- `tts_rest(api_key, text, **body_kwargs) -> bytes`; `tts_stream(api_key, text, **body_kwargs)` (async iterator of PCM chunks); `TtsError`
+- `tts_rest(api_key, text, **body_kwargs) -> bytes`; `tts_stream(api_key, text, **body_kwargs)` (async iterator of PCM chunks; raises `TtsError` if the socket sends nothing for `RECV_TIMEOUT` = 8 s); `TtsError`
 - `strip_audio_tags(text) -> str`; `AUDIO_TAGS` (the 13 Timbre v3.0 tags)
 - `create_voice_embedding(api_key, wav: bytes) -> dict` (Gnani voice cloning: returns `{embedding, shape, dtype}`; normalises the two documented response shapes)
 - `tts_clone_rest(api_key, text, embedding: dict, *, sample_rate=8000) -> bytes` (model `vachana-vc-v1`)

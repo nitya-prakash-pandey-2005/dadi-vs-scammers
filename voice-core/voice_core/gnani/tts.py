@@ -20,6 +20,7 @@ from .errors import GnaniError
 TTS_REST_URL = "https://api.vachana.ai/api/v1/tts/inference"
 TTS_WS_URL = "wss://api.vachana.ai/api/v1/tts"
 VC_EMBED_URL = "https://api.vachana.ai/api/v1/tts/voice-clone/embeddings"
+RECV_TIMEOUT = 8.0  # seconds between Timbre stream messages before we give up (frees the gate, runs the fallback)
 
 AUDIO_TAGS = (
     "laugh", "giggle", "sigh", "exhales", "sniffles", "yawns", "coughs",
@@ -116,7 +117,10 @@ async def _tts_stream_once(api_key: str, body: dict) -> AsyncIterator[bytes]:
     async with _ws_connect(TTS_WS_URL, additional_headers=headers, max_size=None, open_timeout=15) as ws:
         await ws.send(json.dumps(body, ensure_ascii=False))
         while True:
-            msg = await ws.recv()
+            try:
+                msg = await asyncio.wait_for(ws.recv(), RECV_TIMEOUT)
+            except asyncio.TimeoutError:
+                raise TtsError(f"TTS stream stalled (no message for {RECV_TIMEOUT:.0f} s)") from None
             if isinstance(msg, (bytes, bytearray)):
                 data = carry + bytes(msg)
             else:
