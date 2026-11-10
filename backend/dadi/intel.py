@@ -133,7 +133,7 @@ async def extract_intel(llm, history: list[Turn], previous: IntelReport) -> Inte
         try:
             raw = await llm.complete(
                 [{"role": "system", "content": PROMPT}, {"role": "user", "content": transcript}],
-                temperature=0.1, max_tokens=500, json_mode=True,
+                temperature=0.1, max_tokens=350, json_mode=True,
             )
             llm_part = _sanitise(parse_json_loose(raw))
         except Exception as e:  # bad JSON, network, rate limit: keep what we have

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import time
 from typing import AsyncIterator
 
 from voice_core.types import Turn
@@ -16,6 +17,7 @@ from .tactics import CallState, mission_done
 from .taxonomy import SCAM_KEYTERMS
 
 AUTO_STT_HINT = "hi-IN,en-IN,ta-IN,bn-IN,kn-IN,te-IN"
+INTEL_MIN_GAP_S = 30.0  # see on_user_turn
 
 
 class DadiAgent:
@@ -32,6 +34,7 @@ class DadiAgent:
         self.state = CallState()
         self.intel = IntelReport()
         self._intel_llm_at: int | None = None  # scammer-turn count at the last intel LLM call
+        self._intel_llm_t = 0.0
         self.rng = random.Random(self.seed)
         self.call_id = store.create_call(self.persona.key)
         self.keyterms = SCAM_KEYTERMS
@@ -109,8 +112,13 @@ class DadiAgent:
         scammer = [t for t in history if t.speaker == self.user_label]
         rx, new = self._regex_intel(scammer)
         self.intel = merge_intel(self.intel, rx)
-        if self._intel_llm_at is None or new or len(scammer) - self._intel_llm_at >= 2:
-            self._intel_llm_at = len(scammer)
+        # Groq's free tier also caps OUTPUT tokens at ~1,000/min for qwen3.8-27b (live, 10 Nov): keep the intel LLM at
+        # least INTEL_MIN_GAP_S apart unless a new identifier appeared, so Dadi's own replies keep their budget
+        now = time.monotonic()
+        due = self._intel_llm_at is None or new or (len(scammer) - self._intel_llm_at >= 2
+                                                    and now - self._intel_llm_t >= INTEL_MIN_GAP_S)
+        if due:
+            self._intel_llm_at, self._intel_llm_t = len(scammer), now
             self.intel = await extract_intel(self.intel_llm, history, self.intel)
         self.store.save_intel(self.call_id, self.intel)
         self.state.captured = {k for k in ("upi_ids", "accounts", "phones") if getattr(self.intel, k)}
