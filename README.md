@@ -7,7 +7,7 @@
 ![Gnani Prisma v3.0](https://img.shields.io/badge/Gnani-Prisma_v3.0_STT-ff4d9d)
 ![Gnani Timbre v3.0](https://img.shields.io/badge/Gnani-Timbre_v3.0_TTS-8b5cf6)
 ![Gnani voice cloning](https://img.shields.io/badge/Gnani-voice_cloning_as_fingerprint-22d3ee)
-![Tests](https://img.shields.io/badge/tests-241_passing-34d399)
+![Tests](https://img.shields.io/badge/tests-256_passing-34d399)
 ![Languages](https://img.shields.io/badge/speaks-5_Indian_code--mixed_languages-fbbf24)
 
 **Live demo:** *[live demo link]* &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
@@ -20,7 +20,7 @@
 
 ## Contents
 
-[She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Guardian mode](#guardian-mode) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
+[She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Dadi's family](#dadis-family) · [Guardian mode](#guardian-mode) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
 
 ## She remembers him
 
@@ -56,6 +56,7 @@ Blocking a scam call costs the scammer nothing: he dials the next number. **Rout
 | **Live scam line** | Talk to Dadi in the browser (8 kHz phone audio). Gnani **Prisma v3.0** streams the scammer's speech to text; a tactic planner picks the next move (mishear, lost glasses, pressure-cooker whistle, "trying to pay", ask for his UPI ID); the LLM phrases it in character; Gnani **Timbre v3.0** speaks it with audio tags (she really coughs). Barge-in, in-character fillers while she "thinks", echo guard, reconnects. |
 | **Five grandmothers** | Dadi (Hindi, Kanpur), Paati (Tamil, Madurai), Thakuma (Bengali, Howrah), Ajji (Kannada, Mysuru), Ammamma (Telugu, Vijayawada). "Auto" picks the grandmother from the language Prisma hears. Each has her own running stories. |
 | **Mission mode** | Give Dadi a goal (UPI ID, bank account + IFSC, WhatsApp number, name + badge). The war room shows when it is done, honestly, including when the scammer refuses. |
+| **Family hand-off** | When the pressure peaks (a payment demand or a threat, from her 4th reply), Dadi passes the phone to her grandson **Bunty** (19, Kanpur, his own Timbre voice). Bunty "tries to pay", fumbles the apps and makes the scammer spell the UPI ID, account and IFSC, then hands the phone back. Once per call; a switch on the phone panel turns it off. [More below](#dadis-family). |
 | **Intel + complaint** | Regex and LLM extraction: UPI IDs (misheard handles repaired, e.g. `@okax.in` → `@okaxis`), phones, accounts, IFSC, links, remote-access apps, claimed identity, amounts, red flags with quotes. One click: a complaint draft for cybercrime.gov.in / 1930 / Sanchar Saathi Chakshu. |
 | **Evidence pack** | Every call is recorded in two tracks (left = caller, right = Dadi as actually heard) and sealed with SHA-256. A ZIP per call holds the recording, full transcript, report and a manifest with each file's hash. |
 | **Dadi never forgets a voice** | About 8 s into a call, Gnani's voice-cloning model fingerprints the caller (768-d embedding). If it matches an earlier scammer, Dadi teases him in character ("arre, tum to wahi CBI wale ho na?") and the war room shows the earlier call. A match is a lead, not proof. |
@@ -64,6 +65,20 @@ Blocking a scam call costs the scammer nothing: he dials the next number. **Rout
 | **Check a message** | Paste an SMS/WhatsApp "notice" in any script: verdict, red flags, IDs, the true fact, and a Dadi reply that baits the sender. |
 | **Guardian mode** | Protects a real elder on her own call: she puts it on speaker next to the Guardian page, Prisma transcribes the caller, a rule-based score (0–100, no LLM) rises with each red flag, and Timbre calmly warns her in her language at "be careful" (40) and "stop" (70), once each. Then: "Alert my family" (WhatsApp/SMS) and report on 1930 / cybercrime.gov.in. [More below](#guardian-mode). |
 | **Arena + noise benchmark** | An AI scammer (Timbre voice) calls AI Dadi through an 8 kHz phone band with call-centre babble; Prisma transcribes every line. Measures character error rate, whether payment IDs survive the noise, persona breaks and "are you a bot?" admissions. |
+
+## Dadi's family
+
+Scammers expect one confused grandmother. Dadi brings the family:
+
+1. **Hand-off.** Once per call, when the caller demands payment or threatens her (from her 4th reply; by her 8th reply at the latest), Dadi says *"रुको बेटा, मुझसे ये फ़ोन वाला पेमेंट नहीं होता, बंटी को देती हूँ… बंटी! इधर आ!"* and her grandson answers in his own voice: *"हाँ हेलो sir? मैं Bunty बोल रहा हूँ, दादी का पोता। बताइए, payment कहाँ करना है?"*
+2. **Bunty, 19.** Eager, Hinglish, sure he knows phones, has never made a UPI payment. For the next 3 scammer turns he has his own prompt and tactics ("the app says invalid UPI ID, spell it letter by letter", "UPI is failing, give me the account number and IFSC", "I opened the cricket app"). He uses the same provably invalid fake wallet as Dadi, never real data.
+3. **Hand-back.** *"Sorry sir, ये मुझसे नहीं हो रहा… दादी, आप ही बात करो।"* Dadi takes the phone back and carries on.
+
+How: the tactic planner (`tactics.family_step`) decides who answers each turn. The agent's `voice` and `speed` follow whoever holds the phone, sentence by sentence, so the realtime session voices Dadi's line in Lakshmi and Bunty's in Devansh within the same reply. The four hand-off lines and Bunty's fillers are rendered once at start-up and cached, so the hand-off plays instantly without an LLM call. Intel extraction and the mission continue across the hand-off; turns carry `speaker_persona`, the war room shows who has the phone, the transcript marks the hand-off, and the complaint report credits both decoys. Only the Hindi Dadi has a grandson wired in; the switch "Family hand-off" on the phone panel (start message `"family": false`) keeps Dadi on the phone.
+
+A real hand-off, recorded live on 10 Nov (synthetic scammer, fake IDs; the static demo replays it as "Play the family hand-off call"): Dadi passed the phone at 35 s on "आपका case बहुत serious है", the scammer's UPI ID came out while Bunty had the phone, and Bunty handed back at 78 s. The issues that call showed, and their fixes, are in [docs/test-log.md](docs/test-log.md).
+
+<img src="docs/screenshots/dadi/family-handoff-1440.png" alt="Demo replay of the recorded call: the transcript marks the family hand-off, Dadi's line and Bunty's reply are labelled separately, and the phone panel shows Bunty has the phone" width="900">
 
 ## Guardian mode
 
@@ -241,7 +256,7 @@ uv run python -m uvicorn dadi.app:create_app --factory --port 8765
 
 ## Tests
 
-`uv run python -m pytest -q` runs **241 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, Guardian mode (risk rules, one warning per level, six languages, `/ws/guard`, browser/backend scoring parity), and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
+`uv run python -m pytest -q` runs **256 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, the family hand-off (fires once at the right turn, Bunty's turns and hand-back, the voice per sentence through the session, intel continuity, the off switch, fake wallet only), Guardian mode (risk rules, one warning per level, six languages, `/ws/guard`, browser/backend scoring parity), and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
 
 ## Team
 
