@@ -26,6 +26,8 @@ log = logging.getLogger(__name__)
 SendJson = Callable[[dict], Awaitable[None]]
 SendAudio = Callable[[bytes], Awaitable[None]]
 NOISE_REF_RMS = 0.08  # typical speech RMS used to set a constant noise floor
+ECHO_WINDOW_S = 8.0  # transcripts are compared with what the agent said in the last 8 s (plus audio still queued)
+ECHO_TAIL_S = 0.8  # half duplex: the agent's voice can still reach the mic this long after playback ends
 
 
 def default_stt_factory(settings: Settings, agent) -> Any:
@@ -53,6 +55,7 @@ class VoiceAgentSession:
         reconnect_delays: tuple[float, ...] = (0.5, 1, 2, 4, 8),
         first_sentence_timeout: float | None = 8.0,
         hangup_grace: float = 3.0,
+        half_duplex: bool = False,
     ):
         self.agent = agent
         self.send_json = send_json
@@ -69,6 +72,9 @@ class VoiceAgentSession:
         self.reconnect_delays = reconnect_delays
         self.first_sentence_timeout = first_sentence_timeout
         self.hangup_grace = hangup_grace
+        # speakerphone: the mic hears the agent, so only a non-echo transcript may interrupt her (no speech_start
+        # barge-in) and VAD events during her speech and its echo tail are ignored
+        self.half_duplex = half_duplex
 
         self.history: list[Turn] = []
         self.started_at = 0.0
@@ -80,6 +86,7 @@ class VoiceAgentSession:
         self._analysis_lock = asyncio.Lock()
         self._bg: set[asyncio.Task] = set()
         self._recent_agent_lines: list[str] = []
+        self._said_at: list[tuple[float, str]] = []  # (monotonic time, text) of the agent's recent lines
         self._speaking_until = 0.0
         self._reply_audio_started = False
         self._last_filler: str | None = None
@@ -99,7 +106,7 @@ class VoiceAgentSession:
         await self.send_json({"type": "session_started", "started_at": self.started_at, **info})
         greeting = self.agent.greeting()
         if greeting:
-            self._recent_agent_lines.append(greeting)
+            self._said(greeting)
         if greeting:
             self._speak_task = asyncio.create_task(self._speak_fixed(greeting))
         try:
@@ -206,13 +213,37 @@ class VoiceAgentSession:
                 log.info("reconnect failed: %r", e)
         await self._safe_json({"type": "status", "stt": "error", "message": "speech recognition unavailable"})
 
+    def _said(self, text: str) -> None:
+        self._recent_agent_lines.append(text)
+        del self._recent_agent_lines[:-50]
+        now = time.monotonic()
+        self._said_at.append((now, text))
+        horizon = now - ECHO_WINDOW_S - 60.0
+        while self._said_at and self._said_at[0][0] < horizon:
+            self._said_at.pop(0)
+
+    def _echo_lines(self) -> list[str]:
+        """The agent's lines that may still come back through the mic: the last 8 s (longer while audio is queued),
+        and always at least the last two lines."""
+        now = time.monotonic()
+        since = now - ECHO_WINDOW_S - max(0.0, self._speaking_until - now)
+        lines = [t for ts, t in self._said_at if ts >= since]
+        return lines if len(lines) >= 2 else self._recent_agent_lines[-2:]
+
+    def _in_echo_tail(self) -> bool:
+        return self._agent_busy() or time.monotonic() < self._speaking_until + ECHO_TAIL_S
+
     async def _on_stt_event(self, ev: SttEvent) -> None:
         if ev.type == "connected":
             await self._safe_json({"type": "status", "stt": "connected"})
         elif ev.type == "speech_start":
+            if self.half_duplex:
+                return  # on a speakerphone this is usually her own voice; a real transcript barges in instead
             if self._agent_busy():
                 await self._barge_in()
         elif ev.type == "processing":
+            if self.half_duplex and self._in_echo_tail():
+                return
             if not self._agent_busy():
                 self._schedule_filler()
         elif ev.type == "transcript":
@@ -239,7 +270,7 @@ class VoiceAgentSession:
 
     async def _on_transcript(self, ev: SttEvent) -> None:
         text = ev.text
-        if not is_meaningful(text) or is_echo(text, self._recent_agent_lines):
+        if not is_meaningful(text) or is_echo(text, self._echo_lines()):
             return
         if not self._lang_set:
             self._lang_set = True
@@ -276,7 +307,7 @@ class VoiceAgentSession:
             return
         text = self.rng.choice(options)
         self._last_filler = text
-        self._recent_agent_lines.append(text)
+        self._said(text)
         await self._emit_audio(self.filler_audio[text], kind="filler")
 
     async def _emit_audio(self, chunk: bytes, kind: str = "speech") -> None:
@@ -386,7 +417,7 @@ class VoiceAgentSession:
         try:
             async for sentence in self._reply_stream():
                 said.append(sentence)
-                self._recent_agent_lines.append(sentence)
+                self._said(sentence)
                 async for chunk in self._tts(sentence):
                     if not self._reply_audio_started:
                         self._reply_audio_started = True
@@ -406,7 +437,7 @@ class VoiceAgentSession:
                 log.info("reply produced no audio; fallback line")
                 try:
                     self._last_filler = text
-                    self._recent_agent_lines.append(text)
+                    self._said(text)
                     self._reply_audio_started = True
                     await self._safe_json({"type": "agent_speaking", "on": True})
                     await self._emit_audio(self.filler_audio[text])

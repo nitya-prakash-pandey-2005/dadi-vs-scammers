@@ -38,7 +38,7 @@ All audio inside the engine is **PCM16 little-endian mono**. Default sample rate
 - `voice_core.testing.FakeLLM(replies: list[str])`, `FakeStt(events: list[SttEvent])`, `fake_tts(text, **kw)` (two 320-byte chunks), for offline tests
 
 ## `voice_core.turns`
-- `is_meaningful(text) -> bool`, `is_echo(text, recent_agent_lines, threshold=0.6) -> bool`
+- `is_meaningful(text) -> bool`, `is_echo(text, recent_agent_lines, threshold=0.6) -> bool` (ignores nukta / chandrabindu spelling variants; checks each of the last two lines, and for 3+ words whether ≥ 80 % of the transcript appears in order in all the given lines joined)
 - `split_sentences(buf) -> (list[str], remainder)` (splits on `. ! ? । ॥ …` or a newline)
 - `TurnBasedStt(api_key, **kw)`: the same `events()` interface as `PrismaStream`, using an energy VAD plus `transcribe_rest`. This is the fallback when the account allows only one active Gnani request at a time.
 
@@ -56,8 +56,9 @@ async def reply_sentences(self, history: list[Turn]) -> AsyncIterator[str]
 async def on_user_turn(self, history: list[Turn]) -> dict | None      # background analysis; returns an event to send, e.g. {"type":"intel",...}
 async def record(self, turn: Turn) -> None                            # persistence hook
 ```
-`VoiceAgentSession(agent, *, send_json, send_audio, settings, stt_factory=None, tts_fn=None, filler_audio=None, noise=None, rng=None, filler_delay=0.25, reconnect_delays=(0.5, 1, 2, 4, 8), first_sentence_timeout=8.0, hangup_grace=3.0)`:
+`VoiceAgentSession(agent, *, send_json, send_audio, settings, stt_factory=None, tts_fn=None, filler_audio=None, noise=None, rng=None, filler_delay=0.25, reconnect_delays=(0.5, 1, 2, 4, 8), first_sentence_timeout=8.0, hangup_grace=3.0, half_duplex=False)`:
 - `start()`, `on_audio(pcm16)`, `set_noise(snr_db | None)`, `hangup() -> {"session_seconds": float}`, `.started_at`
+- `half_duplex=True` (speakerphone / laptop speakers; settable as `.half_duplex` before `start()`): `speech_start` never barges in, `processing` is ignored while the agent is busy and for 0.8 s after her audio ends, and only a transcript that is not echo interrupts her. Echo is checked against everything the agent said in the last 8 s (longer while audio is still queued). Default `False` = earphones, full-duplex barge-in.
 - `hangup()` stops speech and STT at once, then waits up to `hangup_grace` (default 3 s) for pending `on_user_turn` analysis (its event is still sent) before `agent.end()` and `session_ended`; `session_seconds` excludes that wait.
 - Sends JSON events: `session_started`, `turn` {speaker, text, t, lang, latency_ms}, `agent_speaking` {on}, `stop_audio`, `status` {stt: connected|reconnecting|error}, `session_ended`, plus whatever `on_user_turn` returns. Sends binary PCM16 for agent speech.
 - Pinned behaviour: barge-in (`speech_start` while speaking → cancel and `stop_audio`; a new transcript while a reply is still streaming or playing also sends `stop_audio` before the new reply, except over a filler clip that this same utterance triggered); a filler after `processing` if no reply audio within 250 ms; ignore non-meaningful and echo transcripts; **no dead air**: when a reply produces no audio (agent error, first sentence later than `first_sentence_timeout`, empty reply, TTS failure) the session plays a pre-rendered line from `fallback_texts()` (else `filler_texts()`), only texts present in `filler_audio`, never the same clip twice in a row, sent as a normal agent `turn` with `"fallback": true`; STT reconnect with backoff 0.5/1/2/4/8 s (also when the very first connect in `start()` fails: the greeting still plays and `status: reconnecting` is sent; `start()` never raises for an STT failure); TTS failure → retry once on `timbre-v2.5` with tags stripped; noise (if set) mixed into user audio at `snr_db` after `telephone_band`.

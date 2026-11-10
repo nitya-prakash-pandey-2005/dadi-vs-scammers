@@ -248,3 +248,31 @@ def test_ws_call_survives_stt_connect_failure(tmp_path):
     assert kinds[0] == "session_started" and "call_ended" in kinds
     assert any(m["type"] == "turn" and m["speaker"] == "dadi" for m in msgs)  # the greeting still played
     assert holder["s"].get_call(holder["agent"].call_id)["ended_at"] is not None
+
+
+def test_ws_start_speakerphone_sets_half_duplex(tmp_path):
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache")
+    made = []
+
+    def factory(send_json, send_audio, persona):
+        agent = DadiAgent(store=Store(tmp_path / f"t{len(made)}.db"), llm=FakeLLM([]), intel_llm=FakeLLM([]),
+                          persona_key="dadi", seed=1)
+        sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
+                                 stt_factory=lambda: FakeStt([ev("connected")]), tts_fn=fake_tts, rng=random.Random(0))
+        made.append(sess)
+        return sess, agent
+
+    with TestClient(create_app(settings, session_factory=factory)) as c:
+        for flag in (True, False, None):
+            with c.websocket_connect("/ws/call") as ws:
+                start = {"type": "start", "persona": "dadi"}
+                if flag is not None:
+                    start["speakerphone"] = flag
+                ws.send_json(start)
+                assert ws.receive_json()["type"] == "session_started"
+                ws.send_json({"type": "hangup"})
+                for _ in range(50):
+                    m = ws.receive()
+                    if m.get("type") == "websocket.close" or '"call_ended"' in (m.get("text") or ""):
+                        break
+    assert [s.half_duplex for s in made] == [True, False, False]

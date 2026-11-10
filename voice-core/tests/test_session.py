@@ -241,3 +241,58 @@ async def test_hangup_does_not_wait_forever():
     t = asyncio.get_running_loop().time()
     await sess.hangup()
     assert asyncio.get_running_loop().time() - t < 1.0
+
+
+# ---------------------------------------------------------------- 5. speakerphone (half duplex)
+
+LINE = "अरे बेटा, ज़रा धीरे बोलो, मैं लिख रही हूँ।"
+
+
+async def test_half_duplex_own_echo_does_not_cut_the_agent_off():
+    agent = StubAgent([[LINE], ["SECOND REPLY"]], fillers=["hmm"])
+    stt = FakeStt([ev("transcript", "Madam main CBI se bol raha hoon"), ev("speech_start"), ev("processing"),
+                   ev("transcript", "ज़रा धीरे बोलो मैं लिख रही हूं")], gap=0.15)
+    sess, out_json, _ = make(agent, streams=[stt], tts=slow_tts, filler_audio={"hmm": CLIP}, half_duplex=True)
+    await sess.start()
+    await asyncio.sleep(0.9)
+    await sess.wait_idle()
+    assert not any(m["type"] == "stop_audio" for m in out_json)
+    assert [m["text"] for m in turns(out_json, "agent")] == [LINE]
+    await sess.hangup()
+
+
+async def test_half_duplex_real_speech_still_barges_in():
+    agent = StubAgent([[LINE], ["achha."]])
+    stt = FakeStt([ev("transcript", "Madam main CBI se bol raha hoon"), ev("speech_start"),
+                   ev("transcript", "aap abhi paise bhejiye warna arrest hoga")], gap=0.15)
+    sess, out_json, _ = make(agent, streams=[stt], tts=slow_tts, half_duplex=True)
+    await sess.start()
+    await asyncio.sleep(0.9)
+    await sess.wait_idle()
+    kinds = [m["type"] for m in out_json]
+    assert kinds.count("stop_audio") == 1
+    assert [m["text"] for m in turns(out_json, "agent")] == [LINE, "achha."]
+    await sess.hangup()
+
+
+async def test_half_duplex_no_filler_from_the_echo_tail():
+    agent = StubAgent(fillers=["hmm"])
+    stt = FakeStt([ev("processing")], gap=0.05)
+    sess, out_json, out_audio = make(agent, streams=[stt], filler_audio={"hmm": CLIP}, filler_delay=0.01,
+                                     half_duplex=True)
+    await sess.start()
+    await sess._emit_audio(b"\x00\x00" * 400)  # 50 ms of agent speech: its echo tail lasts 800 ms more
+    await asyncio.sleep(0.3)
+    assert CLIP not in out_audio
+    await sess.hangup()
+
+
+async def test_full_duplex_speech_start_still_barges_in():
+    agent = StubAgent([[LINE]])
+    stt = FakeStt([ev("transcript", "Madam main CBI se bol raha hoon"), ev("speech_start")], gap=0.15)
+    sess, out_json, _ = make(agent, streams=[stt], tts=slow_tts)
+    await sess.start()
+    await asyncio.sleep(0.5)
+    await sess.wait_idle()
+    assert any(m["type"] == "stop_audio" for m in out_json)
+    await sess.hangup()

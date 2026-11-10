@@ -236,6 +236,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             await ws.close(code=1008)
             return
         sess, agent = factory(send_json, send_audio, first.get("persona") or "auto")
+        if hasattr(sess, "half_duplex"):  # speakerphone (laptop speakers): Dadi must not interrupt herself
+            sess.half_duplex = bool(first.get("speakerphone"))
         if first.get("mission") in MISSIONS:
             agent.state.mission = first["mission"]
 

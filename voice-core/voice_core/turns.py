@@ -43,10 +43,22 @@ def split_sentences(buf: str, final: bool = False) -> tuple[list[str], str]:
     return out, rest
 
 
+# STT spells the same Indic word several ways (ज़/ज, ँ/ं): drop nuktas and zero-width joiners, chandrabindu -> anusvara
+_DROP = dict.fromkeys(map(ord, "\u093c\u09bc\u0a3c\u0abc\u0b3c\u0cbc\u200c\u200d"), None)
+_SAME = {0x0901: 0x0902, 0x0981: 0x0982, 0x0c01: 0x0c02, 0x0c81: 0x0c82}
+
+
 def _norm(text: str) -> str:
-    t = strip_audio_tags(text or "").lower()
+    t = unicodedata.normalize("NFD", strip_audio_tags(text or "").lower()).translate(_DROP).translate(_SAME)
+    t = unicodedata.normalize("NFC", t)
     t = "".join(" " if unicodedata.category(ch).startswith("P") else ch for ch in t)
     return re.sub(r"\s+", " ", t).strip()
+
+
+def _coverage(t: str, a: str, min_block: int = 4) -> float:
+    """Share of t's characters found, in order, in a (only matching runs of >= min_block characters count)."""
+    sm = SequenceMatcher(None, t, a, autojunk=False)
+    return sum(b.size for b in sm.get_matching_blocks() if b.size >= min_block) / max(1, len(t))
 
 
 def is_meaningful(text: str) -> bool:
@@ -54,7 +66,8 @@ def is_meaningful(text: str) -> bool:
 
 
 def is_echo(text: str, recent_agent_lines: list[str], threshold: float = 0.6) -> bool:
-    """True when a transcript is (mostly) the agent's own recent speech picked up by the mic."""
+    """True when a transcript is (mostly) the agent's own recent speech picked up by the mic. Compares with each of
+    the last two lines and, for 3+ words, with all the given lines joined (pass the last few seconds of speech)."""
     t = _norm(text)
     if not t:
         return False
@@ -65,6 +78,11 @@ def is_echo(text: str, recent_agent_lines: list[str], threshold: float = 0.6) ->
         if SequenceMatcher(None, t, a).ratio() >= threshold:
             return True
         if len(t.split()) >= 3 and (t in a or a in t):
+            return True
+    # an echo that spans several of the agent's lines (speakerphone): nearly all of it appears, in order, in her text
+    if len(t.split()) >= 3:
+        joined = " ".join(x for x in (_norm(line) for line in recent_agent_lines) if x)
+        if joined and _coverage(t, joined) >= 0.8:
             return True
     return False
 
