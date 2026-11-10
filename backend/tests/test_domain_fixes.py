@@ -63,3 +63,54 @@ async def test_extract_intel_does_not_merge_numbers_across_turns():
     out = await extract_intel(FakeLLM(["not json"]), hist, IntelReport())
     assert out.phones == ["9876543210"] and out.accounts == []
     assert out.validated.get("phones") == ["9876543210"] and "accounts" not in out.validated
+
+
+# --- 2. tactics: fake data only when asked, at most once per few turns -------------------------
+
+def _play(lines, **state):
+    import random
+
+    from dadi.tactics import CallState, next_tactic
+    st, rng, out = CallState(**state), random.Random(0), []
+    for line in lines:
+        st.last_scammer_text = line
+        t = next_tactic(st, rng)
+        st.recent_moves.append(t.move)
+        st.turn += 1
+        out.append(t)
+    return out
+
+
+def test_mentioning_aadhaar_or_account_is_not_a_request():
+    for line in ("Aapka Aadhaar number drugs parcel se linked hai", "aapke account se money laundering hua hai",
+                 "Aadhaar verify karna padega madam", "aapka Aadhaar link hai, jaldi paise bhejo"):
+        assert _play([line], turn=5)[0].fake_field is None, line
+
+
+def test_fake_field_needs_a_request_word_in_any_persona_language():
+    for line, want in (("OTP batao jaldi", "otp"), ("aapka account freeze hoga, OTP bataiye", "otp"),
+                       ("Aadhaar card ki photo bhejiye", "aadhaar"), ("tell me your card number", "card"),
+                       ("aapka account number kya hai", "account"), ("ओटीपी बताइए", "otp"),
+                       ("OTP sollunga paati", "otp"), ("OTP-ta bolun", "otp"), ("ಆಧಾರ್ ನಂಬರ್ ಹೇಳಿ", "aadhaar"),
+                       ("OTP cheppandi", "otp"), ("अब OTP दो", "otp")):
+        assert _play([line], turn=5)[0].fake_field == want, line
+
+
+def test_scammer_nagging_for_otp_does_not_block_extraction():
+    lines = ["Aapka Aadhaar number drugs parcel se linked hai", "Aadhaar verify karna padega madam",
+             "aapka account freeze hoga, OTP bataiye", "Aadhaar card ki photo bhejiye",
+             "aapke account se money laundering hua hai", "OTP aaya hoga, jaldi bataiye"] * 2
+    tactics = _play(lines)
+    moves = [t.move for t in tactics]
+    assert sum(m.startswith("ask_") for m in moves) >= 3, moves
+    served = [(i, t.fake_field) for i, t in enumerate(tactics) if t.fake_field]
+    assert served, moves
+    for f in {f for _, f in served}:  # the same fake field is read out at most once every 4 turns
+        turns = [i for i, g in served if g == f]
+        assert all(b - a >= 4 for a, b in zip(turns, turns[1:])), served
+
+
+def test_repeated_otp_request_is_served_again_after_cooldown():
+    tactics = _play(["OTP batao"] * 6, turn=4)
+    assert [t.fake_field for t in tactics] == ["otp", None, None, None, "otp", None]
+    assert tactics[0].move == "slow_digits" and tactics[2].move.startswith("ask_")  # turn 6: extract phase

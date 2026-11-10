@@ -59,11 +59,25 @@ PHASE_GOALS = {
 }
 
 _FAKE_PATTERNS = [
-    ("aadhaar", re.compile(r"aadha+r|आधार|ஆதார்|আধার", re.I)),
-    ("card", re.compile(r"\bcard\b|कार्ड|கார்டு|কার্ড|card number", re.I)),
-    ("otp", re.compile(r"\botp\b|o\.t\.p|ओटीपी|\bpin\b|पिन|\bcvv\b", re.I)),
+    ("aadhaar", re.compile(r"aadha+r|आधार|ஆதார்|আধার|ಆಧಾರ್|ఆధార్", re.I)),
+    ("card", re.compile(r"\bcard\b|कार्ड|கார்டு|কার্ড|ಕಾರ್ಡ್|కార్డ్|card number", re.I)),
+    ("otp", re.compile(r"\botp\b|o\.t\.p|ओटीपी|ஓடிபி|ওটিপি|ಒಟಿಪಿ|ఓటీపీ|\bpin\b|पिन|\bcvv\b", re.I)),
     ("account", re.compile(r"(your|apna|aapka|aapke|tumhara)\s+(bank\s+)?account|खाता", re.I)),
 ]
+# The caller must actually ASK for the value ("OTP bataiye"), not just mention it ("aapka Aadhaar linked hai").
+_REQUEST = re.compile(
+    r"\b(?:bata\w*|btao|bol(?:o|iye|ie|na|\s+do)|bhej\w*|di(?:jiye|jie|ye)|de\s?do|dena|dein|share|send|tell|give|"
+    r"read|say|provide|confirm|sunao|sunaiye|likhwa\w*|kya\s+hai|what\s+is|what's|"
+    r"(?:otp|pin|cvv|number|details?|aadhaa?r|card)\s+(?:jaldi\s+)?do|"
+    r"sollu\w*|kudu\w*|kodu\w*|anuppu\w*|bolun|dao|pathan|pathao|heli|helu|kalisi|"
+    r"chepp\w*|ivvandi|pampandi)\b"
+    r"|बता|बोल|भेज|दीजि|दे\s?दो|(?:ओटीपी|OTP|नंबर|नम्बर|पिन)\s+दो|शेयर|पढ़|सुना|क्या\s+है"
+    r"|சொல்லு|கொடு|குடு|அனுப்பு|என்ன|বলুন|বলো|দিন|দাও|পাঠা|ಹೇಳಿ|ಕೊಡಿ|ಕಳಿಸಿ|ಕಳುಹಿಸಿ|ಏನು"
+    r"|చెప్ప|ఇవ్వ|పంప|ఏంటి",
+    re.I,
+)
+_CLAUSE = re.compile(r"[,.;!?।|]")
+FAKE_COOLDOWN = 4  # turns before the same fake field is read out again
 
 
 @dataclass
@@ -74,6 +88,7 @@ class CallState:
     last_scammer_text: str = ""
     mission: str | None = None
     mission_done: bool = False
+    fake_served: dict[str, int] = field(default_factory=dict)  # fake field -> turn it was last read out
 
 
 @dataclass
@@ -95,17 +110,28 @@ def _phase(state: CallState) -> str:
 
 
 def _fake_field(text: str) -> str | None:
-    for name, pat in _FAKE_PATTERNS:
-        if pat.search(text or ""):
-            return name
+    """The personal detail the caller asks for in this line, if any: the field and a request word must be
+    in the same clause ("aapka account freeze hoga, OTP bataiye" -> otp; "aapka Aadhaar linked hai" -> None)."""
+    for clause in _CLAUSE.split(text or ""):
+        if not _REQUEST.search(clause):
+            continue
+        for name, pat in _FAKE_PATTERNS:
+            if pat.search(clause):
+                return name
     return None
 
 
 def next_tactic(state: CallState, rng: random.Random) -> Tactic:
+    """Picks this turn's move. Records in state.fake_served when a fake detail is handed out, so a caller who
+    keeps nagging for the OTP gets it at most once every FAKE_COOLDOWN turns and the call still moves on
+    to extraction (ask_upi, ask_account_ifsc, ...)."""
     phase = _phase(state)
     recent = set(state.recent_moves[-3:])
     fake = _fake_field(state.last_scammer_text)
+    if fake and state.turn - state.fake_served.get(fake, -FAKE_COOLDOWN) < FAKE_COOLDOWN:
+        fake = None  # read out just now: stall or extract instead of reading it again
     if fake:
+        state.fake_served[fake] = state.turn
         move = "slow_digits" if "slow_digits" not in recent else "wrong_button"
         if move in recent:
             move = next((m for m in POOLS["stall_pay"] if m not in recent), "glasses")
