@@ -1,7 +1,7 @@
 [project]
 name = "dadi-vs-scammers"
 version = "0.1.0"
-description = "AI grandmother that answers scam calls, wastes fraudsters' time and extracts mule accounts. Built on Gnani AI Prisma, Timbre and Evon."
+description = "AI grandmother that answers scam calls, wastes fraudsters' time and extracts mule accounts. Built on Gnani AI Prisma, Timbre and voice cloning; Evon v3.3-ready through an OpenAI-compatible adapter (the demos run on Groq)."
 requires-python = ">=3.12,<3.13"
 dependencies = ["voice-core", "dadi"]
 
