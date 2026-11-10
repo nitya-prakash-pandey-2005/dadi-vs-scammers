@@ -22,7 +22,9 @@ Replace every `[…]` with **real numbers from your recorded call**. The rules f
 
 Subtitles matter: most people watch muted, and many don't speak Hindi. CapCut's auto-captions plus a quick manual fix work fine.
 
-Optional extra shots (branch `dilavesh`; pick one, keep the cut at 60 s):
+Optional extra shots (pick one, keep the cut at 60 s; show only what you saw work live):
+- **Dadi never forgets a voice:** call once as "Inspector Rathore, CBI", hang up, call again as "Rahul from SBI". About 8 s in, the war room shows "Repeat scammer: Dadi knows this voice" and Dadi teases you. Caption: "New name. New script. Same voice. Dadi remembers." (Test it once before recording; it uses Gnani voice cloning as a fingerprint.)
+- **Evidence pack:** open the report → play the two-track recording → "SHA-256 sealed" → download the evidence pack. Caption: "Evidence a police officer can verify."
 - **Scam Ring Radar (Jugaad Genius):** two arena calls with the same scammer voice and different scripts → the radar links "Inspector Vijay Rathore, CBI" and "Rahul, SBI" as **same voice (0.93)**; caption "Two different officers. Two different numbers. Same voice: same gang." (Gnani's voice-cloning model used as a voice fingerprint.)
 - **Check a message (Crowd Favourite):** paste the Hinglish "digital arrest" WhatsApp sample → "Scam" + the true fact + Dadi's bait reply; caption "Forward it to your parents' phone."
 - **Five grandmothers (Main Character / Mixed Vibes):** 3-second clips of Ajji (Kannada) and Ammamma (Telugu) answering the same scam.
@@ -43,7 +45,7 @@ So instead of blocking them, we give them Dadi.
 Built on @Gnani AI's sovereign voice stack:
 • Prisma v3.0: real-time speech-to-text for noisy, code-mixed phone audio
 • Timbre v3.0: streaming text-to-speech with emotion tags (yes, she really coughs)
-[• Evon v3.3: Indic LLM for intelligence extraction — ONLY if we actually used it]
+• Gnani voice cloning, used as a voice fingerprint: if the same scammer calls back under a new name, Dadi recognises him
 
 (The call in the video is simulated; I'm playing the scammer 😄)
 
@@ -63,7 +65,7 @@ Don't block scammers. Route them to Dadi.
 ## 5. Engagement plan (inside the rules)
 - **Allowed:** personally asking real friends, family and classmates to watch, react and comment honestly; posting in college groups; your teammate resharing with his own words; replying to every comment quickly.
 - **Not allowed (disqualification risk):** buying likes, bots, paid promotion, "like-for-like" exchanges with other participants (engagement pods).
-- **Timing:** publish as early as possible, ideally **Mon 9 Nov 7–9 PM IST**. Engagement counts only until the cutoff. **The post must be live before you submit.**
+- **Timing (deadline day):** publish **tonight, as early as possible (target before 21:30 IST)**. Engagement counts only until the cutoff, and **the post must be live before you submit** (rule 4). Submit the form right after, with time to spare before 23:59. Posting more widely after the deadline is fine, but the nominated posts must exist before you submit.
 - First comment: the GitHub link (make the repo public just before posting) and one line on how it works.
 - Pin the post on your profile. Reply to comments with real answers ("Yes, Paati speaks Tamil, here's how…").
 
@@ -71,7 +73,7 @@ Don't block scammers. Route them to Dadi.
 - **Project title:** Dadi vs Scammers: an AI grandmother who scams the scammers
 - **The problem you are solving:** Phone scams (digital arrest, KYC, parcel, lottery) cost Indians ₹22,845 crore in 2024. Blocking a scam call costs the scammer nothing; he calls the next victim. There is no system that turns scam calls into wasted scammer time and actionable intelligence (mule accounts).
 - **Who will use it:** telecom operators (route spam-flagged calls to Dadi lines instead of blocking them), bank fraud teams (freeze harvested mule accounts), cyber police and I4C (structured reports and scam-script trends), and families (forward suspicious calls to Dadi).
-- **Gnani AI models / APIs used:** Prisma v3.0 realtime STT over WebSocket (codemix format, Hindi/English/Tamil/Bengali hints, scam keyterms, 8 kHz telephony), Prisma REST STT, Timbre v3.0 streaming TTS over WebSocket with audio tags (Timbre v2.5 as fallback) [, Gnani voice cloning] [, Evon v3.3 self-hosted for intel extraction].
-- **Each member's contribution:** Nitya: [idea, research, persona and product design, prompts and tactics, testing, demo, posts]. [Teammate]: [Evon hosting and evaluation, testing, Pukaar …]. Be accurate; you will both be interviewed separately.
+- **Gnani AI models / APIs used:** Prisma v3.0 realtime STT over WebSocket (codemix, single locale or indic-auto, scam keyterms, 8 kHz telephony) and Prisma REST STT; Timbre v3.0 streaming TTS over WebSocket with audio tags (Timbre v2.5 as automatic fallback) and Timbre REST for pre-rendered fillers; Gnani voice cloning (`/voice-clone/embeddings`) used as a speaker fingerprint for repeat-caller detection, the Scam Ring Radar and the AI-voice flag. Evon v3.3 is supported through our OpenAI-compatible adapter but was not hosted for the demo (no hosted API; needs an 80 GB GPU), so dialogue and extraction ran on Groq (qwen/qwen3.8-27b).
+- **Each member's contribution:** Nitya Prakash Pandey: idea and research, product and persona design, the shared voice engine (Gnani clients, request gate, realtime session with barge-in, fillers, echo guard, reconnect), Dadi's brain (tactics, prompts, intel extraction, complaint report), web app, AI-vs-AI arena and noise benchmark, repeat-caller recognition, evidence pack, demo and posts. Dilavesh Kanz Nidooli: live Gnani integration and testing (found and fixed the Prisma one-locale and ASCII-keyterm issues), Scam Ring Radar, message checker, intelligence board and freeze list, mission mode, Ajji and Ammamma personas, running stories, AI-voice flag, the "are you a bot?" arena; built the sister apps Pukaar and Apni Awaaz. Check this with each other: you will be interviewed separately.
 - **Written explanation (about 150 words):** Dadi is a realtime voice agent that answers scam calls as a believable Indian grandmother. The caller's audio streams to Gnani Prisma v3.0, which transcribes noisy, code-mixed phone speech. A tactic planner chooses the next move (stall, mishear, "try to pay", ask for the scammer's UPI ID), and an LLM phrases it in Hinglish, Tanglish or Benglish. Gnani Timbre v3.0 speaks it with audio tags (coughs, sighs) via streaming TTS. Pre-rendered fillers hide latency, and barge-in, echo guards and reconnects keep calls natural on real networks. In the background, regex plus LLM extraction builds an intel report (UPI IDs, accounts, phones, IFSC, remote-access apps, claimed identity, red flags) and a ready-to-file complaint. All personal data Dadi speaks is provably fake (fails Luhn/Verhoeff checks).
 - **Nominated posts:** the LinkedIn URL and the X URL (one per platform).
