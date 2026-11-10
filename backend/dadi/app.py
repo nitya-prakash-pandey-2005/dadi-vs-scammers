@@ -32,6 +32,7 @@ from .agent import DadiAgent
 from .arena import run_arena, run_noise_benchmark
 from .assets import load_or_make_babble, load_or_make_fillers
 from .evidence import CallRecorder, build_evidence_pack, feed_csv, mule_feed
+from .guardian import GuardianAgent
 from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, all_audio, echo_stt, fake_embed, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
@@ -48,8 +49,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 log = logging.getLogger("dadi")
 
 
-def create_app(settings: Settings | None = None, *, session_factory=None, voice_embed_fn=None) -> FastAPI:
-    """`voice_embed_fn(api_key, wav) -> embedding dict` fingerprints callers (default: Gnani voice-clone embedding)."""
+def create_app(settings: Settings | None = None, *, session_factory=None, voice_embed_fn=None,
+               guard_factory=None) -> FastAPI:
+    """`voice_embed_fn(api_key, wav) -> embedding dict` fingerprints callers (default: Gnani voice-clone embedding).
+    `guard_factory(send_json, send_audio, language) -> (session, GuardianAgent)` builds a Guardian session (tests)."""
     settings = settings or get_settings()
     fake = os.environ.get("DADI_FAKE") == "1"
     if voice_embed_fn is None:
@@ -94,6 +97,16 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
         return sess, agent
 
     factory = session_factory or default_factory
+
+    def default_guard_factory(send_json, send_audio, language: str):
+        # Guardian sits next to a speakerphone: half duplex, and it only speaks its own warnings (no LLM at all)
+        agent = GuardianAgent(language=language)
+        kw = dict(stt_factory=lambda: ScriptedStt(), tts_fn=tone_tts) if fake else {}
+        sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
+                                 half_duplex=True, first_sentence_timeout=None, **kw)
+        return sess, agent
+
+    guard = guard_factory or default_guard_factory
 
     # ------------------------------------------------------------------ REST
     @app.get("/api/health")
@@ -301,6 +314,63 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
             except Exception:
                 pass
             await watch.finish()  # after the caller has the result: saves his voice fingerprint (one Gnani call)
+
+    # ------------------------------------------------------------------ WebSocket Guardian (protects a real elder)
+    @app.websocket("/ws/guard")
+    async def ws_guard(ws: WebSocket):
+        """Same messages as /ws/call, plus {"type":"risk",...} on every caller turn and {"type":"warning",...} when
+        Guardian speaks. Nothing is stored: no call row, no recording, no voiceprint."""
+        await ws.accept()
+        lock = asyncio.Lock()
+        alive = {"v": True}
+
+        async def send_json(m: dict):
+            if not alive["v"]:
+                return
+            async with lock:
+                await ws.send_json(m)
+                if m.get("type") == "turn" and m.get("warning"):
+                    await ws.send_json({"type": "warning", "text": m["text"], "level": m.get("level")})
+
+        async def send_audio(b: bytes):
+            if alive["v"]:
+                async with lock:
+                    await ws.send_bytes(b)
+
+        try:
+            first = await ws.receive_json()
+        except Exception:
+            return
+        if first.get("type") != "start":
+            await ws.close(code=1008)
+            return
+        sess, agent = guard(send_json, send_audio, str(first.get("language") or "hi"))
+        try:
+            await sess.start()
+            while True:
+                msg = await ws.receive()
+                if msg.get("type") == "websocket.disconnect":
+                    break
+                if msg.get("bytes"):
+                    await sess.on_audio(msg["bytes"])
+                elif msg.get("text") and json.loads(msg["text"]).get("type") == "hangup":
+                    break
+        except (WebSocketDisconnect, RuntimeError):
+            pass
+        except Exception as e:
+            log.warning("guard loop failed: %r", e)
+        finally:
+            res = await sess.hangup()
+            try:
+                await send_json({"type": "call_ended", "session_seconds": res["session_seconds"],
+                                 "score": agent.tracker.score, "level": agent.tracker.level})
+            except Exception:
+                pass
+            alive["v"] = False
+            try:
+                await ws.close()
+            except Exception:
+                pass
 
     # ------------------------------------------------------------------ Arena (AI scammer vs AI Dadi) + noise benchmark
     @app.websocket("/ws/arena")

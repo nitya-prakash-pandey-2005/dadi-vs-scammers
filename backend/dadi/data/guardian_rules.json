@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "about": "Guardian mode risk rules. Shared by backend/dadi/guardian.py and the web app (frontend/src/lib/guardian-rules.json must stay identical; a test checks it). terms: lower-case substrings of the normalised text, which is padded with spaces, so ' cbi ' only matches the whole word. patterns: regexes on the lower-cased raw text (ASCII only, same meaning in Python and JavaScript). Each flag counts once per call; the score combines flags with diminishing returns: 100 * (1 - product(1 - weight/100)).",
+  "separators": "[\\s.,!?;:\"'()<>…।|/_-]+",
+  "thresholds": {"caution": 40, "stop": 70},
+  "flags": [
+    {
+      "key": "impersonates_authority", "weight": 30, "reason": "claims to be police, CBI, bank or government",
+      "terms": [" cbi ", "सीबीआई", " police", "पुलिस", "inspector", "इंस्पेक्टर", "officer", "ऑफिसर", "headquarters",
+                "हेडक्वार्टर", " rbi ", " trai ", "customs", "कस्टम", "narcotics", "crime branch", "cyber crime",
+                "cyber cell", "साइबर", "enforcement directorate", "income tax", "bank se bol", "बैंक से बोल",
+                "পুলিশ", "காவல்", "போலீஸ்", "పోలీస్", "ಪೊಲೀಸ್"],
+      "patterns": []
+    },
+    {
+      "key": "threat_of_arrest", "weight": 30, "reason": "threatens arrest or a criminal case",
+      "terms": ["arrest", "अरेस्ट", "गिरफ्तार", "गिरफ़्तार", "giraftar", "warrant", "वारंट", " jail", "जेल", " fir ",
+                "court", "कोर्ट", "money laundering", "drugs", "ड्रग्स", "கைது", "গ্রেফতার", "అరెస్ట్", "ಅರೆಸ್ಟ್"],
+      "patterns": []
+    },
+    {
+      "key": "demands_secrecy", "weight": 25, "reason": "tells you to keep it secret",
+      "terms": ["kisi ko mat", "किसी को मत", "kisi ko bhi mat", "किसी को भी मत", "mat batana", "मत बताना", "mat batao",
+                "मत बताओ", "don t tell", "dont tell", "do not tell", "keep it secret", "confidential", "गुप्त",
+                "யாரிடமும் சொல்ல", "কাউকে বলবেন না", "ఎవరికీ చెప్ప", "ಯಾರಿಗೂ ಹೇಳ"],
+      "patterns": []
+    },
+    {
+      "key": "safe_account_transfer", "weight": 35, "reason": "asks to move money to a 'safe account'",
+      "terms": ["safe account", "सेफ अकाउंट", "secure account", "transfer kar", "ट्रांसफर", "पैसा भेज", "पैसे भेज",
+                "paisa bhej", "paise bhej", "send money", "send the money", "move your money", "rbi account"],
+      "patterns": []
+    },
+    {
+      "key": "remote_access_app", "weight": 35, "reason": "asks to install a remote-access app",
+      "terms": ["anydesk", "any desk", "एनीडेस्क", "teamviewer", "team viewer", "quicksupport", "quick support",
+                "rustdesk", "screen share", "screen sharing", "app install", "इंस्टॉल", " apk "],
+      "patterns": []
+    },
+    {
+      "key": "asks_otp_pin", "weight": 35, "reason": "asks for an OTP, PIN, CVV or password",
+      "terms": [" otp", "ओटीपी", " pin ", " पिन ", "cvv", "सीवीवी", "password", "पासवर्ड", "card number",
+                "कार्ड नंबर", "ஓடிபி", "ওটিপি", "ఓటీపీ", "ಒಟಿಪಿ"],
+      "patterns": []
+    },
+    {
+      "key": "asks_personal_ids", "weight": 15, "reason": "brings up your Aadhaar, PAN or bank details",
+      "terms": ["aadhaar", "aadhar", "आधार", " pan ", "pan card", "पैन कार्ड", "bank details", "account details",
+                "date of birth"],
+      "patterns": []
+    },
+    {
+      "key": "urgency_pressure", "weight": 10, "reason": "rushes you and creates panic",
+      "terms": ["jaldi", "जल्दी", "turant", "तुरंत", "warna", "वरना", "urgent", "immediately", "right now",
+                "last warning"],
+      "patterns": []
+    },
+    {
+      "key": "payment_details", "weight": 25, "reason": "gives a UPI ID or account number to pay into",
+      "terms": ["upi", "यूपीआई", "account number", "अकाउंट नंबर", "khata number", "ifsc", "qr code", "क्यूआर"],
+      "patterns": ["[a-z0-9._-]{2,}@[a-z]{2,}", "\\d(?:[ -]?\\d){10,17}"]
+    }
+  ],
+  "warnings": {
+    "hi": {"caution": "सावधान रहिए। यह कॉल धोखाधड़ी जैसी लग रही है। कोई OTP, PIN या बैंक की जानकारी मत दीजिए।",
+           "stop": "रुकिए। CBI या पुलिस कभी फ़ोन पर पैसे नहीं माँगती। फ़ोन काट दीजिए।"},
+    "en": {"caution": "Be careful. This call looks like a scam. Do not share any OTP, PIN or bank details.",
+           "stop": "Stop. Police, CBI and banks never ask for money on a phone call. Please hang up now."},
+    "ta": {"caution": "கவனமாக இருங்கள். இந்த அழைப்பு மோசடி போல் தெரிகிறது. OTP, PIN அல்லது வங்கி விவரங்களை சொல்லாதீர்கள்.",
+           "stop": "நிறுத்துங்கள். போலீஸ் அல்லது CBI ஒருபோதும் தொலைபேசியில் பணம் கேட்பதில்லை. அழைப்பைத் துண்டியுங்கள்."},
+    "bn": {"caution": "সাবধান। এই ফোনটা প্রতারণার মতো লাগছে। কোনো OTP, PIN বা ব্যাঙ্কের তথ্য দেবেন না।",
+           "stop": "থামুন। পুলিশ বা CBI কখনো ফোনে টাকা চায় না। ফোনটা কেটে দিন।"},
+    "kn": {"caution": "ಎಚ್ಚರಿಕೆ. ಈ ಕರೆ ವಂಚನೆಯಂತೆ ಕಾಣುತ್ತಿದೆ. ಯಾವುದೇ OTP, PIN ಅಥವಾ ಬ್ಯಾಂಕ್ ವಿವರ ಹೇಳಬೇಡಿ.",
+           "stop": "ನಿಲ್ಲಿಸಿ. ಪೊಲೀಸ್ ಅಥವಾ CBI ಎಂದಿಗೂ ಫೋನಿನಲ್ಲಿ ಹಣ ಕೇಳುವುದಿಲ್ಲ. ಕರೆ ಕಟ್ ಮಾಡಿ."},
+    "te": {"caution": "జాగ్రత్త. ఈ కాల్ మోసంలా అనిపిస్తోంది. OTP, PIN లేదా బ్యాంక్ వివరాలు చెప్పకండి.",
+           "stop": "ఆగండి. పోలీసులు లేదా CBI ఎప్పుడూ ఫోన్‌లో డబ్బు అడగరు. కాల్ కట్ చేయండి."}
+  },
+  "languages": {
+    "hi": {"name": "Hindi", "tts": "hi-IN", "stt": "hi-IN,en-IN", "voice": "Lakshmi"},
+    "en": {"name": "English", "tts": "en-IN", "stt": "en-IN,hi-IN", "voice": "Lakshmi"},
+    "ta": {"name": "Tamil", "tts": "ta-IN", "stt": "ta-IN,en-IN,hi-IN", "voice": "Vasudha"},
+    "bn": {"name": "Bengali", "tts": "bn-IN", "stt": "bn-IN,en-IN,hi-IN", "voice": "Chetana"},
+    "kn": {"name": "Kannada", "tts": "kn-IN", "stt": "kn-IN,en-IN,hi-IN", "voice": "Kalpana"},
+    "te": {"name": "Telugu", "tts": "te-IN", "stt": "te-IN,en-IN,hi-IN", "voice": "Shivani"}
+  }
+}
