@@ -1,0 +1,6 @@
+kind,id,bank,ring,calls,names_used,first_seen_unix
+UPI,kbc.price2026@upi,BHIM (NPCI),1,4bc38fb2b5f2,,1794319963.2543972
+phone,9000011112,,1,4bc38fb2b5f2,,1794319963.2543972
+phone,9011111212,,1,4bc38fb2b5f2,,1794319963.2543972
+UPI,rathore.cbi@okaxis,Axis Bank (Google Pay),,2c5705e9410b,Vijay Rathore,1794319640.7768867
+phone,9876543210,,,2c5705e9410b,Vijay Rathore,1794319640.7768867

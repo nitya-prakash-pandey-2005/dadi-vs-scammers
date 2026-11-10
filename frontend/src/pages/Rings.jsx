@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, AudioWaveform, Download, Network, RefreshCw } from "lucide-react";
 import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
+import ApiLink from "../components/ApiLink";
 import { SCAM_TYPE_LABELS } from "../lib/labels";
 
 const W = 800, H = 440;
@@ -125,7 +126,7 @@ export default function Rings() {
         sub="One gang uses many names and many numbers. Dadi links calls that share a mule UPI ID, phone or account, or the same scammer's voice: Gnani's voice-cloning model turns ~10 s of their speech into a voice fingerprint. The same fingerprint flags callers who use a known AI voice."
         right={
           <div className="row wrap" style={{ gap: 8 }}>
-            <a className="btn" href="/api/feed/mule-ids.csv" download><Download size={16} /> Mule-ID feed (CSV)</a>
+            <ApiLink className="btn" href="/api/feed/mule-ids.csv" download><Download size={16} /> Mule-ID feed (CSV)</ApiLink>
             <button className="btn" onClick={reload} disabled={loading}><RefreshCw size={16} /> Refresh</button>
           </div>
         }

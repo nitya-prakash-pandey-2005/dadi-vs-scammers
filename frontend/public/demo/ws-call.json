@@ -1,0 +1,824 @@
+[
+ {
+  "t": 0,
+  "msg": {
+   "type": "session_started",
+   "started_at": 1794319640.7832644,
+   "call_id": "2c5705e9410b",
+   "persona": "dadi",
+   "persona_name": "Kamla Devi",
+   "city": "Kanpur",
+   "auto": true
+  }
+ },
+ {
+  "t": 0.002,
+  "msg": {
+   "type": "agent_speaking",
+   "on": true
+  }
+ },
+ {
+  "t": 0.018,
+  "msg": {
+   "type": "turn",
+   "speaker": "dadi",
+   "text": "हेलो? <clears throat> हाँ जी, कौन बोल रहा है? ज़रा ज़ोर से बोलिए, सुनाई कम देता है।",
+   "t": 0
+  }
+ },
+ {
+  "t": 0.018,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 0.364,
+  "msg": {
+   "type": "status",
+   "stt": "connected"
+  }
+ },
+ {
+  "t": 2.687,
+  "msg": {
+   "type": "stop_audio"
+  }
+ },
+ {
+  "t": 2.688,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 7.483,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "Hello मैडम, मैं CBI headquarters से inspector विजय राठौर बोल रहा हूँ।",
+   "t": 7.47,
+   "lang": "hi-IN",
+   "latency_ms": 170
+  }
+ },
+ {
+  "t": 8.26,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.95,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     }
+    ],
+    "validated": {}
+   },
+   "mission": {
+    "key": "upi",
+    "done": false
+   }
+  }
+ },
+ {
+  "t": 8.705,
+  "msg": {
+   "type": "agent_speaking",
+   "on": true
+  }
+ },
+ {
+  "t": 14.002,
+  "msg": {
+   "type": "turn",
+   "speaker": "dadi",
+   "text": "CBI? <coughs> अरे बेटा, पहले दूध का बिल चुकता करना है। बाहर दस्तक है, आकर सुनती हूँ।",
+   "t": 13.98,
+   "tactic": "door_bell",
+   "phase": "confused"
+  }
+ },
+ {
+  "t": 14.002,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 16.193,
+  "msg": {
+   "type": "stop_audio"
+  }
+ },
+ {
+  "t": 16.193,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 19.276,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "आपके Aadhaar card से एक parcel में drugs मिले हैं।",
+   "t": 19.27,
+   "lang": "hi-IN",
+   "latency_ms": 129
+  }
+ },
+ {
+  "t": 19.278,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.95,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     }
+    ],
+    "validated": {}
+   },
+   "mission": {
+    "key": "upi",
+    "done": false
+   }
+  }
+ },
+ {
+  "t": 19.336,
+  "msg": {
+   "type": "stop_audio"
+  }
+ },
+ {
+  "t": 19.336,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 19.336,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 20.888,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "आप digital arrest में हैं।",
+   "t": 20.88,
+   "lang": "hi-IN",
+   "latency_ms": 75
+  }
+ },
+ {
+  "t": 20.992,
+  "msg": {
+   "type": "stop_audio"
+  }
+ },
+ {
+  "t": 20.992,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 20.992,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 21.502,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.95,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     }
+    ],
+    "validated": {}
+   },
+   "mission": {
+    "key": "upi",
+    "done": false
+   }
+  }
+ },
+ {
+  "t": 22.211,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "किसी को मत बताना।",
+   "t": 22.2,
+   "lang": "hi-IN",
+   "latency_ms": 67
+  }
+ },
+ {
+  "t": 22.214,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.95,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     }
+    ],
+    "validated": {}
+   },
+   "mission": {
+    "key": "upi",
+    "done": false
+   }
+  }
+ },
+ {
+  "t": 22.995,
+  "msg": {
+   "type": "agent_speaking",
+   "on": true
+  }
+ },
+ {
+  "t": 26.752,
+  "msg": {
+   "type": "turn",
+   "speaker": "dadi",
+   "text": "<pauses> बेटा, मैं तो काँप रही हूँ। बताइए, अगला क्या करना है?",
+   "t": 26.73,
+   "tactic": "ask_police_station",
+   "phase": "scared"
+  }
+ },
+ {
+  "t": 26.753,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 35.837,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "verification के लिए पैसा safe account में भेजना होगा।",
+   "t": 35.81,
+   "lang": "hi-IN",
+   "latency_ms": 115
+  }
+ },
+ {
+  "t": 35.968,
+  "msg": {
+   "type": "stop_audio"
+  }
+ },
+ {
+  "t": 35.968,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 35.968,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 36.782,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.98,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     },
+     {
+      "flag": "demands_secrecy",
+      "quote": "किसी को मत बताना",
+      "t": 22.2
+     },
+     {
+      "flag": "safe_account_transfer",
+      "quote": "paise safe account mein bhejna hoga",
+      "t": 35.8
+     }
+    ],
+    "validated": {}
+   },
+   "mission": {
+    "key": "upi",
+    "done": false
+   }
+  }
+ },
+ {
+  "t": 41.698,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "UPI ID लिखिए: rathore.cbi@okaxis.",
+   "t": 41.69,
+   "lang": "en-IN",
+   "latency_ms": 151
+  }
+ },
+ {
+  "t": 42.442,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [
+     "rathore.cbi@okaxis"
+    ],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.98,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     },
+     {
+      "flag": "demands_secrecy",
+      "quote": "किसी को मत बताना",
+      "t": 22.2
+     },
+     {
+      "flag": "safe_account_transfer",
+      "quote": "paise safe account mein bhejna hoga",
+      "t": 35.8
+     }
+    ],
+    "validated": {
+     "upi_ids": [
+      "rathore.cbi@okaxis"
+     ]
+    }
+   },
+   "mission": {
+    "key": "upi",
+    "done": true
+   }
+  }
+ },
+ {
+  "t": 42.639,
+  "msg": {
+   "type": "agent_speaking",
+   "on": true
+  }
+ },
+ {
+  "t": 45.851,
+  "msg": {
+   "type": "turn",
+   "speaker": "dadi",
+   "text": "रथोर सीबीआई ऑक्सेस? <coughs> मेरी चश्मा कहाँ गया?",
+   "t": 45.84,
+   "tactic": "tv_serial",
+   "phase": "stall_pay"
+  }
+ },
+ {
+  "t": 45.851,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 57.614,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "और मेरा WhatsApp नंबर है नौ आठ सात छः पाँच।",
+   "t": 57.61,
+   "lang": "hi-IN",
+   "latency_ms": 136
+  }
+ },
+ {
+  "t": 57.617,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [
+     "rathore.cbi@okaxis"
+    ],
+    "phones": [],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.98,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     },
+     {
+      "flag": "demands_secrecy",
+      "quote": "किसी को मत बताना",
+      "t": 22.2
+     },
+     {
+      "flag": "safe_account_transfer",
+      "quote": "paise safe account mein bhejna hoga",
+      "t": 35.8
+     }
+    ],
+    "validated": {
+     "upi_ids": [
+      "rathore.cbi@okaxis"
+     ]
+    }
+   },
+   "mission": {
+    "key": "upi",
+    "done": true
+   }
+  }
+ },
+ {
+  "t": 57.658,
+  "msg": {
+   "type": "stop_audio"
+  }
+ },
+ {
+  "t": 57.659,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 57.659,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 60.593,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "चार, तीन, दो, एक, शून्य।",
+   "t": 60.58,
+   "lang": "hi-IN",
+   "latency_ms": 102
+  }
+ },
+ {
+  "t": 61.48,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [
+     "rathore.cbi@okaxis"
+    ],
+    "phones": [
+     "9876543210"
+    ],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.98,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     },
+     {
+      "flag": "demands_secrecy",
+      "quote": "किसी को मत बताना",
+      "t": 22.2
+     },
+     {
+      "flag": "safe_account_transfer",
+      "quote": "paise safe account mein bhejna hoga",
+      "t": 35.8
+     }
+    ],
+    "validated": {
+     "upi_ids": [
+      "rathore.cbi@okaxis"
+     ]
+    }
+   },
+   "mission": {
+    "key": "upi",
+    "done": true
+   }
+  }
+ },
+ {
+  "t": 61.596,
+  "msg": {
+   "type": "agent_speaking",
+   "on": true
+  }
+ },
+ {
+  "t": 66.994,
+  "msg": {
+   "type": "turn",
+   "speaker": "dadi",
+   "text": "चार तीन दो एक शून्य... <pauses> बेटा, मेरा फोन चलन छोड़ दिया है। स्क्रीन काली हो गई है।",
+   "t": 66.97,
+   "tactic": "wrong_button",
+   "phase": "loop"
+  }
+ },
+ {
+  "t": 66.995,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 75.739,
+  "msg": {
+   "type": "turn",
+   "speaker": "scammer",
+   "text": "जल्दी कीजिए madam, अभी AnyDesk app install कीजिए वरना police आ जाएगी।",
+   "t": 75.73,
+   "lang": "hi-IN",
+   "latency_ms": 154
+  }
+ },
+ {
+  "t": 76.776,
+  "msg": {
+   "type": "agent_speaking",
+   "on": true
+  }
+ },
+ {
+  "t": 79.936,
+  "msg": {
+   "type": "intel",
+   "call_id": "2c5705e9410b",
+   "intel": {
+    "upi_ids": [
+     "rathore.cbi@okaxis"
+    ],
+    "phones": [
+     "9876543210"
+    ],
+    "accounts": [],
+    "ifsc": [],
+    "urls": [],
+    "apps": [
+     "AnyDesk"
+    ],
+    "amounts": [],
+    "names": [
+     "Vijay Rathore"
+    ],
+    "agencies_claimed": [
+     "CBI"
+    ],
+    "scam_type": "digital_arrest",
+    "scam_confidence": 0.98,
+    "red_flags": [
+     {
+      "flag": "impersonates_authority",
+      "quote": "CBI headquarters se inspector Vijay Rathore bol raha hoon",
+      "t": 7.5
+     },
+     {
+      "flag": "threat_of_arrest",
+      "quote": "aap digital arrest mein hain",
+      "t": 20.9
+     },
+     {
+      "flag": "demands_secrecy",
+      "quote": "किसी को मत बताना",
+      "t": 22.2
+     },
+     {
+      "flag": "safe_account_transfer",
+      "quote": "paise safe account mein bhejna hoga",
+      "t": 35.8
+     }
+    ],
+    "validated": {
+     "upi_ids": [
+      "rathore.cbi@okaxis"
+     ],
+     "apps": [
+      "AnyDesk"
+     ]
+    }
+   },
+   "mission": {
+    "key": "upi",
+    "done": true
+   }
+  }
+ },
+ {
+  "t": 82.29,
+  "msg": {
+   "type": "turn",
+   "speaker": "dadi",
+   "text": "police? <sigh> अभी Sharma ji के कुत्ते का शोर लगा है। बेटा, आपका नाम क्या है?",
+   "t": 82.28,
+   "tactic": "health_tangent",
+   "phase": "loop"
+  }
+ },
+ {
+  "t": 82.291,
+  "msg": {
+   "type": "agent_speaking",
+   "on": false
+  }
+ },
+ {
+  "t": 95.26,
+  "msg": {
+   "type": "call_ended",
+   "call_id": "2c5705e9410b",
+   "wasted_seconds": 95.3
+  }
+ }
+]

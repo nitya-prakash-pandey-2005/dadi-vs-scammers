@@ -2,6 +2,7 @@
 import { AlertTriangle, Building2, Download, Landmark, ShieldAlert, Snowflake } from "lucide-react";
 import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
+import ApiLink from "../components/ApiLink";
 import { RED_FLAG_LABELS, SCAM_TYPE_LABELS } from "../lib/labels";
 
 const inr = (n) => (n >= 1e7 ? `₹${(n / 1e7).toFixed(1)} Cr` : n >= 1e5 ? `₹${(n / 1e5).toFixed(1)} L` : `₹${n.toLocaleString("en-IN")}`);
@@ -32,7 +33,7 @@ export default function Intel() {
         kicker="Intelligence"
         title="Scam intelligence board"
         sub="Every call Dadi takes becomes data: who the scammers pretend to be, how much they demand, and which mule accounts banks should freeze."
-        right={<a className="btn primary" href="/api/freeze-list?format=csv"><Download size={16} /> Freeze list (CSV)</a>}
+        right={<ApiLink className="btn primary" href="/api/freeze-list?format=csv"><Download size={16} /> Freeze list (CSV)</ApiLink>}
       />
       <div className="disclaimer" style={{ marginBottom: 16 }}>
         <AlertTriangle size={14} className="flex-none" /> Simulated calls with synthetic data. Bank names come from the UPI handle; confirm with NPCI before acting.

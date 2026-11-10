@@ -3,6 +3,8 @@ import { Badge, Card, Hud, PageHead } from "../ui";
 import { useApi } from "../lib/api";
 import { INTEL_FIELDS, mmss } from "../lib/labels";
 import SpeechText from "../components/SpeechText";
+import ApiLink from "../components/ApiLink";
+import { NOT_IN_DEMO, apiHref } from "../demo";
 
 const REPORT_LINKS = {
   "cybercrime.gov.in": "https://cybercrime.gov.in",
@@ -21,6 +23,7 @@ export default function Report({ query }) {
 
   const when = r.incident_time ? new Date(r.incident_time).toLocaleString("en-IN") : "-";
   const ids = Object.entries(r.suspect_identifiers || {});
+  const recUrl = r.recording ? apiHref(r.recording.url) : null; // demo: the static copy, if the snapshot has it
   return (
     <div className="report">
       <PageHead
@@ -30,7 +33,7 @@ export default function Report({ query }) {
         right={
           <div className="row no-print">
             <a className="btn ghost sm" href="#/app/history"><ArrowLeft size={15} /> Calls</a>
-            <a className="btn sm" href={`/api/calls/${id}/evidence.zip`} download><Download size={15} /> Evidence pack</a>
+            <ApiLink className="btn sm" href={`/api/calls/${id}/evidence.zip`} download><Download size={15} /> Evidence pack</ApiLink>
             <button className="btn primary sm" onClick={() => window.print()}><Printer size={15} /> Print / save PDF</button>
           </div>
         }
@@ -45,7 +48,7 @@ export default function Report({ query }) {
 
         {r.recording && (
           <Card icon={AudioLines} title="Call recording (evidence)" right={<Hud tone="green">SHA-256 sealed</Hud>}>
-            <audio className="rec-player no-print" controls preload="none" src={r.recording.url} />
+            {recUrl ? <audio className="rec-player no-print" controls preload="none" src={recUrl} /> : <div className="empty no-print">{NOT_IN_DEMO}.</div>}
             <div className="small text-2" style={{ marginTop: 8 }}>
               Stereo: left = caller, right = {r.persona}, as it was heard on the call · {mmss(r.recording.seconds)}
             </div>

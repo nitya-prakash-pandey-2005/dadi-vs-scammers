@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
+import { DEMO, demoGet, demoPost } from "../demo";
 
 export async function getJSON(path) {
+  if (DEMO) return demoGet(path); // static snapshot (demo build only)
   const r = await fetch(path, { headers: { Accept: "application/json" } });
   if (!r.ok) throw new Error(`${path} → ${r.status}`);
+  return r.json();
+}
+
+export async function postJSON(path, body) {
+  if (DEMO) return demoPost(path, body);
+  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
 

@@ -12,6 +12,8 @@ import Arena from "./pages/Arena";
 import Rings from "./pages/Rings";
 import Intel from "./pages/Intel";
 import Check from "./pages/Check";
+import { DEMO } from "./demo";
+import DemoBanner from "./demo/DemoBanner";
 
 const NAV = [
   { group: "Scam line", items: [
@@ -39,6 +41,7 @@ const TITLES = [
 // [tone, full text, short text for phones, tooltip]
 function healthState(h) {
   if (!h) return ["muted", "Server offline", "Offline"];
+  if (h.demo) return ["cyan", "Demo · recorded on Gnani live", "Demo replay", "Replays calls recorded on Gnani's live servers: no server, no API keys"];
   if (h.fake) return ["amber", "Fake mode: no API keys", "Fake mode"];
   if (!h.gnani_key || !h.llm_key) return ["rose", "API keys missing", "Keys missing"];
   if (h.llm_ready === false && h.llm_last_error) return ["amber", "LLM error", "LLM error", `LLM error: ${h.llm_last_error}`];
@@ -68,6 +71,7 @@ export default function App() {
   // keep the pill honest: poll every 10 s (every 3 s while the voices warm up), also while the server is offline
   const warming = !!health && !health.fake && !health.fillers_ready;
   useEffect(() => {
+    if (DEMO) return undefined; // static snapshot: nothing changes
     const id = setInterval(() => { if (!document.hidden) reloadHealth(); }, warming ? 3000 : 10000);
     return () => clearInterval(id);
   }, [warming, reloadHealth]);
@@ -96,6 +100,7 @@ export default function App() {
         mobileTabs={MOBILE_TABS}
         titles={TITLES}
         topRight={<HealthPill health={health} />}
+        banner={DEMO ? <DemoBanner /> : null}
         footer={<div className="pill-src">Built on Gnani AI: Prisma v3.0 (STT) · Timbre v3.0 (TTS) · Evon v3.3 (LLM, when hosted)</div>}
       >
         {page}

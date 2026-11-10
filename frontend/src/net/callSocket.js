@@ -1,9 +1,13 @@
 // WebSocket client for /ws/call (protocol: backend/dadi/app.py).
+import { DEMO } from "../demo";
+import { DemoSocket } from "../demo/DemoSocket";
+
 // openCall({ persona, noiseSnrDb, mission, speakerphone, onEvent, onAudio, onClose }) -> { sendAudio, setNoise, hangup, close }
 
 export function openCall({ persona = "auto", noiseSnrDb = null, mission = null, speakerphone = false, onEvent, onAudio, onClose } = {}) {
   const proto = window.location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${window.location.host}/ws/call`);
+  const url = `${proto}://${window.location.host}/ws/call`;
+  const ws = DEMO ? new DemoSocket(url) : new WebSocket(url); // demo: replays a recorded call
   ws.binaryType = "arraybuffer";
   let closed = false;
   let aborted = false; // hung up before the socket opened: never send "start"

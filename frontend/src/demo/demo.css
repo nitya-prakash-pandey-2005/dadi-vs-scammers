@@ -1,0 +1,23 @@
+/* Demo build only: the honest "this is a replay" banner + disabled API links */
+.demo-banner {
+  display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 7px var(--gutter);
+  background: var(--grad-soft); border-bottom: 1px solid var(--line-2);
+  color: var(--text-2); font-size: 13px; line-height: 1.4;
+}
+.demo-banner b { color: var(--text); font-weight: 600; }
+.demo-banner-icon { color: var(--cyan); }
+.demo-banner .short { display: none; }
+.demo-banner-link {
+  flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: var(--surface-2); color: var(--text); font-weight: 600; text-decoration: none;
+  white-space: nowrap;
+}
+.demo-banner-link:hover, .demo-banner-link:focus-visible { border-color: var(--cyan); color: var(--cyan); }
+@media (max-width: 600px) {
+  .demo-banner { font-size: 12px; padding: 6px var(--gutter); gap: 8px; }
+  .demo-banner .long { display: none; }
+  .demo-banner .short { display: inline; }
+}
+.api-link-off { display: inline-flex; cursor: not-allowed; }
+.demo-call-note { display: block; text-align: center; }
+@media print { .demo-banner { display: none !important; } }
