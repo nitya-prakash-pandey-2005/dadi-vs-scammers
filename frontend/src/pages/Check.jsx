@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle2, Copy, Info, MessageSquareWarning, Network,
 import { Badge, Card, PageHead, toast } from "../ui";
 import { postJSON } from "../lib/api";
 import { SAMPLES } from "../lib/checkSamples";
-import { REPO_URL } from "../demo";
+import { HAS_CHECKS, REPO_URL } from "../demo";
 
 const VERDICT = {
   scam: { tone: "rose", icon: ShieldAlert, text: "Scam. Do not pay, do not reply with real details." },
@@ -49,13 +49,14 @@ export default function Check() {
         <div className="span-7 stack">
           {!r && <Card icon={ShieldCheck} title="Result"><div className="empty">Paste a message or pick a sample.</div></Card>}
           {note && (
-            <Card icon={Info} title="Try a sample message in this demo">
+            <Card icon={Info} title={HAS_CHECKS ? "Try a sample message in this demo" : "Checking needs the live server"}>
               <div className="stack" style={{ gap: 10 }}>
                 <p className="text-2">
-                  This online demo replays verdicts recorded from the live backend, so it can check the sample
-                  messages. Pick one of them. To check any message, run Dadi locally with your own keys.
+                  {HAS_CHECKS
+                    ? "This online demo replays verdicts recorded from the live backend, so it can check the sample messages. Pick one of them. To check any message, run Dadi locally with your own keys."
+                    : "The checker reads each message with a live LLM, which this online demo never calls. Run Dadi locally with your own keys to check any message."}
                 </p>
-                <div className="chips">{SAMPLES.map((s) => <button key={s.label} className="btn sm" onClick={() => { setText(s.text); run(s.text); }}>{s.label}</button>)}</div>
+                {HAS_CHECKS && <div className="chips">{SAMPLES.map((s) => <button key={s.label} className="btn sm" onClick={() => { setText(s.text); run(s.text); }}>{s.label}</button>)}</div>}
                 <a className="btn sm" href={REPO_URL} target="_blank" rel="noreferrer">How to run it locally (GitHub)</a>
               </div>
             </Card>
