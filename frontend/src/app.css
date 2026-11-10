@@ -195,3 +195,12 @@ table.freeze a { color: var(--cyan); text-decoration: none; }
 @media (max-width: 600px) {
   .list > button.li .s { white-space: normal; }
 }
+
+/* arena on phones: settings, then the live transcript right under "Start", then results, intel and benchmark */
+@media (max-width: 900px) {
+  .arena-grid > .stack { display: contents; }
+  .arena-grid > .stack > * { grid-column: 1 / -1; order: 3; }
+  .arena-grid .arena-setup { order: 1; }
+  .arena-grid .arena-feed { order: 2; }
+  .arena-grid .chat { max-height: 60vh; }
+}

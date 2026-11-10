@@ -94,9 +94,9 @@ export default function Arena() {
         <AlertTriangle size={14} className="flex-none" /> Synthetic AI-vs-AI call. All names, UPI IDs and numbers are fake.
       </div>
 
-      <div className="grid g-12">
+      <div className="grid g-12 arena-grid">
         <div className="span-5 stack">
-          <Card icon={Swords} title="Run a simulated scam call">
+          <Card icon={Swords} title="Run a simulated scam call" className="arena-setup">
             <div className="stack" style={{ gap: 12 }}>
               <label className="field">Scam script<Seg options={SCAMS} value={scam} onChange={setScam} /></label>
               <label className="field">Call-centre noise (SNR)<Seg options={NOISE} value={noise} onChange={setNoise} /></label>
@@ -131,7 +131,7 @@ export default function Arena() {
               )}
               {summary.ring_links?.length > 0 && (
                 <a className="ring-alert" href="#/app/rings">
-                  <Network size={16} /> Linked to {summary.ring_links.length} earlier call{summary.ring_links.length > 1 ? "s" : ""}: {summary.ring_links.map((l) => l.reason).join(" · ")}
+                  <Network size={16} /> Linked to {summary.ring_links.length} earlier call{summary.ring_links.length > 1 ? "s" : ""}: {[...new Set(summary.ring_links.map((l) => l.reason))].join(" · ")}
                 </a>
               )}
             </Card>
@@ -141,7 +141,7 @@ export default function Arena() {
         </div>
 
         <div className="span-7 stack">
-          <Card icon={Bot} title="Live transcript" right={running === "arena" ? <span className="pulse-dot" /> : null}>
+          <Card icon={Bot} title="Live transcript" className="arena-feed" right={running === "arena" ? <span className="pulse-dot" /> : null}>
             {!feed.length && <div className="empty">Start a call to watch the AI scammer meet Dadi.</div>}
             <div className="chat" ref={feedRef}>
               {feed.map((m, i) =>
