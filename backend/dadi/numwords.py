@@ -2,11 +2,17 @@
 
 Only runs of two or more digit tokens are converted, so a lone "do" (Hindi "give") or "ek"
 ("one" as in "ek minute") stays a word. Native-script numerals (०-९, ০-৯) are always converted.
+
+Spoken digits are joined into one number; numbers already written as numerals stay separate groups, and
+`intel_rules.find_entities` decides which groups form one phone/account, so an amount said next to a phone
+("50000 9876543210") never swallows it. A number built with सौ/हज़ार/लाख/करोड़ that is round or in lakhs
+(दस हज़ार, दस करोड़) is an amount: `words_to_digits(..., mask_amounts=True)` hides it from identifier extraction.
 """
 
 from __future__ import annotations
 
 import re
+import unicodedata
 
 _WORDS = {
     # English
@@ -55,13 +61,25 @@ _HI_N = {w: i for i, w in enumerate(_HI_1_99, 1)} | {"छः": 6, "छे": 6}
 _HI_MULT = {"सौ": 100, "हजार": 1000, "लाख": 100_000, "करोड": 10_000_000}
 
 
+MAX_GROUP = 5  # longest digit group that is joined with its neighbours
+AMOUNT_MARK = "<amount>"
+
+
 def _hi_key(tok: str) -> str:
+    tok = unicodedata.normalize("NFC", tok)  # precomposed U+095B / U+095C (za, Ra) -> letter + nukta
     return tok.replace("\u093c", "").replace("\u0901", "\u0902")  # drop nukta, chandrabindu -> anusvara
 
 
-def _hindi_compounds(text: str) -> str:
-    """'निन्यानवे हज़ार आठ सौ सत्तासी' -> '99887', 'पचपन' -> '55'. Single digits are left for the digit-run rule."""
-    out: list[str] = []
+def _is_amount(value: int) -> bool:
+    """A number said with a multiplier is an amount when it is round or in lakhs (das hazaar, das crore).
+    Non-round 5-digit groups (99887 said as words) can still be half of a phone number."""
+    return value >= 100_000 or value % 100 == 0
+
+
+def _hindi_compounds(text: str) -> list[tuple[str, bool]]:
+    """'निन्यानवे हज़ार आठ सौ सत्तासी' -> '99887', 'पचपन' -> '55'. Single digits are left for the digit-run rule.
+    Returns (token, is_amount) pairs."""
+    out: list[tuple[str, bool]] = []
     group: list[tuple[str, str, str]] = []  # (kind, key, trail)
 
     def flush() -> None:
@@ -76,9 +94,10 @@ def _hindi_compounds(text: str) -> str:
                     cur = (cur or 1) * 100
                 else:
                     total, cur = total + (cur or 1) * _HI_MULT[key], 0
-            out.append(str(total + cur) + group[-1][2])
+            out.append((str(total + cur) + group[-1][2], _is_amount(total + cur)))
         else:
-            out.extend(str(_HI_N[key]) + tr if _HI_N[key] >= 10 else raw for (_, key, tr), raw in zip(group, raws))
+            out.extend((str(_HI_N[key]) + tr if _HI_N[key] >= 10 else raw, False)
+                       for (_, key, tr), raw in zip(group, raws))
         group.clear()
         raws.clear()
 
@@ -87,18 +106,18 @@ def _hindi_compounds(text: str) -> str:
         core, trail = _TRAIL.match(tok).groups()
         key = _hi_key(core)
         kind = "n" if key in _HI_N else "m" if key in _HI_MULT else None
-        if kind is None or (kind == "n" and group and group[-1][0] == "n" and any(k == "m" for k, _, _ in group)) \
-                or (kind == "m" and not group):
+        # two number words in a row start a new number: 'बीस पच्चीस हज़ार' is 20-25 thousand, not 45000
+        if kind is None or (kind == "n" and group and group[-1][0] == "n") or (kind == "m" and not group):
             flush()
             if kind is None or kind == "m":
-                out.append(tok)
+                out.append((tok, False))
                 continue
         group.append((kind, key, trail))
         raws.append(tok)
         if trail:
             flush()
     flush()
-    return " ".join(out)
+    return out
 
 
 def _digit_value(core: str) -> str | None:
@@ -108,15 +127,18 @@ def _digit_value(core: str) -> str | None:
     return _WORDS.get(core.lower())
 
 
-def words_to_digits(text: str) -> str:
+def words_to_digits(text: str, *, mask_amounts: bool = False) -> str:
+    """Spoken/native digits -> ASCII digits. Spoken digits are joined into one number ('nau aath' -> '98');
+    numbers already written as numerals stay separate groups ('50000 98765 43210'): `find_entities` decides
+    which groups belong together. With mask_amounts=True, numbers said as amounts ('दस हज़ार') become
+    AMOUNT_MARK so they can never be read as a phone or account number."""
     out: list[str] = []
     run: list[str] = []  # digit strings
     raw: list[str] = []  # original tokens of the run
-    mult: int | None = None
-    text = _hindi_compounds(text)
+    typed = False  # the run is one group of numerals (STT output or a parsed Hindi compound)
 
     def flush(trail: str = "") -> None:
-        nonlocal mult
+        nonlocal typed
         if run and (len(run) >= 2 or len(run[0]) > 1 or any(r.translate(_NATIVE) != r for r in raw)):
             out.append("".join(run) + trail)
         elif raw:
@@ -126,13 +148,21 @@ def words_to_digits(text: str) -> str:
             out.append(trail)
         run.clear()
         raw.clear()
-        mult = None
+        typed = False
 
-    for tok in text.split():
+    mult: int | None = None
+    for tok, amount in _hindi_compounds(text):
+        if amount:
+            flush()
+            mult = None
+            out.append(AMOUNT_MARK + _TRAIL.match(tok).group(2) if mask_amounts else tok)
+            continue
         lead, rest = _LEAD.match(tok).groups()
         core, trail = _TRAIL.match(rest).groups()
         low = core.lower()
         if low in _MULT and not lead:
+            if typed:
+                flush()
             mult = _MULT[low]
             raw.append(tok)
             continue
@@ -140,12 +170,17 @@ def words_to_digits(text: str) -> str:
         if val is not None:
             if mult:
                 val, mult = val * mult, None
+            numeral = core.isascii() and core.isdigit()
+            if run and (numeral or typed or len(val) > MAX_GROUP or len(run[-1]) > MAX_GROUP):
+                flush()  # '50000 9876543210' stays two numbers
+            typed = numeral
             run.append(val)
             raw.append(core)
             if trail:
                 flush(trail)
             continue
         flush()
+        mult = None
         out.append(tok)
     flush()
     return " ".join(out)

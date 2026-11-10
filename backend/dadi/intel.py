@@ -109,7 +109,10 @@ def _sanitise(d: dict) -> IntelReport:
 
 async def extract_intel(llm, history: list[Turn], previous: IntelReport) -> IntelReport:
     scammer = [t for t in history if t.speaker == "scammer"]
-    regex = find_entities(" \n ".join(t.text for t in scammer))
+    regex: dict[str, list[str]] = {}
+    for turn in scammer:  # per turn, so a number never merges with one from the next turn
+        for k, v in find_entities(turn.text).items():
+            regex[k] = _dedupe(regex.get(k, []) + v)
     rx = IntelReport(**{k: v for k, v in regex.items()}, validated={k: v for k, v in regex.items() if k in ID_FIELDS and v})
     llm_part = IntelReport()
     if scammer:
