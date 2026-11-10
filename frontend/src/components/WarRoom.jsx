@@ -9,7 +9,7 @@ import { useNow } from "../state/useCall";
 export function TimeWasted({ call }) {
   const live = ["connecting", "live", "ending"].includes(call.phase);
   const now = useNow(live);
-  const secs = live && call.startedAt ? (now - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
+  const secs = live && call.startedAt ? ((call.frozenAt || now) - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
   return (
     <Card className="glow counter-card" icon={Timer} title="Scammer ka time barbaad" right={live ? <span className="pulse-dot" /> : null} tour="counter">
       <div className="big-counter grad-text">{mmss(secs)}</div>
@@ -148,6 +148,7 @@ export function Transcript({ call }) {
                 {scammer ? "Scammer" : name} · {mmss(t.t)}
                 {scammer && t.latency_ms != null ? ` · Prisma ${Math.round(t.latency_ms)} ms` : ""}
                 {!scammer && t.tactic ? ` · ${TACTIC_LABELS[t.tactic] || t.tactic}` : ""}
+                {!scammer && t.fallback ? " · fallback line" : ""}
                 {i === firstKnown ? " · Recognised his voice" : ""}
               </div>
             </div>

@@ -16,7 +16,11 @@ import { applySavedTheme } from "./lib/theme";
 import App from "./App";
 
 applySavedTheme();
+// the service worker reloads stale tabs with ?sw=<build>; drop it so the address bar stays clean
+if (new URLSearchParams(window.location.search).has("sw")) {
+  window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+}
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" }).catch(() => {}));
 }
 createRoot(document.getElementById("root")).render(<StrictMode><App /></StrictMode>);
