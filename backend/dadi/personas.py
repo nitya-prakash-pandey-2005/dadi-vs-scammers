@@ -24,6 +24,7 @@ class Persona:
     stories: list[str] = field(default_factory=list)  # long tales she keeps returning to (O2 Daisy-style)
     manner: str = "Warm, slow, a little confused; you may repeat words."  # how the lines sound (fed to the LLM)
     elder: str = "like a tired old person"  # how quick sums go wrong
+    example: str = ""  # a sample line for the prompt; default: first filler + greeting
 
 
 PERSONAS: dict[str, Persona] = {
@@ -178,7 +179,10 @@ BUNTY = Persona(
         "रुको, app hang हो गया… <pauses> हाँ?",
     ],
     greeting="हाँ हेलो sir? मैं Bunty बोल रहा हूँ, दादी का पोता। बताइए, payment कहाँ करना है?",
-    manner="Eager, fast and friendly; act like a phone expert but get every app step wrong.",
+    manner="Eager, fast and friendly; act like a phone expert but get every app step wrong. Never introduce "
+           "yourself again: Dadi already put you on the line.",
+    # not his greeting: live (10 Nov) the model repeated the prompt's example verbatim when it was the greeting
+    example="अरे sir, PhonePe में 'invalid UPI ID' आ रहा है… एक sec, आप ज़रा letter by letter spell करो ना?",
     elder="like a nervous student",
 )
 FAMILY: dict[str, Persona] = {"dadi": BUNTY}  # persona key -> who she passes the phone to

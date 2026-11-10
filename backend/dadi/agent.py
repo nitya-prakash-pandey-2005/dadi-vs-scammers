@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 import time
+from dataclasses import replace
 from typing import AsyncIterator
 
 from voice_core.types import Turn
@@ -44,6 +45,7 @@ class DadiAgent:
         self.bunty_brain: DadiBrain | None = None
         self._family_event: str | None = None  # "handoff" / "handback" on the turn it happened
         self._segments: list[dict] = []  # [{persona, name, text}] of the last reply, when two people spoke in it
+        self._owner: dict[str, str] = {}  # agent turn text -> "bunty" / "family" (who said it), for the prompts
 
     @property
     def family(self) -> bool:
@@ -103,12 +105,11 @@ class DadiAgent:
         self._family_event, self._segments = None, []
         relative = self._relative()
         step = family_step(self.state) if relative else None
-        if step == "bunty":
-            self.state.bunty_left -= 1
+        if step == "bunty":  # counted in record(), once he has actually said something
             self.speaker = relative
             if self.bunty_brain is None:
                 self.bunty_brain = DadiBrain(self.brain.llm, relative, seed=self.seed)  # same seed: same fake wallet
-            async for s in self.bunty_brain.reply_sentences(history, self.state, self.rng):
+            async for s in self.bunty_brain.reply_sentences(self._annotated(history, relative.key), self.state, self.rng):
                 yield s
             return
         if step in ("handoff", "handback"):
@@ -128,8 +129,25 @@ class DadiAgent:
                 yield text
             return
         self.speaker = self.persona
-        async for s in self.brain.reply_sentences(history, self.state, self.rng):
+        async for s in self.brain.reply_sentences(self._annotated(history, self.persona.key), self.state, self.rng):
             yield s
+
+    def _annotated(self, history: list[Turn], listener: str) -> list[Turn]:
+        """The history as the speaker's LLM sees it: lines the other family member said are marked, so Dadi does not
+        carry on as Bunty after the hand-back (seen live, 10 Nov) and Bunty does not think he said Dadi's lines."""
+        if not self._owner:
+            return history
+        out = []
+        for t in history:
+            who = self._owner.get(t.text, "self") if t.speaker == self.agent_label else None
+            if who == "family":
+                t = replace(t, text=f"(Dadi and Bunty pass the phone) {t.text}")
+            elif who == "bunty" and listener != "bunty":
+                t = replace(t, text=f"(your grandson Bunty had the phone) {t.text}")
+            elif who == "self" and listener == "bunty":
+                t = replace(t, text=f"(Dadi said) {t.text}")
+            out.append(t)
+        return out
 
     def turn_meta(self) -> dict:
         bunty = self.speaker.key != self.persona.key and self._family_event is None
@@ -180,6 +198,14 @@ class DadiAgent:
                 "mission": {"key": self.state.mission, "done": self.state.mission_done} if self.state.mission else None}
 
     async def record(self, turn: Turn) -> None:
+        if turn.speaker == self.agent_label and self._relative():
+            if self._family_event:
+                self._owner[turn.text] = "family"
+            elif self.speaker.key != self.persona.key:
+                self._owner[turn.text] = "bunty"
+                # one of Bunty's turns is used up only when he said something (a reply cut off before it began
+                # does not count: live, a split transcript ate one of his turns)
+                self.state.bunty_left = max(0, self.state.bunty_left - 1)
         self.store.add_turn(self.call_id, turn)
 
     def end(self, seconds: float) -> None:

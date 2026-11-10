@@ -37,7 +37,10 @@ async def say(agent, history, text):
     out = []
     async for s in agent.reply_sentences(list(history)):
         out.append((s, agent.voice, agent.speed))
-    history.append(Turn("dadi", " ".join(s for s, _, _ in out), float(len(history))))
+    turn = Turn("dadi", " ".join(s for s, _, _ in out), float(len(history)))
+    history.append(turn)
+    if out:
+        await agent.record(turn)  # as VoiceAgentSession does for every reply that said something
     return out, agent.turn_meta()
 
 
@@ -218,3 +221,46 @@ async def test_session_voices_each_sentence_and_plays_prerendered_handoff(tmp_pa
     fam = [m.get("family") for m in dadi_turns if m.get("family")]
     assert fam == ["handoff", "handback"]
     assert [m.get("speaker_persona") for m in dadi_turns].count("bunty") == BUNTY_TURNS + 1
+
+
+async def test_a_cut_off_bunty_reply_does_not_use_up_his_turn(tmp_path):
+    agent, _ = make_agent(tmp_path)
+    h: list[Turn] = []
+    for _ in range(HANDOFF_MIN_TURN):
+        await say(agent, h, CALM)
+    await say(agent, h, PUSH)  # hand-off
+    h.append(Turn("scammer", SPELL, 50.0))
+    gen = agent.reply_sentences(list(h)).__aiter__()
+    await gen.aclose()  # barged in before he said a word: nothing recorded
+    assert agent.state.bunty_left == BUNTY_TURNS
+    for _ in range(BUNTY_TURNS):
+        _, meta = await say(agent, h, SPELL)
+        assert meta["speaker_persona"] == "bunty"
+    _, meta = await say(agent, h, SPELL)
+    assert meta["family"] == "handback"
+
+
+async def test_prompts_mark_who_said_what_after_the_handoff(tmp_path):
+    agent, llm = make_agent(tmp_path)
+    h: list[Turn] = []
+    for _ in range(HANDOFF_MIN_TURN):
+        await say(agent, h, CALM)
+    await say(agent, h, PUSH)
+    await say(agent, h, SPELL)  # Bunty
+    bunty_msgs = llm.calls[-1]
+    assert any(m["role"] == "assistant" and m["content"].startswith("(Dadi said)") for m in bunty_msgs)
+    assert any(m["content"].startswith("(Dadi and Bunty pass the phone)") for m in bunty_msgs)
+    for _ in range(BUNTY_TURNS):
+        await say(agent, h, SPELL)  # 2 more Bunty turns, then the hand-back
+    await say(agent, h, CALM)  # Dadi again
+    dadi_msgs = llm.calls[-1]
+    assert "You are Kamla Devi" in dadi_msgs[0]["content"]
+    assert any(m["content"].startswith("(your grandson Bunty had the phone)") for m in dadi_msgs)
+    assert not any(m["content"].startswith("(Dadi said)") for m in dadi_msgs)
+
+
+def test_bunty_prompt_example_is_not_his_greeting():
+    from dadi.tactics import Tactic
+
+    p = system_prompt(BUNTY, Tactic("bunty", "spell_upi", "x"), {})
+    assert BUNTY.greeting not in p and "letter by letter" in p

@@ -72,7 +72,7 @@ def system_prompt(p: Persona, tactic: Tactic, wallet: dict, extra: str = "", sto
         "give any real information.\n"
         "How you talk:\n"
         f"- LANGUAGE (most important): always reply in {_LANG_NAME.get(p.language[:2], 'Hindi')}, even when the caller "
-        f"speaks Hindi or English. {p.style} Example of your voice: \"{strip_tags(p.fillers[0])} {strip_tags(p.greeting)}\"\n"
+        f"speaks Hindi or English. {p.style} Example of your voice: \"{strip_tags(p.example) or (strip_tags(p.fillers[0]) + ' ' + strip_tags(p.greeting))}\"\n"
         f"- 1 or 2 short spoken sentences per reply (at most about 25 words). {p.manner}\n"
         "- You may use at most one of these sound tags per reply, inside the text: <coughs> <sigh> <laugh> <pauses> <slow> <clears throat>.\n"
         "- No lists, no emojis, no stage directions in brackets, no speaker labels.\n"
