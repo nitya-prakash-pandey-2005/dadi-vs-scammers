@@ -25,6 +25,7 @@ from voice_core.types import Turn
 from .brain import DadiBrain
 from .intel import IntelReport, extract_intel, intel_json
 from .intel_rules import find_entities
+from .numwords import words_to_digits
 from .personas import PERSONAS
 from .rings import build_rings, synthetic_voice, tts_catalog
 from .scammer_scripts import BENCH_LINES, SCAMMER_LANGUAGE, SCAMMER_VOICE, SCRIPTS
@@ -40,14 +41,30 @@ _REFUSAL = re.compile(r"\b(I can'?t|I cannot|I'm sorry|as an AI|I won'?t)\b", re
 ENTITY_KEYS = ("upi_ids", "phones", "accounts", "ifsc")
 
 
+_LATIN = re.compile(r"[A-Za-z]")
+_DEVA = re.compile(r"[ऀ-ॿ]")
+
+
 def _norm(s: str) -> str:
-    s = (s or "").lower()
-    s = "".join(" " if unicodedata.category(ch).startswith("P") else ch for ch in s)
+    """Spelling choices Prisma gets right are not errors: number words vs digits, nukta and chandrabindu variants,
+    punctuation and currency symbols."""
+    s = words_to_digits(s or "").lower()
+    s = unicodedata.normalize("NFD", s).replace("़", "").replace("ँ", "ं")
+    s = "".join(" " if unicodedata.category(ch)[0] in "PS" else ch for ch in s)
     return re.sub(r"\s+", " ", s).strip()
 
 
-def cer(ref: str, hyp: str) -> float:
-    """Character error rate = Levenshtein(ref, hyp) / len(ref) on normalised text."""
+def _script_mismatch(ref: str, hyp: str) -> bool:
+    """Romanised Hindi said, Devanagari heard (or the reverse): a character score would only measure the script."""
+    rl, rd = len(_LATIN.findall(ref)), len(_DEVA.findall(ref))
+    hl, hd = len(_LATIN.findall(hyp)), len(_DEVA.findall(hyp))
+    return (rl > 2 * rd and hd > hl) or (rd > 2 * rl and hl > hd)
+
+
+def cer(ref: str, hyp: str) -> float | None:
+    """Character error rate = Levenshtein(ref, hyp) / len(ref) on normalised text; None when the scripts differ."""
+    if _script_mismatch(ref or "", hyp or ""):
+        return None
     r, h = _norm(ref), _norm(hyp)
     if not r:
         return 0.0 if not h else 1.0
@@ -157,7 +174,8 @@ async def run_arena(*, scam_type: str, turns: int, snr_db: float | None, setting
                 watch.feed(bytes(line_audio))
                 await watch.wait()  # deterministic: a match reaches Dadi before her next reply
             c, rec = cer(line, heard), entity_recall(line, heard)
-            cers.append(c)
+            if c is not None:
+                cers.append(c)
             if rec is not None:
                 recalls.append(rec)
             t += secs + 0.6
@@ -227,7 +245,8 @@ async def run_noise_benchmark(*, settings: Settings, emit: Emit, tts_fn=None, st
     for snr in snr_list:
         rs = [r for r in rows if r["snr_db"] == snr]
         recs = [r["entity_recall"] for r in rs if r["entity_recall"] is not None]
-        by_snr.append({"snr_db": snr, "n": len(rs), "cer": round(sum(r["cer"] for r in rs) / max(1, len(rs)), 4),
+        cs = [r["cer"] for r in rs if r["cer"] is not None]
+        by_snr.append({"snr_db": snr, "n": len(rs), "cer": round(sum(cs) / len(cs), 4) if cs else None,
                        "entity_recall": round(sum(recs) / len(recs), 3) if recs else None})
     result = {"by_snr": by_snr, "rows": rows}
     await emit({"type": "bench_done", "by_snr": by_snr})
