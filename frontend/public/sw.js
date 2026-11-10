@@ -19,10 +19,16 @@ self.addEventListener("activate", (e) => e.waitUntil((async () => {
   const stale = (await caches.keys()).filter((k) => k !== CACHE);
   await Promise.all(stale.map((k) => caches.delete(k)));
   await self.clients.claim();
-  // a tab opened under the old cache-first worker is showing an old build: reload it once
+  // a tab opened under the old cache-first worker is showing an old build: reload it once.
+  // navigate() to the same URL + "#/app" would only be a same-document hash change, so add ?sw=<build>
+  // (the app removes it again on load); not awaited, so activation never waits on a page load
   if (stale.some((k) => LEGACY.includes(k))) {
     const wins = await self.clients.matchAll({ type: "window" });
-    await Promise.all(wins.map((w) => w.navigate(w.url).catch(() => null)));
+    wins.forEach((w) => {
+      const u = new URL(w.url);
+      u.searchParams.set("sw", BUILD);
+      w.navigate(u.href).catch(() => null);
+    });
   }
 })()));
 
