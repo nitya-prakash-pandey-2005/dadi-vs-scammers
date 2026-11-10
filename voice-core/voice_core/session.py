@@ -52,6 +52,7 @@ class VoiceAgentSession:
         filler_delay: float = 0.25,
         reconnect_delays: tuple[float, ...] = (0.5, 1, 2, 4, 8),
         first_sentence_timeout: float | None = 8.0,
+        hangup_grace: float = 3.0,
     ):
         self.agent = agent
         self.send_json = send_json
@@ -67,6 +68,7 @@ class VoiceAgentSession:
         self.filler_delay = filler_delay
         self.reconnect_delays = reconnect_delays
         self.first_sentence_timeout = first_sentence_timeout
+        self.hangup_grace = hangup_grace
 
         self.history: list[Turn] = []
         self.started_at = 0.0
@@ -108,7 +110,8 @@ class VoiceAgentSession:
 
     async def hangup(self) -> dict:
         self._closing = True
-        for t in [self._speak_task, self._filler_task, self._stt_task, *self._bg]:
+        secs = self.now()
+        for t in [self._speak_task, self._filler_task, self._stt_task]:
             if t and not t.done():
                 t.cancel()
         if self._stt is not None:
@@ -116,7 +119,13 @@ class VoiceAgentSession:
                 await self._stt.close()
             except Exception:
                 pass
-        secs = self.now()
+        # the last turn often carries the UPI ID: let pending analysis finish (briefly) before ending the call
+        pending = [t for t in self._bg if not t.done()]
+        if pending and self.hangup_grace > 0:
+            await asyncio.wait(pending, timeout=self.hangup_grace)
+        for t in list(self._bg):
+            if not t.done():
+                t.cancel()
         if hasattr(self.agent, "end"):
             try:
                 self.agent.end(secs)

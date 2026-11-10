@@ -206,3 +206,38 @@ async def test_transcript_does_not_cut_the_filler_it_triggered():
     await sess.wait_idle()
     assert not any(m["type"] == "stop_audio" for m in out_json)
     await sess.hangup()
+
+
+# ---------------------------------------------------------------- 4. hang-up keeps the last turn's intel
+
+async def test_hangup_waits_for_pending_analysis():
+    done = []
+
+    async def analyse(history):
+        await asyncio.sleep(0.3)
+        done.append(len(history))
+        return {"type": "intel", "n": len(history)}
+
+    agent = StubAgent([["achha."]], analyse=analyse)
+    stt = FakeStt([ev("transcript", "UPI likhiye rathore.cbi@okaxis")], gap=0.01)
+    sess, out_json, _ = make(agent, streams=[stt])
+    await sess.start()
+    await asyncio.sleep(0.05)
+    await sess.hangup()
+    assert done, "analysis was cancelled by hang-up"
+    kinds = [m["type"] for m in out_json]
+    assert kinds.index("intel") < kinds.index("session_ended")
+
+
+async def test_hangup_does_not_wait_forever():
+    async def analyse(history):
+        await asyncio.sleep(30)
+
+    agent = StubAgent([["achha."]], analyse=analyse)
+    stt = FakeStt([ev("transcript", "hello ji kaun")], gap=0.01)
+    sess, out_json, _ = make(agent, streams=[stt], hangup_grace=0.1)
+    await sess.start()
+    await asyncio.sleep(0.05)
+    t = asyncio.get_running_loop().time()
+    await sess.hangup()
+    assert asyncio.get_running_loop().time() - t < 1.0
