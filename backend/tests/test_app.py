@@ -290,3 +290,33 @@ def test_health_shows_the_live_model_and_llm_state(tmp_path, monkeypatch):
         monkeypatch.setattr(LLM, "last_status", {"ok": False, "error": "404 model_not_found"})
         h = c.get("/api/health").json()
         assert h["llm_ready"] is False and "404" in h["llm_last_error"]
+
+
+def test_real_mode_call_uses_realtime_llm_settings(tmp_path, monkeypatch):
+    """default_factory (no DADI_FAKE): no SDK retries, a first-token limit, and the shared filler dict."""
+    import dadi.app as app_mod
+
+    monkeypatch.delenv("DADI_FAKE", raising=False)
+    made = []
+
+    class Sess(VoiceAgentSession):
+        def __init__(self, agent, **kw):
+            kw.update(stt_factory=lambda: FakeStt([ev("connected")]), tts_fn=fake_tts)
+            super().__init__(agent, **kw)
+            made.append(self)
+
+    monkeypatch.setattr(app_mod, "VoiceAgentSession", Sess)
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache", groq_api_key="", gnani_api_key="")
+    with TestClient(create_app(settings, voice_embed_fn=None)) as c:
+        with c.websocket_connect("/ws/call") as ws:
+            ws.send_json({"type": "start", "persona": "dadi", "speakerphone": True})
+            assert ws.receive_json()["type"] == "session_started"
+            ws.send_json({"type": "hangup"})
+            for _ in range(50):
+                m = ws.receive()
+                if m.get("type") == "websocket.close" or '"call_ended"' in (m.get("text") or ""):
+                    break
+    sess = made[0]
+    llm = sess.agent.brain.llm
+    assert llm.max_retries == 0 and llm.first_token_timeout == 5.0 and sess.first_sentence_timeout == 8.0
+    assert sess.half_duplex is True
