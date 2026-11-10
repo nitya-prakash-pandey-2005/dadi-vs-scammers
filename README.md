@@ -6,7 +6,7 @@ An AI grandmother who picks up scam calls, keeps the fraudster busy in Hinglish,
 
 Built on Gnani AI's voice stack for the *Great Indian AI Internship Challenge* (#GnaniAI #GreatIndianAIInternshipChallenge).
 
-> Demo video: *[link]* · Every call in the demo is simulated: the scammer is played by a team member or by our AI. All IDs are fake.
+> **One-page pitch: [`PITCH.md`](PITCH.md)** · Demo video: *[link]* · Every call in the demo is simulated: the scammer is played by a team member or by our AI. All IDs are fake.
 
 ## Why
 - Indians lost about **₹22,845 crore** to cyber fraud in 2024 (I4C, MHA); "digital arrest" alone took about ₹1,935 crore.

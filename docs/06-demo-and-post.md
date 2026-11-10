@@ -10,6 +10,23 @@ Replace every `[…]` with **real numbers from your recorded call**. The rules f
 - Record **3–4 full calls of 3–5 minutes each**; pick the best one. Cutting for length is fine; inventing or reordering what happened is not. Add a small caption "edited for length".
 - **Script ideas for the scammer** (improvise around them): "Main CBI headquarters se Inspector Rathore bol raha hoon… aapke Aadhaar se drugs ka parcel pakda gaya hai… kisi ko mat batana… safe account mein paisa transfer karo… UPI ID likhiye: rathore.cbi@okaxis… mera WhatsApp nau aath saat…". Use **fake** IDs only. For the Tamil clip, a friend says "Madam, naan bank manager pesuren, KYC update pannanum…".
 
+## 1b. The submission video: 2–3 minutes (form question 6, mandatory)
+Target 2:45. Upload to YouTube (Unlisted) or Google Drive ("Anyone with the link can view") and open the link in an incognito window before pasting it into the form.
+
+| Time | Picture | Sound / caption |
+|---|---|---|
+| 0:00–0:10 | Black card: **"₹22,845 crore lost to cyber fraud in India in 2024."** → "Blocking a scammer doesn't stop him. He dials the next person." | Phone ringing |
+| 0:10–0:20 | The app's Live call screen. Caption: "So we built him a new victim: Dadi. An AI grandmother on Gnani Prisma + Timbre." | Your voice-over, one sentence |
+| 0:20–1:20 | **One real call, mostly uncut** (subtitled): the scammer (earphones) runs the digital-arrest script; Dadi mishears "CBI" as "CID", coughs, the pressure-cooker excuse; Mission "UPI"; he spells the UPI ID → the intel card ticks green, red flags appear, "Digital arrest" badge, the timer keeps running | Real call audio. Caption: "Prisma hears · Timbre speaks · 8 kHz phone audio" |
+| 1:20–1:35 | Dilavesh calls in Tanglish ("Madam, naan bank manager pesuren, KYC update pannanum…") → toast "Meenakshi (Paati) took the call", she answers in Tamil | Caption: "Hinglish · Tanglish · Benglish · Kanglish · Tenglish" |
+| 1:35–1:55 | Hang up → "Generate complaint report": UPI, phone, red flags with quotes, the two-track recording with "SHA-256 sealed", the Evidence pack button, then the freeze-list CSV | Caption: "Ready to file on cybercrime.gov.in / 1930. Evidence anyone can verify." |
+| 1:55–2:15 | **Dadi never forgets a voice:** the same person calls again as "Rahul from SBI" → war room "Repeat scammer: Dadi knows this voice" + Dadi teases him; then the Scam Ring Radar graph linking the calls | Caption: "New name. New script. Same voice. Gnani voice cloning used as a fingerprint." (Only if it worked live; otherwise show the ring radar from arena runs.) |
+| 2:15–2:30 | Arena: AI scammer vs AI Dadi at 10 dB call-centre noise, CER and "IDs heard" badges; 3 s of the message checker | Caption: "Stress-tested on noisy phone audio" |
+| 2:30–2:40 | Architecture card (from the README diagram) + 2 s each of Pukaar and Apni Awaaz | Caption: "One engine, three apps" |
+| 2:40–2:50 | End card: **"Don't block scammers. Route them to Dadi."** · Nitya Prakash Pandey & Dilavesh Kanz Nidooli · GitHub link · #GnaniAI #GreatIndianAIInternshipChallenge | — |
+
+Say once on screen: "Simulated call: the scammer is played by our team. All IDs are fake." Cut for length only; never reorder or fake what happened.
+
 ## 2. The 60-second cut (Demo Day Drop award)
 | Time | Picture | Sound / caption |
 |---|---|---|
