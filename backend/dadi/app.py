@@ -1,12 +1,14 @@
-"""FastAPI app: WebSocket call bridge + REST for calls, totals and complaint reports.
+"""FastAPI app: browser and phone-line call bridges, live-call monitor, arena, REST for calls, reports and evidence.
 
 Run:  uv run uvicorn dadi.app:create_app --factory --host 127.0.0.1 --port 8765
 No keys / bad network:  set DADI_FAKE=1 (scripted scammer, canned Dadi lines, tone audio).
+Phone line (Twilio / Exotel): see telephony.py and the README; protect it with DADI_PHONE_TOKEN.
 """
 
 from __future__ import annotations
 
 import asyncio
+import html
 import json
 import logging
 import os
@@ -14,8 +16,9 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import parse_qs
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -31,7 +34,8 @@ from voice_core.testing import FakeLLM
 from .agent import DadiAgent
 from .arena import run_arena, run_noise_benchmark
 from .assets import load_or_make_babble, load_or_make_fillers
-from .evidence import CallRecorder, build_evidence_pack, feed_csv, mule_feed
+from .calls import CallDeps, CallHub, run_call
+from .evidence import build_evidence_pack, feed_csv, mule_feed
 from .fake_mode import DADI_LINES, CyclingLLM, ScriptedStt, all_audio, echo_stt, fake_embed, tone_tts, tone_tts_bytes
 from .intel import IntelReport
 from .personas import PERSONAS
@@ -39,16 +43,31 @@ from .report import build_report
 from .rings import build_rings, speech_only
 from .scammer_scripts import SCAMMER_VOICE
 from .store import Store
-from .voicewatch import VoiceWatch
+from .telephony import CODECS, mask_number
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("dadi")
 
 
-def create_app(settings: Settings | None = None, *, session_factory=None, voice_embed_fn=None) -> FastAPI:
-    """`voice_embed_fn(api_key, wav) -> embedding dict` fingerprints callers (default: Gnani voice-clone embedding)."""
+def _env(name: str) -> str:
+    """Env var, else the repo's .env (for app-only settings that voice-core's Settings does not carry)."""
+    if os.environ.get(name):
+        return os.environ[name]
+    try:
+        from dotenv import dotenv_values
+
+        return (dotenv_values(repo_root() / ".env").get(name) or "").strip()
+    except Exception:
+        return ""
+
+
+def create_app(settings: Settings | None = None, *, session_factory=None, voice_embed_fn=None,
+               phone_token: str | None = None) -> FastAPI:
+    """`voice_embed_fn(api_key, wav) -> embedding dict` fingerprints callers (default: Gnani voice-clone embedding).
+    `phone_token` (default env DADI_PHONE_TOKEN) must be presented by phone-line streams when set."""
     settings = settings or get_settings()
     fake = os.environ.get("DADI_FAKE") == "1"
+    phone_token = _env("DADI_PHONE_TOKEN") if phone_token is None else phone_token
     if voice_embed_fn is None:
         voice_embed_fn = fake_embed if fake else (create_voice_embedding if settings.gnani_api_key else None)
     settings.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -170,30 +189,30 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
     async def rings():
         return build_rings(store.list_calls(500), store.voiceprints())
 
-    # ------------------------------------------------------------------ WebSocket call
+    hub = CallHub()
+    deps = CallDeps(settings=settings, store=store, factory=factory, voice_embed_fn=voice_embed_fn,
+                    speech_filter=all_audio if fake else speech_only, hub=hub)
+
+    # ------------------------------------------------------------------ browser call
     @app.websocket("/ws/call")
     async def ws_call(ws: WebSocket):
         await ws.accept()
         lock = asyncio.Lock()
         alive = {"v": True}
-        recorder = CallRecorder(settings.sample_rate)  # two-track evidence recording (caller | Dadi as played)
-        t0 = {"v": time.monotonic()}
 
-        def now() -> float:
-            return time.monotonic() - t0["v"]
-
-        async def send_json(m: dict):
-            if m.get("type") == "stop_audio":
-                recorder.stop_agent(now())
+        async def out_json(m: dict):
             if alive["v"]:
                 async with lock:
                     await ws.send_json(m)
 
-        async def send_audio(b: bytes):
-            recorder.agent(b, now())
+        async def out_audio(b: bytes):
             if alive["v"]:
                 async with lock:
                     await ws.send_bytes(b)
+
+        async def close():
+            alive["v"] = False
+            await ws.close()
 
         try:
             first = await ws.receive_json()
@@ -202,58 +221,128 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
         if first.get("type") != "start":
             await ws.close(code=1008)
             return
-        sess, agent = factory(send_json, send_audio, first.get("persona") or "auto")
 
-        async def on_repeat_caller(match: dict):
-            if hasattr(agent, "recognise"):
-                await send_json(agent.recognise(match))
-
-        # Dadi never forgets a voice: fingerprint the caller live, tease a repeat caller, save it for the ring radar
-        watch = VoiceWatch(store=getattr(agent, "store", store), call_id=agent.call_id, sample_rate=settings.sample_rate,
-                           embed_fn=voice_embed_fn, api_key=settings.gnani_api_key, on_match=on_repeat_caller,
-                           speech_filter=all_audio if fake else speech_only)
-        t0["v"] = time.monotonic()
-        await sess.start()
-        if first.get("noise_snr_db") is not None:
-            await sess.set_noise(float(first["noise_snr_db"]))
-        try:
+        async def inbound():
             while True:
                 msg = await ws.receive()
                 if msg.get("type") == "websocket.disconnect":
-                    break
+                    return
                 if msg.get("bytes"):
-                    recorder.caller(msg["bytes"], now())
-                    if not getattr(sess, "speaking", False):  # keep Dadi's own echoed voice out of his fingerprint
-                        watch.feed(msg["bytes"])
-                    await sess.on_audio(msg["bytes"])
+                    yield "audio", msg["bytes"]
                 elif msg.get("text"):
                     d = json.loads(msg["text"])
                     if d.get("type") == "hangup":
-                        break
+                        return
                     if d.get("type") == "set_noise":
-                        snr = d.get("snr_db")
-                        await sess.set_noise(None if snr is None else float(snr))
-        except (WebSocketDisconnect, RuntimeError):
-            pass
-        finally:
-            res = await sess.hangup()
-            call_store = getattr(agent, "store", store)
-            try:
-                meta = recorder.save(settings.cache_dir / "recordings", agent.call_id)
-                if meta:
-                    call_store.save_recording(agent.call_id, meta)
-            except Exception as e:
-                log.warning("saving the call recording failed: %r", e)
-            try:
-                await send_json({"type": "call_ended", "call_id": agent.call_id, "wasted_seconds": res["session_seconds"]})
-            except Exception:
-                pass
+                        yield "noise", d.get("snr_db")
+
+        await run_call(deps, persona=first.get("persona") or "auto", inbound=inbound(), out_json=out_json,
+                       out_audio=out_audio, noise_snr_db=first.get("noise_snr_db"), channel="web", on_end=close)
+
+    # ------------------------------------------------------------------ real phone line (Twilio / Exotel)
+    @app.api_route("/twilio/voice", methods=["GET", "POST"])
+    async def twilio_voice(request: Request):
+        """Twilio voice webhook: answer with TwiML that streams the call to /ws/twilio."""
+        form = parse_qs((await request.body()).decode("utf-8", "replace")) if request.method == "POST" else {}
+        persona = request.query_params.get("persona") or "auto"
+        persona = persona if persona in PERSONAS else "auto"
+        host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+        params = {"persona": persona, "caller": mask_number((form.get("From") or [""])[0])}
+        if phone_token:
+            params["token"] = phone_token
+        tags = "".join(f'<Parameter name="{k}" value="{html.escape(v, quote=True)}"/>' for k, v in params.items())
+        xml = ('<?xml version="1.0" encoding="UTF-8"?><Response><Connect>'
+               f'<Stream url="wss://{html.escape(host, quote=True)}/ws/twilio">{tags}</Stream></Connect></Response>')
+        return Response(xml, media_type="text/xml")
+
+    async def phone_call(ws: WebSocket, provider: str):
+        await ws.accept()
+        codec = CODECS[provider]()
+        try:
+            while True:  # Twilio sends "connected" first; the call starts with "start"
+                d = json.loads(await ws.receive_text())
+                if d.get("event") == "start":
+                    start = codec.on_start(d)
+                    break
+                if d.get("event") == "stop":
+                    return
+        except Exception:
+            return
+        params = start.get("params") or {}
+        if phone_token and phone_token not in (params.get("token"), ws.query_params.get("token")):
+            log.warning("%s stream rejected: bad or missing token", provider)
+            await ws.close(code=1008)
+            return
+        lock = asyncio.Lock()
+        alive = {"v": True}
+
+        async def send(msgs: list[str]):
+            if alive["v"] and msgs:
+                async with lock:
+                    for m in msgs:
+                        await ws.send_text(m)
+
+        async def out_audio(b: bytes):
+            await send(codec.encode(b))
+
+        async def out_json(m: dict):
+            if m.get("type") == "stop_audio":
+                await send(codec.clear())
+            elif m.get("type") == "agent_speaking" and not m.get("on"):
+                await send(codec.flush())
+
+        async def close():
             alive["v"] = False
-            try:
-                await ws.close()
-            except Exception:
-                pass
-            await watch.finish()  # after the caller has the result: saves his voice fingerprint (one Gnani call)
+            await ws.close()
+
+        async def inbound():
+            while True:
+                d = json.loads(await ws.receive_text())
+                ev = d.get("event")
+                if ev == "media":
+                    yield "audio", codec.decode(d)
+                elif ev == "stop":
+                    return
+
+        persona = params.get("persona") if params.get("persona") in PERSONAS else "auto"
+        caller = params.get("caller") or mask_number(start.get("from"))
+        await run_call(deps, persona=persona, inbound=inbound(), out_json=out_json, out_audio=out_audio,
+                       channel=provider, channel_info={"caller": caller} if caller else None, on_end=close)
+
+    @app.websocket("/ws/twilio")
+    async def ws_twilio(ws: WebSocket):
+        await phone_call(ws, "twilio")
+
+    @app.websocket("/ws/exotel")
+    async def ws_exotel(ws: WebSocket):
+        await phone_call(ws, "exotel")
+
+    # ------------------------------------------------------------------ live-call monitor (war room for phone calls)
+    @app.websocket("/ws/monitor")
+    async def ws_monitor(ws: WebSocket):
+        await ws.accept()
+        q = hub.subscribe()
+
+        async def pump():
+            while True:
+                await ws.send_json(await q.get())
+
+        async def drain():  # returns when the viewer goes away
+            while True:
+                if (await ws.receive()).get("type") == "websocket.disconnect":
+                    return
+
+        tasks = [asyncio.create_task(pump()), asyncio.create_task(drain())]
+        try:
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            hub.unsubscribe(q)
+            for t in tasks:
+                t.cancel()
+
+    @app.get("/api/live")
+    async def live():
+        return hub.live_calls()
 
     # ------------------------------------------------------------------ Arena (AI scammer vs AI Dadi) + noise benchmark
     @app.websocket("/ws/arena")
