@@ -19,9 +19,19 @@
 
 </div>
 
+## Three products, one Gnani voice engine
+
+| Product | What it does | Live demo | One-page pitch | Code |
+|---|---|---|---|---|
+| **Dadi vs Scammers** (this repo) | An AI grandmother wastes scammers' time, pulls out their mule accounts, seals the evidence and protects real elders | [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) | [PDF](PITCH.pdf) | this repo |
+| **Pukaar** | A flood emergency line that answers overflow calls in the caller's own language and puts every caller on a rescue map | [pukaar-snowy.vercel.app](https://pukaar-snowy.vercel.app/) | [PDF](https://github.com/nitya-prakash-pandey-2005/pukaar/blob/main/PITCH.pdf) | [GitHub](https://github.com/nitya-prakash-pandey-2005/pukaar) |
+| **Apni Awaaz** | Gives people who lost their voice to cancer, stroke or ALS their own voice back, in 10 Indian languages | [apni-awaaz-kappa.vercel.app](https://apni-awaaz-kappa.vercel.app/) | [PDF](https://github.com/nitya-prakash-pandey-2005/apni-awaaz/blob/main/PITCH.pdf) | [GitHub](https://github.com/nitya-prakash-pandey-2005/apni-awaaz) |
+
+**Demo videos (all three, about 3 minutes each):** *[videos folder link]* &nbsp;·&nbsp; **All three on one page:** [docs/THREE-PRODUCTS.md](docs/THREE-PRODUCTS.md)
+
 ## Contents
 
-[She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Dadi's family](#dadis-family) · [Guardian mode](#guardian-mode) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
+[Three products](#three-products-one-gnani-voice-engine) · [She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Dadi's family](#dadis-family) · [Guardian mode](#guardian-mode) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
 
 ## She remembers him
 

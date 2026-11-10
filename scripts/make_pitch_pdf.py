@@ -74,7 +74,7 @@ def build_html(md_text: str, pt: float) -> str:
     return (
         f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{title}</title>'
         f"<style>{CSS.replace('__PT__', f'{pt:.1f}')}</style></head><body>"
-        f"<header>{logo}<h1><small>Dadi vs Scammers · Pukaar · Apni Awaaz</small>{title}</h1></header>"
+        f"<header>{logo}<h1><small>Dadi vs Scammers · AI scam-baiter</small>{title}</h1></header>"
         f"{body}</body></html>"
     )
 
@@ -95,7 +95,7 @@ def render(html: str, tmp: Path) -> int:
 
 def main() -> None:
     md_text = SRC.read_text(encoding="utf-8")
-    pt = float(os.environ.get("PITCH_PT", "9.6"))
+    pt = float(os.environ.get("PITCH_PT", "10.8"))
     with tempfile.TemporaryDirectory() as d:
         tmp = Path(d)
         while True:
