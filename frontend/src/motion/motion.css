@@ -1,0 +1,34 @@
+/* App-wide micro-motion. Transform/opacity only; everything is switched off under prefers-reduced-motion. */
+
+/* staggered card entrance (CSS, so cards that arrive later with their data animate too; `backwards` = no lingering transform) */
+.motion-ok .shell .content .card { animation: m-card-in .55s cubic-bezier(.22, 1, .36, 1) backwards; }
+.motion-ok .shell .content .card:nth-child(2) { animation-delay: 50ms; }
+.motion-ok .shell .content .card:nth-child(3) { animation-delay: 100ms; }
+.motion-ok .shell .content .card:nth-child(4) { animation-delay: 150ms; }
+.motion-ok .shell .content .card:nth-child(5) { animation-delay: 200ms; }
+.motion-ok .shell .content .card:nth-child(n+6) { animation-delay: 240ms; }
+@keyframes m-card-in { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+
+/* buttons: lift on hover, press on click */
+.motion-ok .btn:not(:disabled):hover { transform: translateY(-1px); }
+.motion-ok .btn:not(:disabled):active { transform: translateY(0) scale(.97); transition-duration: .06s; }
+.motion-ok .btn.primary { background-size: 160% 160%; background-position: 0% 50%; transition: transform .12s ease, box-shadow .2s ease, background-position .5s ease, opacity .2s; }
+.motion-ok .btn.primary:not(:disabled):hover { background-position: 100% 50%; }
+.motion-ok .nav-link { transition: background .2s ease, color .2s ease, transform .2s ease; }
+.motion-ok .nav-link:hover { transform: translateX(2px); }
+
+/* key cards (.card.glow): the gradient border slowly turns */
+@property --m-ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.motion-ok .card.glow::before {
+  background: conic-gradient(from var(--m-ang), #ff4d9d, #a855f7, #22d3ee, #a855f7, #ff4d9d);
+  animation: m-spin 9s linear infinite;
+}
+@keyframes m-spin { to { --m-ang: 360deg; } }
+
+/* keyboard focus is always visible */
+:focus-visible { outline: 2px solid var(--pink-2, #ff7ab8); outline-offset: 2px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .shell .content .card { animation: none !important; }
+  .card.glow::before { animation: none !important; }
+}

@@ -64,7 +64,6 @@ function HealthPill({ health }) {
 
 export default function App() {
   const route = useRoute();
-  useEffect(() => { if (route.path === "/" || route.path === "") window.location.hash = "/app"; }, [route.path]);
 
   const { data: health, reload: reloadHealth } = useApi("/api/health");
   const { data: personas } = useApi("/api/personas");

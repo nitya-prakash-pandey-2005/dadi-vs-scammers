@@ -13,8 +13,10 @@
 //   banner={<Notice />}           // optional; slim bar above the top bar
 // >{page}</AppShell>
 import { Hud } from "../ui";
+import { useRouteMotion } from "../motion";
 
 export default function AppShell({ path, brand, nav, titles = [], mobileTabs, topRight, footer, fab, banner, children }) {
+  useRouteMotion(path);
   const active = (it) => (it.exact ? path === it.to : path === it.to || path.startsWith(it.to + "/"));
   const [title, sub] = (titles.find(([p]) => path === p || path.startsWith(p + "/")) || [null, brand?.name, ""]).slice(1);
   const tabs = (mobileTabs || nav.flatMap((g) => g.items)).slice(0, 5);

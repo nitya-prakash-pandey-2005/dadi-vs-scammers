@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, animate } from "motion/react";
 import { Lock, X, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { CountUp } from "../motion";
 export const initials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 export const hueOf = (h) => `linear-gradient(135deg, hsl(${h} 85% 60%), hsl(${(h + 50) % 360} 80% 52%))`;
 
@@ -61,7 +62,7 @@ export function Avatar({ name, hue = 300, size = "", status }) {
 export function Stat({ value, unit, label, tone, className = "" }) {
   return (
     <div className={`stat ${className}`}>
-      <div className="v" style={tone ? { color: `var(--${tone})` } : undefined}>{value}{unit && <small>{unit}</small>}</div>
+      <div className="v" style={tone ? { color: `var(--${tone})` } : undefined}>{typeof value === "number" && Number.isFinite(value) ? <CountUp to={value} decimals={Number.isInteger(value) ? 0 : Math.min(2, String(value).split(".")[1]?.length || 1)} /> : value}{unit && <small>{unit}</small>}</div>
       <div className="l">{label}</div>
     </div>
   );
