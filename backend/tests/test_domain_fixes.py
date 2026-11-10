@@ -157,3 +157,23 @@ def test_at_the_rate_of_only_becomes_at_before_a_handle():
     assert find_entities("vijay99 at the rate of ok sbi pe bhejo")["upi_ids"] == ["vijay99@oksbi"]
     assert find_entities("ramesh.k at the rate of ybl")["upi_ids"] == ["ramesh.k@ybl"]
     assert find_entities("bhejo vijay99 at the rate ok sbi")["upi_ids"] == ["vijay99@oksbi"]
+
+
+# --- 5. LLM phone/account formats are normalised ------------------------------------------------
+
+def test_merge_intel_normalises_phone_and_account_formats():
+    from dadi.intel import merge_intel
+    rx = IntelReport(phones=["9876543210"], validated={"phones": ["9876543210"]})
+    llm = IntelReport(phones=["98765 43210", "+91 98765 43210", "098765-43210"], accounts=["1234 5678 9012"])
+    m = merge_intel(rx, llm)
+    assert m.phones == ["9876543210"] and m.accounts == ["123456789012"]
+    assert m.validated == {"phones": ["9876543210"]}
+    m2 = merge_intel(m, IntelReport(accounts=["123456789012"], phones=["9876543210"]))
+    assert m2.phones == ["9876543210"] and m2.accounts == ["123456789012"]
+
+
+def test_sanitise_classifies_llm_numbers_with_the_regex_rules():
+    from dadi.intel import _sanitise
+    r = _sanitise({"accounts": ["98765 43210"], "phones": ["1234 5678 9012", "+91-91234-56789"]})
+    assert sorted(r.phones) == ["9123456789", "9876543210"]
+    assert r.accounts == ["123456789012"]

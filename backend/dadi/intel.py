@@ -53,8 +53,19 @@ def _dedupe(items: list[str]) -> list[str]:
     return out
 
 
+def _numbers(data: dict[str, list[str]]) -> None:
+    """Phones/accounts in any format ('98765 43210', '+91 98765 43210') -> digits, sorted into phones or
+    accounts by the same rules as the regex path, so one number is counted (and ring-linked) once."""
+    if not (data.get("phones") or data.get("accounts")):
+        return
+    found = [find_entities(str(x)) for x in [*data.get("phones", []), *data.get("accounts", [])]]
+    data["phones"] = _dedupe([p for e in found for p in e["phones"]])
+    data["accounts"] = _dedupe([a for e in found for a in e["accounts"]])
+
+
 def merge_intel(old: IntelReport, new: IntelReport) -> IntelReport:
     data = {f: _dedupe(getattr(old, f) + getattr(new, f)) for f in LIST_FIELDS}
+    _numbers(data)
     if new.scam_type != "other" and (new.scam_confidence > old.scam_confidence or old.scam_type == "other"):
         data["scam_type"], data["scam_confidence"] = new.scam_type, new.scam_confidence
     else:
@@ -65,6 +76,7 @@ def merge_intel(old: IntelReport, new: IntelReport) -> IntelReport:
             flags[f.flag] = f
     data["red_flags"] = sorted(flags.values(), key=lambda f: f.t)
     validated = {k: _dedupe(old.validated.get(k, []) + new.validated.get(k, [])) for k in ID_FIELDS}
+    _numbers(validated)
     data["validated"] = {k: v for k, v in validated.items() if v}
     return IntelReport(**data)
 
@@ -87,8 +99,9 @@ def _sanitise(d: dict) -> IntelReport:
     for f in LIST_FIELDS:
         v = d.get(f) or []
         data[f] = [str(x) for x in v] if isinstance(v, list) else []
-    for f in ("upi_ids", "phones", "accounts", "ifsc"):  # LLM IDs must pass the same format rules as the regex
+    for f in ("upi_ids", "ifsc"):  # LLM IDs must pass the same format rules as the regex
         data[f] = [x for item in data[f] for x in find_entities(item)[f]]
+    _numbers(data)  # ... and an LLM "account" that is really a phone (or vice versa) is re-sorted
     data["amounts"] = [a for a in data["amounts"] if not re.fullmatch(r"[\d,.\s]+", a)]  # bare numbers are guesses
     st = d.get("scam_type") or "other"
     data["scam_type"] = st if st in SCAM_TYPES else "other"
