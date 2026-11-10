@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Source of docs/brand/banner.png (1280x400 @2x). Re-render with headless Chrome; fonts come from frontend/node_modules. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dadi vs Scammers banner</title>
+<style>
+  @font-face { font-family: "SG"; src: url("../../frontend/node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2") format("woff2"); font-weight: 300 700; }
+  @font-face { font-family: "IN"; src: url("../../frontend/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+  @font-face { font-family: "JB"; src: url("../../frontend/node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); font-weight: 100 800; }
+  html, body { margin: 0; }
+  body { width: 1280px; height: 400px; overflow: hidden; background: #05060f; color: #f4f2fb; font-family: "IN", "Segoe UI", sans-serif; }
+  .wrap { position: relative; width: 1280px; height: 400px; overflow: hidden;
+    background:
+      radial-gradient(520px 320px at 8% 10%, rgba(255, 77, 157, .20), transparent 70%),
+      radial-gradient(620px 360px at 95% 95%, rgba(139, 92, 246, .26), transparent 70%),
+      #05060f; }
+  .grid { position: absolute; inset: 0; opacity: .5;
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 40px 40px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%, #000 70%, transparent); }
+  .wave { position: absolute; right: 36px; top: 26px; width: 250px; height: 150px; opacity: .5; }
+  .logo { position: absolute; left: 84px; top: 82px; width: 236px; height: 236px; border-radius: 54px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 20px 60px rgba(255, 77, 157, .25), 0 0 90px rgba(139, 92, 246, .25); }
+  .text { position: absolute; left: 368px; top: 96px; right: 40px; }
+  .eyebrow { font-family: "JB", Consolas, monospace; font-size: 15px; letter-spacing: .24em; text-transform: uppercase; color: #ff7ab6; }
+  h1 { font-family: "SG", "Segoe UI", sans-serif; font-weight: 700; font-size: 76px; letter-spacing: -0.035em; line-height: 1; margin: 14px 0 0; }
+  h1 .d { background: linear-gradient(90deg, #ff4d9d, #c05cf0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  h1 .vs { font-weight: 500; font-size: 54px; color: #8b8aa3; margin: 0 6px; }
+  h1 .s { color: #a78bfa; }
+  .tag { font-family: "SG", "Segoe UI", sans-serif; font-size: 32px; font-weight: 600; letter-spacing: -0.015em; margin-top: 20px; color: #f4f2fb; }
+  .meta { margin-top: 26px; display: flex; gap: 8px; flex-wrap: nowrap; }
+  .chip { font-size: 14px; padding: 6px 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: #cfcbe3; }
+  .chip b { color: #fff; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="grid"></div>
+  <svg class="wave" viewBox="0 0 470 280" aria-hidden="true">
+    <defs><linearGradient id="wg" x1="0" x2="1"><stop offset="0" stop-color="#ff4d9d" stop-opacity="0"/><stop offset=".5" stop-color="#ff4d9d"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+    <g fill="url(#wg)">
+      <!-- bars of a voice waveform -->
+      <rect x="20" y="130" width="8" height="20" rx="4"/><rect x="40" y="118" width="8" height="44" rx="4"/><rect x="60" y="100" width="8" height="80" rx="4"/>
+      <rect x="80" y="122" width="8" height="36" rx="4"/><rect x="100" y="86" width="8" height="108" rx="4"/><rect x="120" y="110" width="8" height="60" rx="4"/>
+      <rect x="140" y="70" width="8" height="140" rx="4"/><rect x="160" y="96" width="8" height="88" rx="4"/><rect x="180" y="120" width="8" height="40" rx="4"/>
+      <rect x="200" y="80" width="8" height="120" rx="4"/><rect x="220" y="56" width="8" height="168" rx="4"/><rect x="240" y="92" width="8" height="96" rx="4"/>
+      <rect x="260" y="116" width="8" height="48" rx="4"/><rect x="280" y="74" width="8" height="132" rx="4"/><rect x="300" y="104" width="8" height="72" rx="4"/>
+      <rect x="320" y="124" width="8" height="32" rx="4"/><rect x="340" y="98" width="8" height="84" rx="4"/><rect x="360" y="116" width="8" height="48" rx="4"/>
+      <rect x="380" y="128" width="8" height="24" rx="4"/><rect x="400" y="120" width="8" height="40" rx="4"/><rect x="420" y="132" width="8" height="16" rx="4"/>
+    </g>
+  </svg>
+  <img class="logo" src="logo.svg" alt="">
+  <div class="text">
+    <div class="eyebrow">AI scam-baiter · built on Gnani AI</div>
+    <h1><span class="d">Dadi</span><span class="vs">vs</span><span class="s">Scammers</span></h1>
+    <div class="tag">Don’t block scammers. Route them to Dadi.</div>
+    <div class="meta">
+      <span class="chip"><b>5</b> code-mixed languages</span>
+      <span class="chip">Mule UPI IDs → complaint</span>
+      <span class="chip">SHA-256 sealed evidence</span>
+      <span class="chip">Remembers a scammer’s voice</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
