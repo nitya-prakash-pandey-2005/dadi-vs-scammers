@@ -1,4 +1,5 @@
 // Scam ring radar: calls linked by a shared mule ID or by the scammer's voice fingerprint (Gnani clone embedding).
+import { useEffect, useState } from "react";
 import { AlertTriangle, AudioWaveform, Download, Network, RefreshCw } from "lucide-react";
 import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
@@ -9,36 +10,61 @@ const short = (n) => (n.names?.[0] || n.id.slice(0, 6)).split(" ").slice(0, 2).j
 const plain = (reason) => String(reason || "").replace(/\s*\([^)]*\)\s*$/, ""); // "same voice (1.00)" -> "same voice"
 
 // pos[id] = [x, y, cx, cy]: node position plus its ring centre (labels and link text go on the outer side)
-const heightOf = (data) => (data.rings.length ? H : 130); // no rings yet: one short row of calls, not a big empty box
-
 // first node angle: 2 calls stacked vertically, even rings turned half a step, so no node sits on the left/right
 // edge where its name would collide with the neighbouring ring
 const startAngle = (n) => (n === 2 ? -Math.PI / 2 : n % 2 === 0 ? -Math.PI / 2 + Math.PI / n : -Math.PI / 2);
 
-function layout(data) {
+// Wide cards: rings side by side, calls outside a ring in one row below.
+// Narrow cards (phones): rings stacked, the other calls in rows of three, so nothing needs sideways scrolling.
+const NW = 400, PER_ROW = 3;
+function layout(data, narrow) {
   const pos = {};
-  const ly = data.rings.length ? H - 55 : 60; // row of calls that are not in a ring
   const rings = data.rings;
-  rings.forEach((r, i) => {
-    const n = r.calls.length;
-    const cx = (W / (rings.length + 1)) * (i + 1), cy = 170, rad = n === 2 ? 105 : 95;
+  const lone = data.nodes.filter((n) => !n.ring);
+  const placeRing = (r, cx, cy) => {
+    const n = r.calls.length, rad = n === 2 ? 105 : 95;
     r.calls.forEach((id, j) => {
       const a = (2 * Math.PI * j) / n + startAngle(n);
       pos[id] = [cx + rad * Math.cos(a), cy + rad * Math.sin(a), cx, cy];
     });
-  });
-  const lone = data.nodes.filter((n) => !n.ring);
+  };
+  if (narrow) {
+    rings.forEach((r, i) => placeRing(r, NW / 2, 155 + i * 300));
+    const top = rings.length * 300 + (rings.length ? 20 : 40);
+    lone.forEach((n, i) => {
+      const row = Math.floor(i / PER_ROW), inRow = Math.min(PER_ROW, lone.length - row * PER_ROW);
+      const x = (NW / (inRow + 1)) * ((i % PER_ROW) + 1), y = top + row * 80;
+      pos[n.id] = [x, y, x, y - 140];
+    });
+    const rows = Math.ceil(lone.length / PER_ROW);
+    return { pos, w: NW, h: rows ? top + (rows - 1) * 80 + 50 : rings.length * 300 + 10 };
+  }
+  rings.forEach((r, i) => placeRing(r, (W / (rings.length + 1)) * (i + 1), 170));
+  const ly = rings.length ? H - 55 : 60; // row of calls that are not in a ring
   lone.forEach((n, i) => {
     const x = (W / (lone.length + 1)) * (i + 1);
     // many calls in one row: alternate labels above / below so names don't overlap
     const flip = lone.length > 5 && i % 2 === 1;
     pos[n.id] = [x, ly, x, flip ? ly + 140 : ly - 140];
   });
-  return pos;
+  return { pos, w: W, h: rings.length ? H : 130 }; // no rings yet: one short row of calls, not a big empty box
 }
 
-function Graph({ data }) {
-  const pos = layout(data);
+// true when the element is narrower than `px` (tracks resizes / rotation)
+function useNarrow(px) {
+  const [el, setEl] = useState(null); // callback ref: the element appears only once data has loaded
+  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.innerWidth < px);
+  useEffect(() => {
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(([e]) => setNarrow(e.contentRect.width < px));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [el, px]);
+  return [setEl, narrow];
+}
+
+function Graph({ data, narrow }) {
+  const { pos, w, h } = layout(data, narrow);
   const byId = Object.fromEntries(data.nodes.map((n) => [n.id, n]));
   const ringOf = {};
   data.rings.forEach((r, i) => r.calls.forEach((id) => { ringOf[id] = i; }));
@@ -46,7 +72,7 @@ function Graph({ data }) {
   const big = (i) => i != null && data.rings[i].calls.length > 3;
   const open = (id) => { window.location.hash = `/app/report?id=${id}`; };
   return (
-    <svg viewBox={`0 0 ${W} ${heightOf(data)}`} className="ring-graph" role="img" aria-label="Graph of linked scam calls">
+    <svg viewBox={`0 0 ${w} ${h}`} className={`ring-graph ${narrow ? "narrow" : ""}`} role="img" aria-label="Graph of linked scam calls">
       {data.links.map((l, i) => {
         if (!pos[l.source] || !pos[l.target]) return null;
         const [x1, y1, cx, cy] = pos[l.source], [x2, y2] = pos[l.target];
@@ -87,6 +113,7 @@ function Graph({ data }) {
 
 export default function Rings() {
   const { data, reload, loading } = useApi("/api/rings");
+  const [wrapRef, narrow] = useNarrow(560);
   const d = data || { nodes: [], links: [], rings: [] };
   const inRings = d.rings.reduce((a, r) => a + r.calls.length, 0);
   const synth = d.nodes.filter((n) => n.synthetic);
@@ -113,7 +140,7 @@ export default function Rings() {
         <Stat value={`${synth.length}/${d.nodes.filter((n) => n.voiceprint).length}`} label="Voices matching a known AI voice" tone="cyan" />
       </div>
       <Card icon={Network} title="Who is behind the calls" right={<span className="ring-legend"><i className="id" /> same mule ID <i className="voice" /> same voice</span>}>
-        {d.nodes.length ? <div className="ring-graph-wrap"><Graph data={d} /></div> : <div className="empty">No calls yet. Run two arena calls with the same scammer voice and different scripts.</div>}
+        {d.nodes.length ? <div className="ring-graph-wrap" ref={wrapRef}><Graph data={d} narrow={narrow} /></div> : <div className="empty">No calls yet. Run two arena calls with the same scammer voice and different scripts.</div>}
         {d.nodes.length > 0 && !d.rings.length && <div className="pill-src ring-hint">No links yet: calls join a ring when they share a mule ID or the same voice.</div>}
       </Card>
       <div className="grid g2" style={{ marginTop: 16 }}>
