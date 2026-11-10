@@ -230,8 +230,7 @@ uv run python -m uvicorn dadi.app:create_app --factory --port 8765
 
 ## Team
 
-- **Nitya Prakash Pandey:** idea and research, product and persona design, the shared voice engine, Dadi's brain (tactics, prompts, intel, complaint), web app, arena and noise benchmark, repeat-caller recognition, evidence pack, docs.
-- **Dilavesh Kanz Nidooli:** live Gnani integration and testing (found and fixed the Prisma one-locale and ASCII-keyterm issues), Scam Ring Radar, message checker, intelligence board and freeze list, mission mode, Ajji and Ammamma, running stories, AI-voice flag, "are you a bot?" arena; built our sister apps Pukaar and Apni Awaaz.
+Nitya Prakash Pandey · Dilavesh Kanz Nidooli
 
 **One engine, three products.** The same `voice-core` powers [**Pukaar**](https://github.com/nitya-prakash-pandey-2005/pukaar), a flood-emergency voice line that answers overflow calls in the caller's language, and [**Apni Awaaz**](https://github.com/nitya-prakash-pandey-2005/apni-awaaz), which gives people who lost their voice their own voice back.
 
