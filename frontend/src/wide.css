@@ -11,6 +11,20 @@
 .mix-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff4d9d, #8b5cf6); transform-origin: left; transition: transform .8s cubic-bezier(.22,1,.36,1); }
 .mix-n { text-align: right; color: var(--text); }
 
+.side-list a { color: var(--pink-2); text-decoration: underline; text-underline-offset: 2px; }
+
+/* scam-script donut (Recharts) */
+.donut { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: center; }
+.donut-chart { position: relative; width: 150px; height: 150px; }
+.donut-mid { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+.donut-mid b { font-size: 28px; line-height: 1; }
+.donut-mid span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.donut-legend { display: grid; gap: 8px; font-size: 13px; color: var(--text-2); min-width: 0; }
+.donut-legend div { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.donut-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.donut-legend span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 1500px) and (min-width: 761px) { .donut { grid-template-columns: minmax(0, 1fr); justify-items: center; } .donut-legend { width: 100%; } }
+
 /* call recording: stereo waveform (wavesurfer.js) over the native player */
 .recp { display: grid; gap: 10px; }
 .recp-wave { display: flex; gap: 14px; align-items: center; padding: 12px; border-radius: 14px; background: rgba(0,0,0,.25); border: 1px solid var(--line); }

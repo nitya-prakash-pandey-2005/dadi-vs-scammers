@@ -1,4 +1,5 @@
 // Scam Message Checker: paste a suspicious SMS / WhatsApp / "notice", get a verdict and a Dadi reply to bait the sender.
+import CheckGuide from "../components/viz/CheckGuide";
 import { useState } from "react";
 import { AlertTriangle, CheckCircle2, Copy, Info, MessageSquareWarning, Network, Search, Share2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Badge, Card, PageHead, toast } from "../ui";
@@ -48,6 +49,7 @@ export default function Check() {
         </div>
         <div className="span-7 stack">
           {!r && <Card icon={ShieldCheck} title="Result"><div className="empty">Paste a message or pick a sample.</div></Card>}
+          {!r && <CheckGuide />}
           {note && (
             <Card icon={Info} title={HAS_CHECKS ? "Try a sample message in this demo" : "Checking needs the live server"}>
               <div className="stack" style={{ gap: 10 }}>

@@ -4,6 +4,9 @@ import { Badge, Card, PageHead, Stat } from "../ui";
 import { useApi } from "../lib/api";
 import ApiLink from "../components/ApiLink";
 import { RED_FLAG_LABELS, SCAM_TYPE_LABELS } from "../lib/labels";
+import { lazy, Suspense } from "react";
+
+const ScriptDonut = lazy(() => import("../components/viz/ScriptDonut"));
 
 const inr = (n) => (n >= 1e7 ? `₹${(n / 1e7).toFixed(1)} Cr` : n >= 1e5 ? `₹${(n / 1e5).toFixed(1)} L` : `₹${n.toLocaleString("en-IN")}`);
 
@@ -46,7 +49,13 @@ export default function Intel() {
       </div>
       <div className="grid g3">
         <Card icon={Building2} title="Who they pretend to be"><Bars rows={d.agencies} label={(r) => r.name} value={(r) => r.calls} /></Card>
-        <Card icon={ShieldAlert} title="Scam scripts"><Bars rows={d.scam_types} label={(r) => SCAM_TYPE_LABELS[r.type] || r.type} value={(r) => r.calls} tone="var(--amber)" /></Card>
+        <Card icon={ShieldAlert} title="Scam scripts">
+          {d.scam_types?.length ? (
+            <Suspense fallback={<Bars rows={d.scam_types} label={(r) => SCAM_TYPE_LABELS[r.type] || r.type} value={(r) => r.calls} tone="var(--amber)" />}>
+              <ScriptDonut rows={d.scam_types.map((r) => ({ name: SCAM_TYPE_LABELS[r.type] || r.type, value: r.calls }))} />
+            </Suspense>
+          ) : <div className="empty">Nothing yet.</div>}
+        </Card>
         <Card icon={AlertTriangle} title="Pressure tactics"><Bars rows={d.red_flags} label={(r) => RED_FLAG_LABELS[r.flag] || r.flag} value={(r) => r.calls} tone="var(--cyan)" /></Card>
       </div>
       <Card icon={Snowflake} title="Freeze list: mule IDs to report" className="bad" style={{ marginTop: 16 }} right={<span className="pill-src">{d.handles.map((h) => `${h.handle} → ${h.bank || "?"}`).join(" · ")}</span>}>
