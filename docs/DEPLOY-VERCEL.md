@@ -41,11 +41,12 @@ message, and epoch or millisecond times. Binary frames in a capture are skipped.
 
 ## Refresh the snapshots from real data
 
-1. Start the backend on the database you want to show, **with the keys emptied** so it only reads the database
-   (from the repo root):
+1. Start the backend on the database you want to show (`cache/dadi.db` of that checkout) **without keys**, so it
+   only reads the database. An empty key in the environment falls back to the repo's `.env`, so either start it
+   from a checkout that has no `.env`, or set the keys to a dummy value:
 
    ```bash
-   GNANI_API_KEY= GROQ_API_KEY= uv run python -m uvicorn dadi.app:create_app --factory --port 8765
+   GNANI_API_KEY=off GROQ_API_KEY=off EVON_BASE_URL= uv run python -m uvicorn dadi.app:create_app --factory --port 8765
    ```
 
 2. Save every REST response (replaces `frontend/public/demo/api/`):
@@ -55,8 +56,11 @@ message, and epoch or millisecond times. Binary frames in a capture are skipped.
    ```
 
    Options: `--no-audio` / `--no-evidence` skip recordings and evidence packs (size), `--calls id1,id2` keeps
-   recordings and packs for those calls only. Checker samples need a working LLM; with empty keys the script warns
-   and the demo shows a "try a sample" note instead of a verdict.
+   recordings and packs for those calls only.
+
+   The checker samples need a working LLM (the checker uses only the LLM, no Gnani). Add
+   `--check-base http://127.0.0.1:<port>` to post the 3 samples to a backend that has one. Without an LLM the
+   script keeps the verdicts already in `api/check` and the demo shows a "try a sample" note for missing ones.
 
 3. Put the live captures next to it: `frontend/public/demo/ws-call.json`, `call.wav` (the recording of that call),
    `ws-arena.json`. The call's `call_id` should be one of the snapshot's calls, so its report opens after hang-up.

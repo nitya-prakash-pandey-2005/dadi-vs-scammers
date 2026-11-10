@@ -10,10 +10,16 @@
 //   --no-audio          skip the call recordings (calls/<id>/audio.wav)
 //   --no-evidence       skip the evidence packs (calls/<id>/evidence.zip)
 //   --calls <id,id>     only these calls get recordings and evidence packs (all calls still get their report)
+//   --check-base <url>  backend for the checker samples (default --base). The checker needs a working LLM: point
+//                       this at a backend that has one (3 LLM requests, no Gnani). Without an LLM, earlier verdicts
+//                       in api/check are kept and the demo shows a "try a sample" note for missing ones.
 //   --capture-call <s>  ALSO record a <s>-second /ws/call session into public/demo/ws-call.json + call.wav
 //   --capture-arena     ALSO record one /ws/arena run into public/demo/ws-arena.json
 //                       (captures are for a fake-mode backend, DADI_FAKE=1: against a live one they spend credits)
-// public/demo/api is replaced on every run; ws-*.json and call.wav next to it are only written by --capture-*.
+// public/demo/api is replaced on every run (except api/check, see above); ws-*.json and call.wav next to it are
+// only written by --capture-*.
+// Note: an EMPTY key in the environment falls back to the repo's .env (voice_core/config.py). To read the database
+// without keys, start the backend from a checkout that has no .env, or set the keys to a dummy value such as "off".
 import { mkdir, rm, writeFile, readdir, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,6 +34,7 @@ const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
 const opt = (name, dflt) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : dflt; };
 const BASE = opt("--base", "http://127.0.0.1:8765").replace(/\/$/, "");
+const CHECK_BASE = opt("--check-base", BASE).replace(/\/$/, "");
 const ONLY = opt("--calls", "") ? new Set(opt("--calls", "").split(",").map((s) => s.trim())) : null;
 
 async function get(path, kind = "json") {
@@ -43,8 +50,8 @@ async function save(rel, data) {
 }
 
 async function snapshotRest() {
-  await rm(OUT, { recursive: true, force: true });
   await mkdir(OUT, { recursive: true });
+  for (const e of await readdir(OUT)) if (e !== "check") await rm(join(OUT, e), { recursive: true, force: true });
 
   const health = await get("/api/health");
   // the demo shows a "Demo replay" pill; drop anything that only describes this machine's server
@@ -72,17 +79,25 @@ async function snapshotRest() {
   console.log(`calls: ${calls.length} (recordings saved: ${audio})`);
 
   let checks = 0;
-  for (const s of SAMPLES) {
-    try {
-      const r = await fetch(BASE + "/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: s.text }) });
-      if (!r.ok) throw new Error(String(r.status));
-      await save(`check/${textKey(s.text)}.json`, await r.json());
-      checks += 1;
-    } catch (e) {
-      console.warn(`checker sample "${s.label}" not saved (${e.message}): the demo shows the "try a sample" note for it`);
+  const ch = await (await fetch(CHECK_BASE + "/api/health")).json().catch(() => ({}));
+  if (!ch.fake && !ch.llm_key) {
+    console.warn(`checker: ${CHECK_BASE} has no LLM, so its verdicts would be wrong. Kept the earlier ones in api/check.`);
+  } else {
+    for (const s of SAMPLES) {
+      try {
+        const r = await fetch(CHECK_BASE + "/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: s.text }) });
+        if (!r.ok) throw new Error(String(r.status));
+        const v = await r.json();
+        // every sample is a scam: "no signs" means the LLM call failed (bad key), not a real verdict
+        if (v.verdict === "no_signs") throw new Error("verdict 'no_signs': is the LLM key valid?");
+        await save(`check/${textKey(s.text)}.json`, v);
+        checks += 1;
+      } catch (e) {
+        console.warn(`checker sample "${s.label}" not saved (${e.message}): an earlier verdict, if any, is kept`);
+      }
     }
   }
-  console.log(`checker samples: ${checks}/${SAMPLES.length}`);
+  console.log(`checker samples saved: ${checks}/${SAMPLES.length}`);
 }
 
 // Record a WebSocket session as [{t, msg}] (binary frames are skipped: call audio comes from the recording).

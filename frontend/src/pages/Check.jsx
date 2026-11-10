@@ -19,10 +19,10 @@ export default function Check() {
   const [busy, setBusy] = useState(false);
   const [r, setR] = useState(null);
 
-  const run = async () => {
+  const run = async (msg = text) => {
     setBusy(true); setR(null);
     try {
-      setR(await postJSON("/api/check", { text }));
+      setR(await postJSON("/api/check", { text: msg }));
     } catch { toast("Could not check the message", "warn"); }
     setBusy(false);
   };
@@ -42,7 +42,7 @@ export default function Check() {
             <div className="stack" style={{ gap: 10 }}>
               <textarea className="textarea" rows={7} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste the message here…" maxLength={2000} />
               <div className="chips">{SAMPLES.map((s) => <button key={s.label} className="btn sm" onClick={() => setText(s.text)}>{s.label}</button>)}</div>
-              <button className="btn primary block" disabled={busy || !text.trim()} onClick={run}><Search size={16} /> {busy ? "Checking…" : "Check message"}</button>
+              <button className="btn primary block" disabled={busy || !text.trim()} onClick={() => run()}><Search size={16} /> {busy ? "Checking…" : "Check message"}</button>
             </div>
           </Card>
         </div>
@@ -55,7 +55,7 @@ export default function Check() {
                   This online demo replays verdicts recorded from the live backend, so it can check the sample
                   messages. Pick one of them. To check any message, run Dadi locally with your own keys.
                 </p>
-                <div className="chips">{SAMPLES.map((s) => <button key={s.label} className="btn sm" onClick={() => { setText(s.text); setR(null); }}>{s.label}</button>)}</div>
+                <div className="chips">{SAMPLES.map((s) => <button key={s.label} className="btn sm" onClick={() => { setText(s.text); run(s.text); }}>{s.label}</button>)}</div>
                 <a className="btn sm" href={REPO_URL} target="_blank" rel="noreferrer">How to run it locally (GitHub)</a>
               </div>
             </Card>
