@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Headphones, PhoneCall, PhoneOff, ShieldAlert, Target } from "lucide-react";
-import { Badge, Card, Hud, Seg, hueOf, initials } from "../ui";
+import { Headphones, PhoneCall, PhoneOff, ShieldAlert, Speaker, Target } from "lucide-react";
+import { Badge, Card, Hud, Seg, Toggle, hueOf, initials } from "../ui";
 import { DISCLAIMER, MIX_LABEL, PERSONA_HUE, mmss } from "../lib/labels";
 import { useNow } from "../state/useCall";
 
@@ -26,8 +26,15 @@ export const MISSION_OPTIONS = [
 ];
 export const noiseToDb = (v) => (v === "off" ? null : Number(v));
 
+// Speakerphone choice survives reloads (storage can be blocked: private window, demo kiosk)
+const SPEAKER_KEY = "dadi.speakerphone";
+const loadSpeaker = () => { try { return localStorage.getItem(SPEAKER_KEY) === "1"; } catch { return false; } };
+const saveSpeaker = (on) => { try { localStorage.setItem(SPEAKER_KEY, on ? "1" : "0"); } catch { /* not persisted */ } };
+
 export default function Phone({ call, personas, personaKey, setPersonaKey, noise, setNoise }) {
   const [mission, setMission] = useState("");
+  const [speaker, setSpeakerState] = useState(loadSpeaker);
+  const setSpeaker = (on) => { setSpeakerState(on); saveSpeaker(on); };
   const live = ["connecting", "live", "ending"].includes(call.phase);
   const now = useNow(live);
   const elapsed = live && call.startedAt ? (now - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
@@ -96,7 +103,7 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
           <PhoneOff size={18} /> {call.phase === "ending" ? "Hanging up…" : "Hang up"}
         </button>
       ) : (
-        <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null)}>
+        <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null, { speakerphone: speaker })}>
           <PhoneCall size={18} /> Call {personaKey === "auto" ? "Dadi" : SHORT[personaKey] || "Dadi"}
         </button>
       )}
@@ -109,12 +116,12 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
 
       <div className="field">
         <span>Dadi's mission</span>
-        <div className={live ? "locked" : ""}><Seg options={MISSION_OPTIONS} value={mission} onChange={setMission} /></div>
+        <div className={live ? "locked" : ""} inert={live || undefined}><Seg options={MISSION_OPTIONS} value={mission} onChange={setMission} /></div>
       </div>
 
       <div className="field">
         <span>Who picks up</span>
-        <div className={live ? "locked" : ""}>
+        <div className={live ? "locked" : ""} inert={live || undefined}>
           <Seg
             options={[{ value: "auto", label: "Auto" }, ...personas.map((p) => ({ value: p.key, label: SHORT[p.key] || p.name }))]}
             value={personaKey}
@@ -129,9 +136,19 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
         <span className="pill-src">Mixes Gnani-voiced call-centre babble into the scammer's audio before Prisma hears it</span>
       </div>
 
-      <div className="callout">
-        <Headphones size={18} className="flex-none" />
-        <span>Use earphones while playing the scammer, so Dadi doesn't hear herself.</span>
+      <div className="callout speaker-box" data-tour="speakerphone">
+        <div className="row-top">
+          <Headphones size={18} className="flex-none" />
+          <span>Use earphones while playing the scammer, so Dadi doesn't hear herself.</span>
+        </div>
+        <label className={`speaker-row ${live ? "off" : ""}`} title={live ? "Change it before the call starts" : undefined}>
+          <Speaker size={18} className="flex-none" />
+          <span className="grow">Speakerphone (no earphones)</span>
+          <Toggle on={speaker} onChange={setSpeaker} label="Speakerphone (no earphones)" disabled={live} />
+        </label>
+        <span className="pill-src">
+          {speaker ? "On: Dadi stops listening while she talks, so she can't hear herself. " : ""}Earphones give the best barge-in.
+        </span>
       </div>
 
       <div className="disclaimer">

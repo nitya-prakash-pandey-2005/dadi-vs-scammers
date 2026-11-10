@@ -73,8 +73,13 @@ export function useCall({ onEnded } = {}) {
     }
   }, []);
 
-  const start = useCallback(async (personaKey = "auto", noiseDb = null, missionKey = null) => {
-    if (refs.current.call) return;
+  // One object per call. Async work (mic permission prompt, late socket events) checks it is still the current,
+  // live call before touching shared state, so a hang-up during the prompt can never leak a mic into the next call.
+  const start = useCallback(async (personaKey = "auto", noiseDb = null, missionKey = null, { speakerphone = false } = {}) => {
+    const prev = refs.current.call;
+    if (prev?.live) return; // a call is already running
+    prev?.sock.close(); // previous call is over but its socket is still closing
+    stopMic();
     setTurns([]);
     setIntel(null);
     setMission(missionKey ? { key: missionKey, done: false } : null);
@@ -88,44 +93,74 @@ export function useCall({ onEnded } = {}) {
     const player = createPcmPlayer({ sampleRate: RATE }); // created inside the click, so audio is allowed
     refs.current.player = player;
     const t0 = Date.now();
-    refs.current.call = openCall({
+    const session = { live: true, started: false, sock: null };
+    const current = () => refs.current.call === session;
+    refs.current.call = session;
+    session.sock = openCall({
       persona: personaKey,
       noiseSnrDb: noiseDb,
       mission: missionKey,
-      onEvent,
-      onAudio: (ab) => player.play(ab),
+      speakerphone,
+      onEvent: (m) => {
+        if (!current()) return;
+        if (m.type === "session_started") session.started = true;
+        if (m.type === "call_ended") session.live = false;
+        onEvent(m);
+      },
+      onAudio: (ab) => { if (current()) player.play(ab); },
       onClose: () => {
+        if (!current()) return;
+        session.live = false;
         refs.current.call = null;
         stopMic();
         setStt("idle");
         setSpeaking(false);
+        if (!session.started) { // never reached the server (hung up while ringing, or server offline)
+          player.flush();
+          setPhase("idle");
+          return;
+        }
         setPhase((p) => {
           if (p !== "ended") setWasted((w) => w || (Date.now() - t0) / 1000);
           return "ended";
         });
       },
     });
+    let mic;
     try {
-      refs.current.mic = await startMic({ targetRate: RATE, onFrame: (ab) => refs.current.call?.sendAudio(ab) });
+      mic = await startMic({ targetRate: RATE, onFrame: (ab) => { if (current() && session.live) session.sock.sendAudio(ab); } });
     } catch (e) {
-      toast(`Microphone unavailable: ${e?.message || e}`, "warn");
+      if (current() && session.live) toast(`Microphone unavailable: ${e?.message || e}`, "warn");
+      return;
     }
+    // the call may have been hung up, ended or replaced while the permission prompt was open
+    if (!current() || !session.live) {
+      mic.stop();
+      return;
+    }
+    stopMic();
+    refs.current.mic = mic;
   }, [onEvent]);
 
   const hangup = useCallback(() => {
     stopMic();
-    if (refs.current.call) {
-      refs.current.call.hangup();
+    refs.current.player?.flush();
+    setSpeaking(false);
+    const s = refs.current.call;
+    if (s?.live) {
+      s.live = false;
+      s.sock.hangup();
       setPhase("ending");
     }
   }, []);
 
-  const setNoise = useCallback((db) => refs.current.call?.setNoise(db), []);
+  const setNoise = useCallback((db) => refs.current.call?.sock.setNoise(db), []);
   const playerLevel = useCallback(() => refs.current.player?.level() ?? 0, []);
   const micLevel = useCallback(() => refs.current.mic?.level() ?? 0, []);
 
   useEffect(() => () => {
-    refs.current.call?.close();
+    refs.current.call?.sock.close();
+    refs.current.call = null;
     stopMic();
     refs.current.player?.close();
   }, []);
