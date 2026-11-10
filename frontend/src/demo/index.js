@@ -12,7 +12,7 @@ export const NOT_IN_DEMO = "Not included in this demo build: run Dadi locally wi
 
 const have = new Set(files); // "demo/api/calls.json", "demo/ws-call.json", ...
 export const hasDemoFile = (p) => have.has(p.replace(/^\//, ""));
-export const HAS_CHECKS = files.some((f) => f.startsWith("demo/api/check/")); // recorded checker verdicts
+export const HAS_CHECKS = DEMO && files.some((f) => f.startsWith("demo/api/check/")); // recorded checker verdicts
 
 // "/api/calls/ab12/report" -> "/demo/api/calls/ab12/report.json"; "/api/freeze-list?format=csv" -> ".../freeze-list.csv"
 export function demoPath(path) {
