@@ -1,0 +1,1 @@
+{"gnani_key":true,"llm_key":true,"llm_provider":"groq","groq_model":"qwen/qwen3.8-27b","llm_model":"qwen/qwen3.8-27b","llm_ready":true,"llm_last_error":null,"intel_llm_provider":"groq","stt_mode":"stream","fillers_ready":true,"fake":false,"demo":true}
