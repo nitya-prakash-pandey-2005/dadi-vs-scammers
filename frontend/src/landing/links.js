@@ -1,7 +1,13 @@
 // Every outbound link on the landing page lives here, so the lead can swap in the real video / product URLs in one place.
-export const REPO_URL = "https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers";
+const GH = "https://github.com/nitya-prakash-pandey-2005";
+export const REPO_URL = `${GH}/dadi-vs-scammers`;
 // the 3-minute video: until the final link is known, point at the README (it carries the video link)
 export const VIDEO_URL = `${REPO_URL}#readme`;
-export const PUKAAR_URL = "https://github.com/nitya-prakash-pandey-2005/pukaar";
-export const AWAAZ_URL = "https://github.com/nitya-prakash-pandey-2005/apni-awaaz";
+
+// live demos (Vercel) and their GitHub repos
+export const DADI_URL = "https://dadi-vs-scammers.vercel.app/";
+export const PUKAAR_URL = "https://pukaar-snowy.vercel.app/";
+export const PUKAAR_REPO = `${GH}/pukaar`;
+export const AWAAZ_URL = "https://apni-awaaz-kappa.vercel.app/";
+export const AWAAZ_REPO = `${GH}/apni-awaaz`;
 export const APP_HREF = "#/app";

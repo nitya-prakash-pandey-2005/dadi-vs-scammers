@@ -7,7 +7,7 @@ import {
   Network, PhoneCall, ShieldCheck, Target, Users, Check, Minus,
 } from "lucide-react";
 import { countUp, onceVisible, reducedMotion, revealOnScroll } from "../motion";
-import { APP_HREF, AWAAZ_URL, PUKAAR_URL, REPO_URL, VIDEO_URL } from "./links";
+import { APP_HREF, AWAAZ_REPO, AWAAZ_URL, DADI_URL, PUKAAR_REPO, PUKAAR_URL, REPO_URL, VIDEO_URL } from "./links";
 import Pipeline from "./Pipeline";
 import "../landing.css";
 
@@ -315,9 +315,9 @@ function Compare() {
 function Engine() {
   const ref = useReveal({ gap: 90 });
   const items = [
-    { name: "Dadi vs Scammers", text: "An AI grandmother who baits scam callers and turns the call into mule IDs, evidence and a complaint.", href: REPO_URL, tag: "this site", tone: "pink" },
-    { name: "Pukaar", text: "A flood-emergency voice line that answers overflow calls in the caller's language.", href: PUKAAR_URL, tone: "cyan" },
-    { name: "Apni Awaaz", text: "Gives people who lost their voice their own voice back.", href: AWAAZ_URL, tone: "violet" },
+    { name: "Dadi vs Scammers", text: "An AI grandmother who baits scam callers and turns the call into mule IDs, evidence and a complaint.", live: APP_HREF, liveLabel: "Open the app", repo: REPO_URL, tag: "this site", tone: "pink" },
+    { name: "Pukaar", text: "A flood-emergency voice line that answers overflow calls in the caller's language.", live: PUKAAR_URL, repo: PUKAAR_REPO, tone: "cyan" },
+    { name: "Apni Awaaz", text: "Gives people who lost their voice their own voice back.", live: AWAAZ_URL, repo: AWAAZ_REPO, tone: "violet" },
   ];
   return (
     <section className="l-sec" id="engine" ref={ref}>
@@ -326,11 +326,14 @@ function Engine() {
         <h2 className="l-h2" data-reveal>The same <code>voice-core</code> on Gnani AI <span className="l-dim">powers all three.</span></h2>
         <div className="l-engine">
           {items.map((p) => (
-            <a className={`l-prod t-${p.tone}`} key={p.name} href={p.href} target="_blank" rel="noreferrer" data-reveal>
-              <span className="l-prod-top"><b>{p.name}</b>{p.tag ? <em>{p.tag}</em> : <Github size={16} />}</span>
+            <div className={`l-prod t-${p.tone}`} key={p.name} data-reveal>
+              <span className="l-prod-top"><b>{p.name}</b>{p.tag && <em>{p.tag}</em>}</span>
               <span className="l-prod-text">{p.text}</span>
-              <span className="l-prod-go">View on GitHub <ArrowRight size={15} /></span>
-            </a>
+              <span className="l-prod-links">
+                <a className="l-prod-go" href={p.live} {...(p.live.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>{p.liveLabel || "Live demo"} <ArrowRight size={15} /></a>
+                <a className="l-prod-gh" href={p.repo} target="_blank" rel="noreferrer"><Github size={14} /> GitHub</a>
+              </span>
+            </div>
           ))}
         </div>
       </div>
@@ -414,6 +417,7 @@ export default function Landing() {
           <div className="l-foot-row">
             <a href={REPO_URL} target="_blank" rel="noreferrer"><Github size={15} /> GitHub</a>
             <a href={APP_HREF}>Open the app</a>
+            <a href={DADI_URL}>{DADI_URL.replace(/^https:\/\/|\/$/g, "")}</a>
             <span className="l-tags">#GnaniAI #GreatIndianAIInternshipChallenge</span>
           </div>
         </div>
