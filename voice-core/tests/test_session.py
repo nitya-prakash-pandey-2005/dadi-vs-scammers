@@ -173,3 +173,36 @@ async def test_stt_never_connects_reports_error_and_hangup_works():
     assert [m["text"] for m in turns(out_json, "agent")] == ["hello?"]
     await sess.hangup()
     assert agent.ended is not None
+
+
+# ---------------------------------------------------------------- 3. a new transcript stops stale audio
+
+async def slow_tts(*a, **k):  # 1.2 s of audio streamed in 0.3 s (faster than real time, like Timbre)
+    for _ in range(6):
+        await asyncio.sleep(0.05)
+        yield b"\x00\x01" * 1600
+
+
+async def test_new_transcript_stops_the_old_reply_audio():
+    agent = StubAgent([["pehla jawab bahut lamba."], ["doosra jawab."]])
+    stt = FakeStt([ev("transcript", "madam aapke naam pe FIR hai"),
+                   ev("transcript", "aur abhi paise bhejne honge")], gap=0.2)
+    sess, out_json, _ = make(agent, streams=[stt], tts=slow_tts)
+    await sess.start()
+    await asyncio.sleep(0.8)
+    await sess.wait_idle()
+    kinds = [m["type"] + (":" + m["speaker"] if m["type"] == "turn" else "") for m in out_json]
+    second = [i for i, k in enumerate(kinds) if k == "turn:caller"][1]
+    assert "stop_audio" in kinds[second:], kinds
+    await sess.hangup()
+
+
+async def test_transcript_does_not_cut_the_filler_it_triggered():
+    agent = StubAgent([["achha."]], fillers=["hmm"])
+    stt = FakeStt([ev("processing"), ev("transcript", "aapka KYC pending hai")], gap=0.1)
+    sess, out_json, _ = make(agent, streams=[stt], filler_audio={"hmm": b"\x00\x01" * 8000}, filler_delay=0.01)
+    await sess.start()
+    await asyncio.sleep(0.4)
+    await sess.wait_idle()
+    assert not any(m["type"] == "stop_audio" for m in out_json)
+    await sess.hangup()

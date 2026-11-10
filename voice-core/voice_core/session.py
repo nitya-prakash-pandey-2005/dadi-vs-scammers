@@ -81,6 +81,7 @@ class VoiceAgentSession:
         self._speaking_until = 0.0
         self._reply_audio_started = False
         self._last_filler: str | None = None
+        self._last_audio_kind = ""  # "filler" or "speech": what is playing at the caller's end
         self._lang_set = False
         self._closing = False
         self._noise_pos = 0
@@ -241,9 +242,11 @@ class VoiceAgentSession:
         await self._record(turn)
         await self._safe_json({"type": "turn", "speaker": turn.speaker, "text": text, "t": turn.t,
                                "lang": turn.lang, "latency_ms": turn.latency_ms})
-        # a new user turn supersedes anything still being said
-        if self._speak_task and not self._speak_task.done():
-            self._speak_task.cancel()
+        # a new user turn supersedes anything still being said: also flush the old reply's audio already buffered
+        # at the caller's end (a filler started by this same utterance may finish; the reply queues behind it)
+        if (self._speak_task and not self._speak_task.done()) or (
+                time.monotonic() < self._speaking_until and self._last_audio_kind != "filler"):
+            await self._barge_in()
         self._reply_audio_started = False
         self._speak_task = asyncio.create_task(self._reply())
         self._spawn(self._analyse())
@@ -265,9 +268,10 @@ class VoiceAgentSession:
         text = self.rng.choice(options)
         self._last_filler = text
         self._recent_agent_lines.append(text)
-        await self._emit_audio(self.filler_audio[text])
+        await self._emit_audio(self.filler_audio[text], kind="filler")
 
-    async def _emit_audio(self, chunk: bytes) -> None:
+    async def _emit_audio(self, chunk: bytes, kind: str = "speech") -> None:
+        self._last_audio_kind = kind
         now = time.monotonic()
         self._speaking_until = max(self._speaking_until, now) + len(chunk) / 2 / self.sr
         await self.send_audio(chunk)
