@@ -4,6 +4,7 @@ import { useApi } from "../lib/api";
 import { INTEL_FIELDS, mmss } from "../lib/labels";
 import SpeechText from "../components/SpeechText";
 import ApiLink from "../components/ApiLink";
+import RecPlayer from "../components/viz/RecPlayer";
 import { NOT_IN_DEMO, apiHref } from "../demo";
 
 const REPORT_LINKS = {
@@ -48,7 +49,7 @@ export default function Report({ query }) {
 
         {r.recording && (
           <Card icon={AudioLines} title="Call recording (evidence)" right={<Hud tone="green">SHA-256 sealed</Hud>}>
-            {recUrl ? <audio className="rec-player no-print" controls preload="none" src={recUrl} /> : <div className="empty no-print">{NOT_IN_DEMO}.</div>}
+            {recUrl ? <RecPlayer src={recUrl} persona={r.persona} /> : <div className="empty no-print">{NOT_IN_DEMO}.</div>}
             <div className="small text-2" style={{ marginTop: 8 }}>
               Stereo: left = caller, right = {r.persona}, as it was heard on the call · {mmss(r.recording.seconds)}
             </div>

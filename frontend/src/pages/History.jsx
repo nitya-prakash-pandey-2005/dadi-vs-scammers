@@ -4,6 +4,7 @@ import { useApi } from "../lib/api";
 import { PERSONA_HUE, SCAM_TYPE_LABELS, identifierCount, mmss } from "../lib/labels";
 import { Totals } from "../components/WarRoom";
 import ApiLink from "../components/ApiLink";
+import HistoryAside from "../components/viz/HistoryAside";
 
 const NAMES = { dadi: "Kamla Devi (Dadi)", paati: "Meenakshi (Paati)", thakuma: "Bela Rani (Thakuma)", ajji: "Shantamma (Ajji)", ammamma: "Sarojini (Ammamma)" };
 
@@ -20,6 +21,7 @@ export default function History() {
       />
       <div className="grid">
         <Totals totals={totals} />
+        <div className="split-wide">
         <Card icon={HistoryIcon} title="Calls" right={<Badge>{calls?.length ?? 0}</Badge>}>
           {loading && !calls && <div className="skeleton" style={{ height: 120 }} />}
           {error && <div className="empty">Could not load calls. Is the backend running?</div>}
@@ -42,6 +44,8 @@ export default function History() {
             })}
           </div>
         </Card>
+        <HistoryAside calls={calls} />
+        </div>
       </div>
     </>
   );

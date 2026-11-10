@@ -12,6 +12,7 @@ import "./styles/components.css";
 import "./styles/layout.css";
 import "./styles/tour.css";
 import "./app.css";
+import "./wide.css";
 import "./motion";
 import { applySavedTheme } from "./lib/theme";
 import Root from "./Root";
