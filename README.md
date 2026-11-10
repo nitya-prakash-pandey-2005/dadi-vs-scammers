@@ -9,9 +9,33 @@ Built on Gnani AI's voice stack for the *Great Indian AI Internship Challenge* (
 > **One-page pitch: [`PITCH.md`](PITCH.md)** · Demo video: *[link]* · Every call in the demo is simulated: the scammer is played by a team member or by our AI. All IDs are fake.
 
 ## Why
-- Indians lost about **₹22,845 crore** to cyber fraud in 2024 (I4C, MHA); "digital arrest" alone took about ₹1,935 crore.
-- Blocking a scam call costs the scammer nothing: he dials the next number. **Routing it to Dadi costs him real time** that would have gone to a real victim.
-- Every scam ends with "send the money here". Dadi plays along until he says where, then hands that mule account to police and banks.
+
+- Indians lost **₹22,845 crore** to cyber fraud in 2024, three times 2023's ₹7,465 crore ([MHA reply in the Lok Sabha, via Inc42](https://inc42.com/?p=523954)). Losses stayed around **₹22,500 crore in 2025** ([Free Press Journal](https://www.freepressjournal.in/mumbai/over-24-lakh-cyber-complaints-22495-crore-fraud-reported-in-2025)).
+- The elderly are hit hardest: in 2025, **1,03,488 senior citizens** reported losing **₹4,005 crore**, about 4% of complainants but roughly 18% of the money (our calculation from [MHA's Rajya Sabha reply, via ANI](https://newsable.asianetnews.com/india/senior-citizens-women-lost-rs-7-769-crore-to-cyber-fraud-in-2025-articleshow-u9oad8w)).
+- "Digital arrest" peaked in 2024 at about **₹1,935 crore** ([Inc42](https://inc42.com/buzz/indians-lost-inr-1935-cr-to-digital-arrest-scams-in-2024-govt/)).
+- Lakhs of complaints become only tens of thousands of FIRs (86,420 cybercrime cases in 2023, [NCRB via The News Minute](https://www.thenewsminute.com/news/cybercrime-soars-by-31-in-india-karnataka-tops-with-21889-cases)). Police and banks need evidence: recordings, mule accounts, a complaint they can act on.
+
+**Real calls like the ones Dadi answers:**
+- **₹7 crore, Ludhiana, Aug 2024:** fake "CBI officers" held industrialist S.P. Oswal on Skype for two days, with a fake Supreme Court hearing ([Scroll](https://scroll.in/latest/1073888/2-arrested-for-duping-industrialist-sp-oswal-of-rs-7-crore-by-posing-as-officers-of-central-agencies)).
+- **₹20.26 crore, Mumbai, Dec 2024–Mar 2025:** an 86-year-old woman was told her Aadhaar was linked to money laundering and made to check in every 3 hours ([The Tribune](https://www.tribuneindia.com/news/india/85-year-old-woman-held-hostage-extorted-of-rs-20-crore-by-cyber-fraudsters-3-held)).
+- **₹23 crore, Delhi, Aug–Sep 2025:** a 78-year-old retired banker; the money moved through more than 4,000 layered accounts ([The Week/PTI](https://www.theweek.in/wire-updates/national/2025/09/23/des41-dl-digital-arrest-victim.html)).
+- The Prime Minister warned in Mann Ki Baat (27 Oct 2024): "No investigative agency will ever contact you by phone or video call for enquiries" ([The Week](https://www.theweek.in/news/india/2024/10/27/modi-raises-digital-arrest-scam-in-mann-ki-baat-lakhs-of-bank-accounts-blocked-says-pm.html)).
+
+Blocking a scam call costs the scammer nothing: he dials the next number. **Routing it to Dadi costs him real time** that would have gone to a real victim, and every scam ends with "send the money here". Dadi plays along until he says where.
+
+## How Dadi is different
+
+| | What it does | Languages | Gets mule IDs / evidence for India? |
+|---|---|---|---|
+| **Apate.ai** (Australia; CommBank, TPG) | AI bots hold long scam calls and extract intelligence for banks | English accents incl. Indian | For Australian banks; no Indian reporting channels |
+| **O2 "Daisy"** (UK, Nov 2024) | AI granny that wastes scammers' time | UK English | No (a publicity campaign, not a product) |
+| **Jolly Roger Telephone** (US) | Bots answer telemarketers for subscribers | English | No |
+| **Truecaller Assistant** (India) | Screens calls for you, with a transcript | English, Hindi, Hinglish | No: it screens, it does not bait |
+| **Airtel AI spam labels** (India) | Labels suspected spam calls on the network | Alerts in Indian languages | No: it never engages the caller |
+| **Chakshu / I4C registry / RBI MuleHunter.AI** | Citizen reports; bank-side mule detection | — | They need identifiers; Dadi collects them from inside the call |
+| **Dadi vs Scammers** | Baits the scammer in code-mix, extracts UPI IDs and accounts live, drafts the complaint, seals the recording, recognises repeat scammers by voice | Hinglish, Tanglish, Benglish, Kanglish, Tenglish | **Yes** |
+
+To our knowledge, as of Nov 2026, no publicly reported scam-baiting voice agent both converses in Indian code-mixed languages and turns the call into UPI or mule-account identifiers, evidence and a complaint draft for India's reporting channels (cybercrime.gov.in, 1930, Chakshu). Sources and details: `PITCH.md` and the team's research notes.
 
 ## What it does
 
