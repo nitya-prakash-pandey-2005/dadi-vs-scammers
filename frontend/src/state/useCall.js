@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPcmPlayer, startMic } from "@voice/index.js";
 import { openCall } from "../net/callSocket";
 import { toast } from "../ui";
-import { DEMO, DEMO_CALL_AUDIO } from "../demo";
+import { DEMO, DEMO_CALL_AUDIO, DEMO_FAMILY_AUDIO } from "../demo";
 import { createDemoPlayer } from "../demo/demoPlayer";
 
 const RATE = 8000; // phone-quality audio both ways (Prisma is trained on 8 kHz calls)
@@ -39,6 +39,7 @@ export function useCall({ onEnded } = {}) {
         break;
       case "turn":
         setTurns((t) => [...t, m]);
+        if (m.family === "handoff") toast("Dadi passed the phone to her grandson Bunty", "info");
         break;
       case "agent_speaking":
         setSpeaking(!!m.on);
@@ -78,7 +79,7 @@ export function useCall({ onEnded } = {}) {
 
   // One object per call. Async work (mic permission prompt, late socket events) checks it is still the current,
   // live call before touching shared state, so a hang-up during the prompt can never leak a mic into the next call.
-  const start = useCallback(async (personaKey = "auto", noiseDb = null, missionKey = null, { speakerphone = false } = {}) => {
+  const start = useCallback(async (personaKey = "auto", noiseDb = null, missionKey = null, { speakerphone = false, family = true, replay = null } = {}) => {
     const prev = refs.current.call;
     if (prev?.live) return; // a call is already running
     prev?.sock.close(); // previous call is over but its socket is still closing
@@ -95,7 +96,7 @@ export function useCall({ onEnded } = {}) {
     setPhase("connecting");
     refs.current.player?.close();
     // created inside the click, so audio is allowed (demo: the real recording of the replayed call)
-    const player = DEMO ? createDemoPlayer(DEMO_CALL_AUDIO) : createPcmPlayer({ sampleRate: RATE });
+    const player = DEMO ? createDemoPlayer(replay === "family" ? DEMO_FAMILY_AUDIO : DEMO_CALL_AUDIO) : createPcmPlayer({ sampleRate: RATE });
     refs.current.player = player;
     const t0 = Date.now();
     const session = { live: true, started: false, sock: null };
@@ -106,6 +107,8 @@ export function useCall({ onEnded } = {}) {
       noiseSnrDb: noiseDb,
       mission: missionKey,
       speakerphone,
+      family,
+      replay: DEMO ? replay : null,
       onEvent: (m) => {
         if (!current()) return;
         if (m.type === "session_started") {

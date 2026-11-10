@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { AlertTriangle, AudioLines, CheckCircle2, FileText, Fingerprint, MessagesSquare, Network, Radar, Timer } from "lucide-react";
+import { AlertTriangle, AudioLines, CheckCircle2, FileText, Fingerprint, MessagesSquare, Network, Radar, Timer, Users } from "lucide-react";
 import { Badge, Card, Hud, Progress, Stat } from "../ui";
 import SpeechText from "./SpeechText";
 import { navigate } from "../lib/router";
@@ -135,17 +135,35 @@ export function Transcript({ call }) {
   }, [call.turns.length]);
   const name = call.persona?.name || "Dadi";
   const firstKnown = call.turns.findIndex((t) => t.speaker !== "scammer" && t.recognised);
+  const holder = currentSpeaker(call.turns, name);
   return (
-    <Card icon={MessagesSquare} title="Live transcript" right={call.speaking ? <Badge tone="pink" dot>{name} speaking</Badge> : null} tour="transcript">
+    <Card icon={MessagesSquare} title="Live transcript" right={call.speaking ? <Badge tone="pink" dot>{holder} speaking</Badge> : null} tour="transcript">
       <div className="chat" ref={boxRef}>
         {!call.turns.length && <div className="empty">Press “Call Dadi” and play the scammer. Every line appears here as Prisma hears it.</div>}
         {call.turns.map((t, i) => {
           const scammer = t.speaker === "scammer";
+          if (!scammer && t.family && Array.isArray(t.segments) && t.segments.length) {
+            // family hand-off: Dadi passes the phone to Bunty (or he gives it back), one bubble per speaker
+            return (
+              <div key={i} className="family-turn">
+                <div className="family-event" role="note">
+                  <Users size={14} /> {t.family === "handoff" ? "Family hand-off: Dadi passes the phone to her grandson" : "Family hand-off: the grandson gives the phone back to Dadi"}
+                </div>
+                {t.segments.map((s, j) => (
+                  <div key={j} className={`bubble me ${s.persona === "bunty" ? "bunty" : ""}`}>
+                    <div className="bubble-text"><SpeechText text={s.text} /></div>
+                    <div className="meta">{s.persona === "bunty" ? s.name : name} · {mmss(t.t)}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          }
+          const bunty = !scammer && t.speaker_persona === "bunty";
           return (
-            <div key={i} className={`bubble ${scammer ? "them" : "me"}`}>
+            <div key={i} className={`bubble ${scammer ? "them" : "me"} ${bunty ? "bunty" : ""}`}>
               <div className="bubble-text"><SpeechText text={t.text} /></div>
               <div className="meta">
-                {scammer ? "Scammer" : name} · {mmss(t.t)}
+                {scammer ? "Scammer" : bunty ? t.speaker_name || "Bunty" : name} · {mmss(t.t)}
                 {scammer && t.latency_ms != null ? ` · Prisma ${Math.round(t.latency_ms)} ms` : ""}
                 {!scammer && t.tactic ? ` · ${TACTIC_LABELS[t.tactic] || t.tactic}` : ""}
                 {!scammer && t.fallback ? " · fallback line" : ""}
@@ -157,6 +175,16 @@ export function Transcript({ call }) {
       </div>
     </Card>
   );
+}
+
+/** Who holds Dadi's phone now: the speaker of the latest agent turn (Bunty after a family hand-off). */
+export function currentSpeaker(turns, fallback = "Dadi") {
+  for (let i = turns.length - 1; i >= 0; i--) {
+    const t = turns[i];
+    if (t.speaker === "scammer" || !t.speaker_persona) continue;
+    return t.speaker_persona === "bunty" ? t.speaker_name || "Bunty" : fallback;
+  }
+  return fallback;
 }
 
 export default function WarRoom({ call, totals }) {

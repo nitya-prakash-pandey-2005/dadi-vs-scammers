@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Headphones, PhoneCall, PhoneOff, ShieldAlert, Speaker, Target } from "lucide-react";
+import { AlertTriangle, Headphones, PhoneCall, PhoneOff, ShieldAlert, Speaker, Target, Users } from "lucide-react";
 import { Badge, Card, Hud, Seg, Toggle, hueOf, initials } from "../ui";
 import { DISCLAIMER, MIX_LABEL, PERSONA_HUE, mmss } from "../lib/labels";
 import { useNow } from "../state/useCall";
-import { DEMO } from "../demo";
+import { currentSpeaker } from "./WarRoom";
+import { DEMO, DEMO_FAMILY_TIMELINE, hasDemoFile } from "../demo";
 
 const NOISE_OPTIONS = [
   { value: "off", label: "Off" },
@@ -31,15 +32,22 @@ export const noiseToDb = (v) => (v === "off" ? null : Number(v));
 const SPEAKER_KEY = "dadi.speakerphone";
 const loadSpeaker = () => { try { return localStorage.getItem(SPEAKER_KEY) === "1"; } catch { return false; } };
 const saveSpeaker = (on) => { try { localStorage.setItem(SPEAKER_KEY, on ? "1" : "0"); } catch { /* not persisted */ } };
+// Family hand-off (Dadi passes the phone to grandson Bunty once per call): on by default
+const FAMILY_KEY = "dadi.family";
+const loadFamily = () => { try { return localStorage.getItem(FAMILY_KEY) !== "0"; } catch { return true; } };
+const saveFamily = (on) => { try { localStorage.setItem(FAMILY_KEY, on ? "1" : "0"); } catch { /* not persisted */ } };
 
 export default function Phone({ call, personas, personaKey, setPersonaKey, noise, setNoise }) {
   const [mission, setMission] = useState("");
   const [speaker, setSpeakerState] = useState(loadSpeaker);
   const setSpeaker = (on) => { setSpeakerState(on); saveSpeaker(on); };
+  const [family, setFamilyState] = useState(loadFamily);
+  const setFamily = (on) => { setFamilyState(on); saveFamily(on); };
   const live = ["connecting", "live", "ending"].includes(call.phase);
   const now = useNow(live);
   const elapsed = live && call.startedAt ? ((call.frozenAt || now) - call.startedAt) / 1000 : call.phase === "ended" ? call.wasted : 0;
   const ringRef = useRef(null);
+  const holder = currentSpeaker(call.turns || [], "Dadi"); // Bunty after a family hand-off
 
   const chosen = personas.find((p) => p.key === (personaKey === "auto" ? "dadi" : personaKey));
   const shown = call.persona?.name ? call.persona : chosen ? { key: chosen.key, name: chosen.name, city: chosen.city } : null;
@@ -87,6 +95,12 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
 
       <div className="who">
         <b>{shown?.name || "Dadi"}</b>
+        {holder === "Bunty" && call.phase !== "idle" && (
+          <div className="family-chips" aria-live="polite">
+            <span className="speaker-chip">Dadi</span>
+            <span className="speaker-chip on"><Users size={13} /> Bunty has the phone</span>
+          </div>
+        )}
         <div className="small muted">
           {shown?.city ? `${shown.city} · ` : ""}{MIX_LABEL[lang] || "Hinglish"}
           {personaKey === "auto" && call.phase === "idle" ? " · auto-switches by language" : ""}
@@ -104,8 +118,14 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
           <PhoneOff size={18} /> {call.phase === "ending" ? "Hanging up…" : "Hang up"}
         </button>
       ) : (
-        <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null, { speakerphone: speaker })}>
+        <button className="btn primary lg block" onClick={() => call.start(personaKey, noiseToDb(noise), mission || null, { speakerphone: speaker, family })}>
           <PhoneCall size={18} /> Call {personaKey === "auto" ? "Dadi" : SHORT[personaKey] || "Dadi"}
+        </button>
+      )}
+
+      {DEMO && !live && hasDemoFile(DEMO_FAMILY_TIMELINE) && (
+        <button className="btn lg block" onClick={() => call.start("dadi", null, "upi", { family: true, replay: "family" })}>
+          <Users size={18} /> Play the family hand-off call
         </button>
       )}
 
@@ -160,6 +180,17 @@ export default function Phone({ call, personas, personaKey, setPersonaKey, noise
         </label>
         <span className="pill-src">
           {speaker ? "On: Dadi stops listening while she talks, so she can't hear herself. " : ""}Earphones give the best barge-in.
+        </span>
+      </div>
+
+      <div className="callout speaker-box" data-tour="family">
+        <label className={`speaker-row ${live ? "off" : ""}`} title={live ? "Change it before the call starts" : undefined}>
+          <Users size={18} className="flex-none" />
+          <span className="grow">Family hand-off</span>
+          <Toggle on={family} onChange={setFamily} label="Family hand-off" disabled={live} />
+        </label>
+        <span className="pill-src">
+          {family ? "On: when the pressure peaks, Dadi passes the phone to her grandson Bunty (own voice), who asks him to spell every payment detail, then hands it back. Hindi Dadi only." : "Off: Dadi keeps the phone for the whole call."}
         </span>
       </div>
 

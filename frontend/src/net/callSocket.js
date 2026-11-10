@@ -2,9 +2,9 @@
 import { DEMO } from "../demo";
 import { DemoSocket } from "../demo/DemoSocket";
 
-// openCall({ persona, noiseSnrDb, mission, speakerphone, onEvent, onAudio, onClose }) -> { sendAudio, setNoise, hangup, close }
+// openCall({ persona, noiseSnrDb, mission, speakerphone, family, onEvent, onAudio, onClose }) -> { sendAudio, setNoise, hangup, close }
 
-export function openCall({ persona = "auto", noiseSnrDb = null, mission = null, speakerphone = false, onEvent, onAudio, onClose } = {}) {
+export function openCall({ persona = "auto", noiseSnrDb = null, mission = null, speakerphone = false, family = true, replay = null, onEvent, onAudio, onClose } = {}) {
   const proto = window.location.protocol === "https:" ? "wss" : "ws";
   const url = `${proto}://${window.location.host}/ws/call`;
   const ws = DEMO ? new DemoSocket(url) : new WebSocket(url); // demo: replays a recorded call
@@ -17,7 +17,8 @@ export function openCall({ persona = "auto", noiseSnrDb = null, mission = null, 
       try { ws.close(); } catch { /* already closed */ }
       return;
     }
-    const start = { type: "start", persona, noise_snr_db: noiseSnrDb, mission };
+    const start = { type: "start", persona, noise_snr_db: noiseSnrDb, mission, family: family !== false }; // family hand-off to Bunty
+    if (replay) start.replay = replay; // demo build: which recorded call to replay
     if (speakerphone) start.speakerphone = true; // backend switches to half-duplex (older backends ignore it)
     ws.send(JSON.stringify(start));
   };

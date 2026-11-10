@@ -23,6 +23,12 @@ export const RED_FLAG_LABELS = {
 };
 
 export const TACTIC_LABELS = {
+  handoff: "Family hand-off",
+  handback: "Phone back to Dadi",
+  spell_upi: "Bunty: spell the UPI ID",
+  spell_account: "Bunty: account + IFSC",
+  app_fumble: "Bunty: wrong app",
+  beneficiary_name: "Bunty: beneficiary name",
   glasses: "Lost her glasses",
   door_bell: "Doorbell",
   pressure_cooker: "Pressure cooker whistle",

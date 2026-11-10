@@ -8,6 +8,9 @@ export const DEMO = import.meta.env.VITE_DEMO === "1";
 export const REPO_URL = "https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers";
 export const RECORDED_ON = "10 Nov 2026";
 export const DEMO_CALL_AUDIO = "/demo/call.wav";
+// second replay: a recorded live call with the family hand-off (Dadi passes the phone to grandson Bunty)
+export const DEMO_FAMILY_AUDIO = "/demo/call-family.wav";
+export const DEMO_FAMILY_TIMELINE = "/demo/ws-family.json";
 export const NOT_IN_DEMO = "Not included in this demo build: run Dadi locally with your own keys for this";
 
 const have = new Set(files); // "demo/api/calls.json", "demo/ws-call.json", ...

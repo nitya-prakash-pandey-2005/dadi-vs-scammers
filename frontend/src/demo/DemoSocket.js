@@ -4,11 +4,13 @@
 // Timeline files (public/demo): [{ "t": seconds, "msg": { "type": ... } }, ...], replayed at real-time pace.
 // Also accepted: { "events": [...] }, "data"/"message" instead of "msg", msg as a JSON string, epoch or ms times.
 //   /ws/call  + {type:"start"}     -> ws-call.json   (the call audio, call.wav, is played by demoPlayer.js)
+//   /ws/call  + {type:"start", replay:"family"} -> ws-family.json (audio: call-family.wav)
 //   /ws/arena + {type:"arena"}     -> ws-arena.json
 //   /ws/arena + {type:"benchmark"} -> ws-bench.json  (only if recorded)
 import { hasDemoFile } from "./index.js";
 
 const FILES = { start: "/demo/ws-call.json", arena: "/demo/ws-arena.json", benchmark: "/demo/ws-bench.json" };
+const FAMILY_FILE = "/demo/ws-family.json";
 
 export function normaliseTimeline(raw) {
   const list = Array.isArray(raw) ? raw : raw?.events || raw?.timeline || raw?.messages || [];
@@ -71,14 +73,14 @@ export class DemoSocket {
     if (this.readyState !== 1 || typeof data !== "string") return; // mic audio: nobody listens in a replay
     let m;
     try { m = JSON.parse(data); } catch { return; }
-    if (FILES[m.type] && !this.events) this.play(m.type);
+    if (FILES[m.type] && !this.events) this.play(m.type, m.replay);
     else if (m.type === "hangup") this.hangup();
     // set_noise etc.: the recording can't change, so it is ignored
   }
 
-  async play(kind) {
+  async play(kind, replay) {
     this.events = [];
-    const file = FILES[kind];
+    const file = kind === "start" && replay === "family" ? FAMILY_FILE : FILES[kind];
     let events = [];
     try {
       if (!hasDemoFile(file)) throw new Error("missing");
