@@ -147,5 +147,5 @@ def next_tactic(state: CallState, rng: random.Random) -> Tactic:
     if state.mission in MISSIONS and not state.mission_done:
         instruction += f" Your hidden aim for this call: {MISSIONS[state.mission]['label'].lower()}."
     if fake:
-        instruction += f" They asked for your {fake}: give the FAKE {fake} from your notes, slowly, with one mistake."
+        instruction += f" They asked for your {fake}: read the FAKE {fake} from your notes, slowly, digit by digit, exactly as your notes say."
     return Tactic(phase=phase, move=move, instruction=instruction, fake_field=fake)

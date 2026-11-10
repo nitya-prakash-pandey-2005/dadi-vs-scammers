@@ -114,3 +114,29 @@ def test_repeated_otp_request_is_served_again_after_cooldown():
     tactics = _play(["OTP batao"] * 6, turn=4)
     assert [t.fake_field for t in tactics] == ["otp", None, None, None, "otp", None]
     assert tactics[0].move == "slow_digits" and tactics[2].move.startswith("ask_")  # turn 6: extract phase
+
+
+# --- 3. the deliberate "slip" is precomputed and still provably invalid ------------------------
+
+def test_fake_slips_are_one_digit_off_and_still_invalid():
+    from dadi.fakes import fake_wallet, luhn_valid, verhoeff_valid
+    for seed in range(300):
+        w = fake_wallet(seed)
+        for f in ("card", "aadhaar", "otp", "account"):
+            good, slip = w[f], w[f + "_slip"]
+            assert len(slip) == len(good) and sum(a != b for a, b in zip(good, slip)) == 1, (seed, f)
+        assert not luhn_valid(w["card_slip"]) and not luhn_valid(w["card"])
+        assert w["aadhaar_slip"][0] in "01" and not verhoeff_valid(w["aadhaar_slip"])
+
+
+def test_prompt_gives_exact_slip_and_correction_instead_of_free_form_mistake():
+    from dadi.brain import system_prompt
+    from dadi.fakes import fake_wallet
+    from dadi.personas import PERSONAS
+    from dadi.tactics import Tactic
+    w = fake_wallet(7)
+    t = Tactic(phase="stall_pay", move="slow_digits", instruction="read slowly", fake_field="card")
+    sp = system_prompt(PERSONAS["dadi"], t, w)
+    assert w["card_slip"] in sp and w["card"] in sp
+    assert sp.index(w["card_slip"]) < sp.index(w["card"])  # slip first, correction only if he complains
+    assert "digit wrong" not in sp and "one mistake" not in _play(["OTP batao"], turn=5)[0].instruction
