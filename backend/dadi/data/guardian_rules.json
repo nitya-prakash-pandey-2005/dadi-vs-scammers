@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "about": "Guardian mode risk rules. Shared by backend/dadi/guardian.py and the web app (frontend/src/lib/guardian-rules.json must stay identical; a test checks it). terms: lower-case substrings of the normalised text, which is padded with spaces, so ' cbi ' only matches the whole word. patterns: regexes on the lower-cased raw text (ASCII only, same meaning in Python and JavaScript). Each flag counts once per call; the score combines flags with diminishing returns: 100 * (1 - product(1 - weight/100)).",
+  "about": "Guardian mode risk rules. Shared by backend/dadi/guardian.py and the web app (frontend/src/lib/guardian-rules.json must stay identical; a test checks it). terms: lower-case substrings of the normalised text, which is padded with spaces, so ' cbi ' only matches the whole word. patterns: regexes on the lower-cased raw text (ASCII only, same meaning in Python and JavaScript; digits as [0-9], because \\d also matches Devanagari digits in Python but not in JavaScript). Each flag counts once per call; the score combines flags with diminishing returns: 100 * (1 - product(1 - weight/100)).",
   "separators": "[\\s.,!?;:\"'()<>…।|/_-]+",
   "thresholds": {"caution": 40, "stop": 70},
   "flags": [
@@ -58,7 +58,7 @@
     {
       "key": "payment_details", "weight": 25, "reason": "gives a UPI ID or account number to pay into",
       "terms": ["upi", "यूपीआई", "account number", "अकाउंट नंबर", "khata number", "ifsc", "qr code", "क्यूआर"],
-      "patterns": ["[a-z0-9._-]{2,}@[a-z]{2,}", "\\d(?:[ -]?\\d){10,17}"]
+      "patterns": ["[a-z0-9._-]{2,}@[a-z]{2,}", "[0-9](?:[ -]?[0-9]){10,17}"]
     }
   ],
   "warnings": {

@@ -58,6 +58,7 @@ def test_payment_identifiers_raise_the_risk():
     assert flags_in("pay to rathore.cbi@okaxis now") == [("payment_details", "rathore.cbi@okaxis")]
     assert [k for k, _ in flags_in("account 1234 5678 9012 3456 mein bhejo")] == ["payment_details"]
     assert flags_in("mera number 98765") == []  # a short number is not an account
+    assert flags_in("खाता १२३४५६७८९०१२३") == []  # ASCII digits only, exactly like the web scorer
 
 
 def test_levels_and_thresholds():
@@ -275,6 +276,7 @@ def test_web_rules_are_the_backend_rules():
 def test_web_scorer_gives_the_same_scores_as_python(tmp_path):
     lines = recorded_caller_lines() + LINES + [
         "Install AnyDesk and tell me the OTP", "account 1234 5678 9012 3456", "शॉपिंग pinky", "don't tell anyone",
+        "खाता १२३४५६७८९०१२३ में डालो",  # Devanagari digits: a \d pattern would score differently in JavaScript
         "আপনার নামে গ্রেফতার পরোয়ানা, পুলিশ বলছি", "ಪೊಲೀಸ್ ಅರೆಸ್ಟ್ ಮಾಡುತ್ತಾರೆ, ಒಟಿಪಿ ಹೇಳಿ"]
     script = tmp_path / "parity.mjs"
     script.write_text(
