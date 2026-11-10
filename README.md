@@ -1,10 +1,8 @@
 <div align="center">
 
-# 👵 Dadi vs Scammers
+<img src="docs/brand/banner.png" alt="Dadi vs Scammers: don't block scammers, route them to Dadi" width="100%">
 
-### Don't block scammers. Route them to Dadi.
-
-An AI grandmother who picks up scam calls, keeps the fraudster busy in **Hinglish, Tanglish, Benglish, Kanglish or Tenglish**, and quietly pulls out his mule **UPI IDs, bank accounts and phone numbers** into a ready-to-file cybercrime complaint, with the call recording sealed by SHA-256. And she never forgets a voice.
+**An AI grandmother who picks up scam calls, keeps the fraudster busy in Hinglish, Tanglish, Benglish, Kanglish or Tenglish, and pulls out his mule UPI IDs, bank accounts and phone numbers into a ready-to-file cybercrime complaint, with the call recording sealed by SHA-256. And she never forgets a voice.**
 
 ![Gnani Prisma v3.0](https://img.shields.io/badge/Gnani-Prisma_v3.0_STT-ff4d9d)
 ![Gnani Timbre v3.0](https://img.shields.io/badge/Gnani-Timbre_v3.0_TTS-8b5cf6)
@@ -12,13 +10,17 @@ An AI grandmother who picks up scam calls, keeps the fraudster busy in **Hinglis
 ![Tests](https://img.shields.io/badge/tests-174_passing-34d399)
 ![Languages](https://img.shields.io/badge/speaks-5_Indian_code--mixed_languages-fbbf24)
 
-**[One-page pitch](PITCH.md) · [PDF](PITCH.pdf) · Demo video: *[link]* · Sister apps on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)**
+**Live demo:** *[live demo link]* &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
 
 <img src="docs/screenshots/live/08-live-call-warroom-1440.png" alt="Live call: the scammer's words transcribed by Gnani Prisma, Dadi's replies, the intel card with his UPI ID, red flags and the time-wasted counter" width="100%">
 
-<sub>A live call on Gnani's servers. The "scammer" is synthetic (Gnani Timbre voice playing a fake digital-arrest script); every ID is fake.</sub>
+<sub>A live call on Gnani's servers. The "scammer" is synthetic (a Gnani Timbre voice playing a fake digital-arrest script); every ID is fake.</sub>
 
 </div>
+
+## Contents
+
+[She remembers him](#she-remembers-him) · [The problem](#the-problem) · [What Dadi does](#what-dadi-does) · [Screens](#screens) · [Wireframe](#wireframe) · [How it works](#how-it-works) · [How Dadi is different](#how-dadi-is-different) · [Gnani models used](#gnani-models-used-exactly) · [Measured results](#measured-results) · [Safety and ethics](#safety-and-ethics) · [How we would make it more advanced](#how-we-would-make-it-more-advanced) · [Run it](#run-it) · [Tests](#tests) · [Team](#team) · [Repo map](#repo-map)
 
 ## She remembers him
 
@@ -32,7 +34,7 @@ The Scam Ring Radar then linked both "officers" as one caller. A third call in a
 
 <img src="docs/screenshots/live/01-arena-repeat-scammer-1440.png" alt="AI-vs-AI arena: Dadi recognises a repeat scammer's voice" width="100%">
 
-## Why
+## The problem
 
 - Indians lost **₹22,845 crore** to cyber fraud in 2024, three times 2023's ₹7,465 crore ([MHA reply in the Lok Sabha, via Inc42](https://inc42.com/?p=523954)). Losses stayed around **₹22,500 crore in 2025** ([Free Press Journal](https://www.freepressjournal.in/mumbai/over-24-lakh-cyber-complaints-22495-crore-fraud-reported-in-2025)).
 - The elderly are hit hardest: in 2025, **1,03,488 senior citizens** reported losing **₹4,005 crore**, about 4% of complainants but roughly 18% of the money (our calculation from [MHA's Rajya Sabha reply, via ANI](https://newsable.asianetnews.com/india/senior-citizens-women-lost-rs-7-769-crore-to-cyber-fraud-in-2025-articleshow-u9oad8w)).
@@ -47,21 +49,7 @@ The Scam Ring Radar then linked both "officers" as one caller. A third call in a
 
 Blocking a scam call costs the scammer nothing: he dials the next number. **Routing it to Dadi costs him real time** that would have gone to a real victim, and every scam ends with "send the money here". Dadi plays along until he says where.
 
-## How Dadi is different
-
-| | What it does | Languages | Gets mule IDs / evidence for India? |
-|---|---|---|---|
-| **Apate.ai** (Australia; CommBank, TPG) | AI bots hold long scam calls and extract intelligence for banks | English accents incl. Indian | For Australian banks; no Indian reporting channels |
-| **O2 "Daisy"** (UK, Nov 2024) | AI granny that wastes scammers' time | UK English | No (a publicity campaign, not a product) |
-| **Jolly Roger Telephone** (US) | Bots answer telemarketers for subscribers | English | No |
-| **Truecaller Assistant** (India) | Screens calls for you, with a transcript | English, Hindi, Hinglish | No: it screens, it does not bait |
-| **Airtel AI spam labels** (India) | Labels suspected spam calls on the network | Alerts in Indian languages | No: it never engages the caller |
-| **Chakshu / I4C registry / RBI MuleHunter.AI** | Citizen reports; bank-side mule detection | — | They need identifiers; Dadi collects them from inside the call |
-| **Dadi vs Scammers** | Baits the scammer in code-mix, extracts UPI IDs and accounts live, drafts the complaint, seals the recording, recognises repeat scammers by voice | Hinglish, Tanglish, Benglish, Kanglish, Tenglish | **Yes** |
-
-To our knowledge, as of Nov 2026, no publicly reported scam-baiting voice agent both converses in Indian code-mixed languages and turns the call into UPI or mule-account identifiers, evidence and a complaint draft for India's reporting channels (cybercrime.gov.in, 1930, Chakshu). Sources and details: `PITCH.md` and the team's research notes.
-
-## What it does
+## What Dadi does
 
 | Feature | How it works |
 |---|---|
@@ -97,26 +85,17 @@ To our knowledge, as of Nov 2026, no publicly reported scam-baiting voice agent 
 <br><sub>Every screen works on a phone (390 px) as well as on a laptop.</sub>
 </p>
 
-## Gnani models and APIs used (exactly)
-- **Prisma v3.0 streaming STT** (WebSocket, `codemix`, single locale or `indic-auto`, scam keyterms, 8 kHz) for live calls; **Prisma REST** for the arena and the noise benchmark.
-- **Timbre v3.0 streaming TTS** (WebSocket) with audio tags (`<coughs>`, `<sigh>`, `<laugh>`…), 13 v3 voices; Timbre v2.5 as automatic fallback; Timbre REST for pre-rendered greetings, fillers and call-centre babble.
-- **Gnani voice cloning** (`/voice-clone/embeddings`): used creatively as a **speaker fingerprint** for repeat-caller detection, the ring radar and the AI-voice flag.
-- **Evon v3.3**: supported through the same OpenAI-compatible adapter (`LLM_PROVIDER=evon`, see `docs/EVON-HOSTING.md`), but Evon has no hosted API and needs an 80 GB GPU, so **the demo's dialogue and extraction run on Groq (`qwen/qwen3.8-27b`)**.
+## Wireframe
 
-## Measured on Gnani's live servers (see `docs/test-log.md`)
-| What | Result |
-|---|---|
-| Smoke test, 10 Nov (all Gnani + Groq checks) | **7/7 pass** |
-| Prisma streaming, final transcript after end of speech | **156 ms** (smoke test); 125–260 ms per line in noisy arena calls |
-| Prisma REST transcription | 0.37 s |
-| Timbre streaming, first audio chunk | 0.65 s |
-| LLM first token (Groq `qwen/qwen3.8-27b`) | 0.43 s |
-| Arena calls, 10 dB call-centre noise | 0 persona breaks; all digital-arrest red flags caught (8 Nov) |
-| Voice fingerprint over the 8 kHz line | same voice 0.93–0.96 cosine; different voices ≤ 0.78 (threshold 0.85) |
-| Live repeat-caller recognition | **0.956**, mid-call, then Dadi's tease (10 Nov) |
-| "Are you a bot?" jailbreak script | 0 admissions after the fix |
+The six main screens and how a call moves between them: the live call (phone panel + war room) ends in a report; its mule IDs and voice fingerprint feed the Scam Ring Radar and the bank freeze list; arena calls follow the same path. The message checker stands on its own.
+
+<img src="docs/design/wireframe.svg" alt="Low-fidelity wireframe: live call (desktop and 390 px), report, scam ring radar, AI-vs-AI arena, check a message, intelligence, with arrows for the flow of a call" width="100%">
+
+<sub>Source: `scripts/make_wireframe.py` (re-run it to regenerate `docs/design/wireframe.svg`).</sub>
 
 ## How it works
+
+**Architecture**
 
 ```mermaid
 flowchart LR
@@ -132,9 +111,107 @@ flowchart LR
   A --> J["Two-track recording<br/>SHA-256"] --> G
 ```
 
+**One live call, step by step.** Session = the realtime engine in `voice-core`; Dadi brain = tactic planner + LLM; Intel = regex + LLM extraction; Voice watch = Gnani voice-cloning fingerprint; Recorder = two-track recording.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor C as Scammer
+  participant B as Browser
+  participant S as Session (voice-core)
+  participant P as Prisma v3.0
+  participant D as Dadi brain
+  participant T as Timbre v3.0
+  participant I as Intel
+  participant V as Voice watch
+  participant R as Recorder
+  C->>B: speaks
+  B->>S: 8 kHz PCM16 frames over WebSocket
+  S->>R: caller track
+  S->>P: stream the audio
+  P-->>S: final transcript (about 125-260 ms after he stops)
+  S-->>B: transcript line in the war room
+  par every caller turn
+    S->>I: transcript
+    I-->>B: UPI IDs, phones, accounts, red flags (LLM pass at most every 30 s)
+  and once about 8 s of his speech is in
+    S->>V: caller speech only
+    V-->>D: same voice as an earlier call? (cosine 0.85 threshold)
+  end
+  S-->>B: in-character filler while she thinks
+  S->>D: conversation + mission
+  D->>D: tactic planner picks the move
+  D-->>S: short sentences, streamed
+  S->>T: one sentence at a time
+  T-->>S: Dadi's audio (coughs, sighs, laughs)
+  S->>R: Dadi track, as heard
+  S-->>B: Dadi's audio + text
+  B-->>C: Dadi speaks (he can interrupt: barge-in)
+  Note over S,R: Hang-up: report, complaint draft and evidence pack (ZIP + SHA-256 manifest)
+```
+
 One shared engine (`voice-core/`) runs all three of our apps: Gnani clients with a request gate (Gnani allows one short request at a time per key; we queue and retry 429s), the realtime session (barge-in, fillers, echo guard, reconnect), audio utilities and the LLM adapter.
 
+## How Dadi is different
+
+| | What it does | Languages | Gets mule IDs / evidence for India? |
+|---|---|---|---|
+| **Apate.ai** (Australia; CommBank, TPG) | AI bots hold long scam calls and extract intelligence for banks | English accents incl. Indian | For Australian banks; no Indian reporting channels |
+| **O2 "Daisy"** (UK, Nov 2024) | AI granny that wastes scammers' time | UK English | No (a publicity campaign, not a product) |
+| **Jolly Roger Telephone** (US) | Bots answer telemarketers for subscribers | English | No |
+| **Truecaller Assistant** (India) | Screens calls for you, with a transcript | English, Hindi, Hinglish | No: it screens, it does not bait |
+| **Airtel AI spam labels** (India) | Labels suspected spam calls on the network | Alerts in Indian languages | No: it never engages the caller |
+| **Chakshu / I4C registry / RBI MuleHunter.AI** | Citizen reports; bank-side mule detection | — | They need identifiers; Dadi collects them from inside the call |
+| **Dadi vs Scammers** | Baits the scammer in code-mix, extracts UPI IDs and accounts live, drafts the complaint, seals the recording, recognises repeat scammers by voice | Hinglish, Tanglish, Benglish, Kanglish, Tenglish | **Yes** |
+
+To our knowledge, as of Nov 2026, no publicly reported scam-baiting voice agent both converses in Indian code-mixed languages and turns the call into UPI or mule-account identifiers, evidence and a complaint draft for India's reporting channels (cybercrime.gov.in, 1930, Chakshu). Sources and details: `PITCH.md` and the team's research notes.
+
+## Gnani models used (exactly)
+
+- **Prisma v3.0 streaming STT** (WebSocket, `codemix`, single locale or `indic-auto`, scam keyterms, 8 kHz) for live calls; **Prisma REST** for the arena and the noise benchmark.
+- **Timbre v3.0 streaming TTS** (WebSocket) with audio tags (`<coughs>`, `<sigh>`, `<laugh>`…), 13 v3 voices; Timbre v2.5 as automatic fallback; Timbre REST for pre-rendered greetings, fillers and call-centre babble.
+- **Gnani voice cloning** (`/voice-clone/embeddings`): used as a **speaker fingerprint** for repeat-caller detection, the ring radar and the AI-voice flag.
+- **Evon v3.3**: supported through the same OpenAI-compatible adapter (`LLM_PROVIDER=evon`, see `docs/EVON-HOSTING.md`), but Evon has no hosted API and needs an 80 GB GPU, so **the demo's dialogue and extraction run on Groq (`qwen/qwen3.8-27b`)**.
+
+## Measured results
+
+On Gnani's live servers; details in [`docs/test-log.md`](docs/test-log.md).
+
+| What | Result |
+|---|---|
+| Smoke test, 10 Nov (all Gnani + Groq checks) | **7/7 pass** |
+| Prisma streaming, final transcript after end of speech | **156 ms** (smoke test); 125–260 ms per line in noisy arena calls; 67–170 ms in the live browser call |
+| Prisma REST transcription | 0.37 s |
+| Timbre streaming, first audio chunk | 0.65 s |
+| LLM first token (Groq `qwen/qwen3.8-27b`) | 0.43 s |
+| Live browser call, 10 Nov (synthetic scammer as the microphone) | in 95 s: UPI ID, phone (spoken in Hindi number words), AnyDesk, name, agency and 4 red flags captured; mission "UPI" complete |
+| Arena calls, 10 dB call-centre noise | 0 persona breaks; all digital-arrest red flags caught (8 Nov) |
+| Voice fingerprint over the 8 kHz line | same voice 0.93–0.96 cosine; different voices ≤ 0.78 (threshold 0.85) |
+| Live repeat-caller recognition | **0.956**, mid-call, then Dadi's tease (10 Nov) |
+| "Are you a bot?" jailbreak script | 0 admissions after the fix |
+
+## Safety and ethics
+
+- Demo calls are simulated; synthetic data only. Dadi never uses real personal data: the card and Aadhaar numbers she reads out are generated to fail the Luhn and Verhoeff checks.
+- Dadi never says she is an AI or accuses the caller, and never threatens. A voice match is a lead for investigators, not proof.
+- Recordings and fingerprints stay on the server that took the call (git-ignored). Deploying on real numbers needs the telecom operator's and the law's consent rules.
+- The voice fingerprint has been tested on Timbre voices, not on real human voices, which vary more between calls.
+
+## How we would make it more advanced
+
+| Next step | What exists today | Why it matters |
+|---|---|---|
+| **A real phone line** | A Twilio Media Streams and Exotel Voicebot bridge is prototyped on branch `feat/cl-phone-line` (G.711 mu-law codec, 20 ms frames, "clear" on barge-in, one call runner shared with the browser call, its own tests). Not merged yet. | Scammers call phones, not browsers. A number people can forward a suspected scam call to is the product. |
+| **Evon v3.3 for extraction** | The adapter already speaks to Evon (`LLM_PROVIDER=evon`); `docs/EVON-HOSTING.md` has the hosting recipe (vLLM on an 80 GB GPU, or a 4-bit GGUF on 24 GB). | The full Gnani stack (Prisma hears, Evon thinks, Timbre speaks), and no free-tier cap: Groq's 1,000 output tokens per minute forced us to run the intel LLM at most every 30 s. |
+| **Telecom routing of flagged calls** | Operators already label suspected spam on the network. | Labelling still leaves the scammer free to call the next person. With the subscriber's consent, a flagged call could be offered to Dadi instead, under DoT/TRAI rules. |
+| **Bank and I4C feeds** | The freeze list exports CSV/JSON with first/last seen, aliases, scam types and ring. | Mule IDs help only if they reach the people who can freeze them in the first hours. Next: push to a bank's fraud API or the format I4C's suspect registry takes. |
+| **Scam-script clustering** | Each call is tagged with a scam type, tactics and red flags; the intelligence board counts them. | Embedding and clustering transcripts would surface a new script after a handful of calls, before it shows up in advisories. |
+| **A consented real grandmother's voice** | Dadi speaks with stock Timbre voices; Apni Awaaz already has a consent and one-tap-delete flow for Gnani voice cloning. | A real, consenting grandmother's voice is warmer and is not in any scammer's list of known AI voices. |
+| **More languages** | Five code-mixed personas (Hinglish, Tanglish, Benglish, Kanglish, Tenglish). | Scams follow language. Prisma and Timbre cover more Indian languages, so Marathi, Gujarati, Malayalam, Punjabi and Odia grandmothers are mostly persona, prompt and number-word work. |
+| **Voice fingerprint on human voices** | Tested on Timbre voices over an 8 kHz line with noise. | Real voices vary more between calls; thresholds need a consented human test set before a match is shown to police. |
+
 ## Run it
+
 ```bash
 uv sync --all-packages
 cp .env.example .env              # GNANI_API_KEY, GROQ_API_KEY (GROQ_MODEL=qwen/qwen3.8-27b)
@@ -143,18 +220,16 @@ cd frontend && npm install && npm run build && cd ..
 uv run python -m uvicorn dadi.app:create_app --factory --port 8765
 # open http://127.0.0.1:8765 ; wait for the green "Gnani live" pill; use earphones
 ```
-No keys? `DADI_FAKE=1` runs the whole app with a scripted scammer and canned Dadi lines.
+
+- **No keys?** `DADI_FAKE=1` runs the whole app with a scripted scammer and canned Dadi lines.
+- **Static demo (what the live demo link serves):** `cd frontend && npm run build:demo` writes a replay build to `frontend/dist` that needs no backend, keys or microphone; serve it with `python -m http.server 8080 -d frontend/dist`. It replays calls recorded on Gnani's live servers on 10 Nov 2026 (`docs/DEPLOY-VERCEL.md`). Run `npm run build` afterwards so a local backend serves the real app.
 
 ## Tests
 
-`uv run python -m pytest -q` runs **174 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, and the WebSocket app end to end.
-
-## Safety and ethics
-- Demo calls are simulated; synthetic data only. Dadi never uses real personal data: the card and Aadhaar numbers she reads out are generated to fail the Luhn and Verhoeff checks.
-- Dadi never says she is an AI or accuses the caller, and never threatens. A voice match is a lead for investigators, not proof.
-- Recordings and fingerprints stay on the server that took the call (git-ignored). Deploying on real numbers needs the telecom operator's and the law's consent rules.
+`uv run python -m pytest -q` runs **174 tests** with fakes (no keys needed): the Gnani protocol and request gate, the realtime session (barge-in, fillers, echo guard in earphone and speakerphone modes, reconnect backoff, LLM-failure fallback lines, hang-up keeping the last turn's intel), number parsing in five languages, UPI-handle repair, provably invalid fake card and Aadhaar numbers, tactics, the voice fingerprint and ring radar, the evidence pack and its hashes, and the WebSocket app end to end. `npm run build` and `npm run build:demo` must also pass.
 
 ## Team
+
 - **Nitya Prakash Pandey:** idea and research, product and persona design, the shared voice engine, Dadi's brain (tactics, prompts, intel, complaint), web app, arena and noise benchmark, repeat-caller recognition, evidence pack, docs.
 - **Dilavesh Kanz Nidooli:** live Gnani integration and testing (found and fixed the Prisma one-locale and ASCII-keyterm issues), Scam Ring Radar, message checker, intelligence board and freeze list, mission mode, Ajji and Ammamma, running stories, AI-voice flag, "are you a bot?" arena; built our sister apps Pukaar and Apni Awaaz.
 
@@ -163,9 +238,13 @@ No keys? `DADI_FAKE=1` runs the whole app with a scripted scammer and canned Dad
 <sub>#GnaniAI #GreatIndianAIInternshipChallenge</sub>
 
 ## Repo map
+
 | Path | What |
 |---|---|
 | `voice-core/` | Shared voice engine (canonical copy; synced to `pukaar` and `apni-awaaz`) |
 | `backend/dadi/` | Personas, tactics, brain, intel, rings, voice watch, evidence, arena, FastAPI app |
-| `frontend/` | React + Vite UI: phone, war room, reports, ring radar, arena, checker, intelligence board |
-| `docs/` | Challenge brief, API reference, design, build plan, interview prep, demo kit, test log |
+| `frontend/` | React + Vite UI: phone, war room, reports, ring radar, arena, checker, intelligence board; `npm run build:demo` for the static replay |
+| `docs/` | Challenge brief, API reference, design, build plan, interview prep, demo kit, test log, deploy and Evon hosting notes |
+| `docs/brand/` | Logo (`logo.svg`, `mark.svg`), wordmark, README banner and its HTML source |
+| `docs/design/` | Wireframe of the main screens |
+| `scripts/` | Pitch PDF and wireframe generators, voiceprint builder, core sync |
