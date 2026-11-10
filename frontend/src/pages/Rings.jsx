@@ -143,11 +143,12 @@ export default function Rings() {
         <Stat value={inRings} label="Calls linked to a ring" />
         <Stat value={`${synth.length}/${d.nodes.filter((n) => n.voiceprint).length}`} label="Voices matching a known AI voice" tone="cyan" />
       </div>
+      <div className={d.rings.length ? "split-wide" : ""}>
       <Card icon={Network} title="Who is behind the calls" right={<span className="ring-legend"><i className="id" /> same mule ID <i className="voice" /> same voice</span>}>
         {d.nodes.length ? <div className="ring-graph-wrap" ref={wrapRef}><Graph data={d} narrow={narrow} /></div> : <div className="empty">No calls yet. Run two arena calls with the same scammer voice and different scripts.</div>}
         {d.nodes.length > 0 && !d.rings.length && <div className="pill-src ring-hint">No links yet: calls join a ring when they share a mule ID or the same voice.</div>}
       </Card>
-      <div className="grid g2" style={{ marginTop: 16 }}>
+      {d.rings.length > 0 && <div className="side-col">
         {d.rings.map((r, i) => (
           <Card key={i} icon={AudioWaveform} title={`Ring ${i + 1}: ${r.calls.length} calls`} className="alert">
             <div className="stack" style={{ gap: 10 }}>
@@ -158,6 +159,7 @@ export default function Rings() {
             </div>
           </Card>
         ))}
+      </div>}
       </div>
     </>
   );
