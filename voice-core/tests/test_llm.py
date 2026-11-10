@@ -92,3 +92,19 @@ def test_max_retries_is_configurable():
     s = _settings()
     assert LLM(s, max_retries=0).client.max_retries == 0
     assert LLM(s).client.max_retries == 1
+
+
+async def test_last_status_records_failures_and_successes(monkeypatch):
+    monkeypatch.setattr(LLM, "last_status", {})
+
+    async def boom(**kw):
+        raise RuntimeError("Error code: 404 model_not_found")
+
+    llm = LLM(_settings())
+    llm._client = type("Cl", (), {"chat": type("Ch", (), {"completions": type("Co", (), {"create": staticmethod(boom)})()})()})()
+    with pytest.raises(RuntimeError):
+        [c async for c in llm.stream([])]
+    assert LLM.last_status["ok"] is False and "404" in LLM.last_status["error"]
+    llm._client = _fake_client(_SlowStream(0.0, ["ok."]))
+    assert "".join([c async for c in llm.stream([])]) == "ok."
+    assert LLM.last_status["ok"] is True

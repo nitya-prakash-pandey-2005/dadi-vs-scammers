@@ -276,3 +276,17 @@ def test_ws_start_speakerphone_sets_half_duplex(tmp_path):
                     if m.get("type") == "websocket.close" or '"call_ended"' in (m.get("text") or ""):
                         break
     assert [s.half_duplex for s in made] == [True, False, False]
+
+
+def test_health_shows_the_live_model_and_llm_state(tmp_path, monkeypatch):
+    from voice_core.llm import LLM
+
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache", groq_api_key="g", groq_model="qwen/test-model")
+    monkeypatch.setattr(LLM, "last_status", {})
+    with TestClient(create_app(settings, session_factory=lambda *a: None)) as c:
+        h = c.get("/api/health").json()
+        assert h["groq_model"] == "qwen/test-model" and h["llm_model"] == "qwen/test-model"
+        assert h["llm_ready"] is True and h["llm_last_error"] is None
+        monkeypatch.setattr(LLM, "last_status", {"ok": False, "error": "404 model_not_found"})
+        h = c.get("/api/health").json()
+        assert h["llm_ready"] is False and "404" in h["llm_last_error"]

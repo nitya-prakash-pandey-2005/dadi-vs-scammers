@@ -96,10 +96,16 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
     # ------------------------------------------------------------------ REST
     @app.get("/api/health")
     async def health():
+        llm_key = bool(settings.groq_api_key or settings.evon_base_url)
+        last = LLM.last_status  # outcome of the most recent LLM call in this process (no extra request)
         return {
             "gnani_key": bool(settings.gnani_api_key),
-            "llm_key": bool(settings.groq_api_key or settings.evon_base_url),
+            "llm_key": llm_key,
             "llm_provider": settings.llm_provider,
+            "groq_model": settings.groq_model,
+            "llm_model": "fake" if fake else LLM(settings).model,
+            "llm_ready": (llm_key or fake) and last.get("ok", True) is not False,
+            "llm_last_error": last.get("error"),
             "intel_llm_provider": settings.intel_llm_provider,
             "stt_mode": settings.stt_mode,
             "fillers_ready": st.ready,
