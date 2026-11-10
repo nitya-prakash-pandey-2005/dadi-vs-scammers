@@ -28,7 +28,7 @@ FastAPI backend ── VoiceAgentSession (voice-core)
    ├─► Gnani Timbre v3.0 WebSocket streaming TTS (sentence by sentence) → audio back to the browser
    └─► background: intel extraction (regex + LLM JSON) → SQLite → live "war room" dashboard
 ```
-**Gnani models used:** Prisma v3.0 (STT realtime + REST), Timbre v3.0 (streaming TTS + audio tags; v2.5 as fallback), Gnani voice cloning (planned for a real grandmother's voice with consent), and Evon v3.3 (self-hosted, OpenAI-compatible) for extraction and reports.
+**Gnani models used:** Prisma v3.0 (STT realtime + REST), Timbre v3.0 (streaming TTS + audio tags; v2.5 as fallback), and Gnani voice cloning used as a **speaker fingerprint** (repeat callers, Scam Ring Radar, AI-voice flag). **Say it straight if asked about Evon:** the adapter supports it (`LLM_PROVIDER=evon`), but Evon has no hosted API and needs an 80 GB GPU, so the demo ran on Groq (qwen/qwen3.8-27b). Moving to Evon is a config change once it is hosted.
 
 ## 5. Decisions and why (most likely interview questions)
 
@@ -64,8 +64,8 @@ FastAPI backend ── VoiceAgentSession (voice-core)
 - **Sovereignty:** fraud intelligence is sensitive. Gnani's stack can run on-premise, and Evon's open weights can run in a government data centre.
 
 ## 8. What you personally did (fill this in honestly)
-- Nitya: idea selection and research, product decisions, persona design, testing and demo, posts, submission.
-- Teammate: Evon hosting and evaluation, testing, Pukaar.
+- Nitya: idea and research, product and persona design, the shared voice engine (Gnani clients, request gate, realtime session), Dadi's brain (tactics, prompts, intel, complaint), web app, arena and noise benchmark, repeat-caller recognition, evidence pack, demo, posts, submission.
+- Dilavesh: live Gnani integration and testing (Prisma one-locale and ASCII-keyterm fixes, Groq model choice), Scam Ring Radar, message checker, intelligence board and freeze list, mission mode, Ajji and Ammamma, running stories, AI-voice flag, "are you a bot?" arena; built Pukaar and Apni Awaaz.
 - Be honest that you used AI coding assistants. Then show you **understand** every part. Expect to be asked to explain one file in depth: practise `voice-core/voice_core/session.py` and `backend/dadi/tactics.py`.
 
 ## 9. Likely technical questions (short answers)
@@ -73,5 +73,7 @@ FastAPI backend ── VoiceAgentSession (voice-core)
 - **How does the server know the user stopped talking?** Prisma's server-side VAD (`x-min-silence-ms` ≈ 450 ms) closes the utterance and sends `processing` then `transcript`. We play a filler on `processing`.
 - **How do you measure latency?** Prisma returns `latency` per transcript; we show it on each bubble. We measure the LLM's time to first token and the TTS first-chunk time in `smoke_gnani.py`.
 - **What breaks under noise?** We add call-centre babble (generated from Gnani's own TTS voices) at a chosen SNR and watch the transcripts. The Arena measures character error rate per noise level.
-- **What if Gnani allows only one request at a time?** `STT_MODE=turn`: local energy VAD plus REST STT per utterance, and TTS only when no STT request is in flight.
-- **How would you improve it?** Real telephony, persona memory across calls, automatic scam-script clustering, a voice-cloned real grandmother, and Evon fine-tuned on scam transcripts.
+- **What if Gnani allows only one request at a time?** It does (live: a second concurrent REST call gets 429). `voice-core/voice_core/gnani/gate.py` puts every short request (TTS, REST STT, voice embedding) through one app-wide slot and retries 429/5xx with 0.5/1/2 s backoff; the long-lived Prisma stream is not gated (an open stream plus TTS was allowed). A stuck holder can't freeze the app: after 20 s a waiter goes ahead and relies on retries.
+- **How does Dadi recognise a repeat scammer?** `backend/dadi/voicewatch.py`: while Dadi is silent (so her own echo is not mixed in), the caller's speech is buffered; after 8 s of speech one Gnani voice-clone embedding (768-d) is made and compared by cosine with every earlier call (live: same voice 0.93–0.96, different voices ≤ 0.78, threshold 0.85). On a match, one line is added to Dadi's prompt ("you recognise this voice… tease him once") and the war room shows the earlier call. At hang-up the fingerprint is saved for the ring radar. It's a lead, not proof: real human voices vary more than TTS voices.
+- **How is the recording trustworthy?** `backend/dadi/evidence.py`: two tracks on one call clock (left = caller as received, right = Dadi as actually played; a barge-in cuts Dadi's track where playback stopped). The WAV's SHA-256 is stored at hang-up; the evidence ZIP lists every file with its hash, so anyone can check nothing was changed.
+- **How would you improve it?** Real telephony (a Twilio/Exotel media-stream bridge is on branch `feat/cl-phone-line`), automatic scam-script clustering, a voice-cloned real grandmother (with her consent), and Evon hosted and fine-tuned on scam transcripts.
