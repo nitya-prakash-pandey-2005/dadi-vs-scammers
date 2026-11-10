@@ -15,7 +15,7 @@ from typing import Any, Awaitable, Callable
 
 import numpy as np
 
-from .audio import float_to_pcm16, pcm16_to_float, telephone_band
+from .audio import BandPass, float_to_pcm16, pcm16_to_float
 from .config import Settings
 from .gnani.stt_stream import PrismaStream, SttEvent
 from .gnani.tts import strip_audio_tags, tts_stream
@@ -99,6 +99,7 @@ class VoiceAgentSession:
         self._lang_set = False
         self._closing = False
         self._noise_pos = 0
+        self._band = BandPass(self.sr)  # stateful across frames
 
     # ------------------------------------------------------------------ lifecycle
     def now(self) -> float:
@@ -163,7 +164,7 @@ class VoiceAgentSession:
         self.snr_db = snr_db
 
     def _add_noise(self, pcm16: bytes) -> bytes:
-        x = telephone_band(pcm16_to_float(pcm16), self.sr)
+        x = self._band(pcm16_to_float(pcm16))
         if self.noise is None or not len(self.noise) or not len(x):
             return float_to_pcm16(x)
         n = len(x)
