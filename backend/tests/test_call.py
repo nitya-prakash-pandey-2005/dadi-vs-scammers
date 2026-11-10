@@ -1,7 +1,6 @@
 import asyncio
 import random
 
-import pytest
 
 from voice_core.config import Settings
 from voice_core.session import VoiceAgentSession

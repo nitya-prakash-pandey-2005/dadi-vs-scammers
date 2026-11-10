@@ -1,8 +1,6 @@
 """Dadi never forgets a voice: live repeat-caller detection from Gnani voice-clone embeddings."""
 
-import asyncio
 import base64
-import random
 
 import numpy as np
 

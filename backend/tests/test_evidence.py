@@ -12,7 +12,6 @@ import numpy as np
 from voice_core.types import Turn
 
 from dadi.evidence import CallRecorder, build_evidence_pack, feed_csv, mule_feed
-from dadi.intel import IntelReport
 from dadi.store import Store
 
 SR = 8000
