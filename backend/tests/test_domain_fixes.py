@@ -177,3 +177,16 @@ def test_sanitise_classifies_llm_numbers_with_the_regex_rules():
     r = _sanitise({"accounts": ["98765 43210"], "phones": ["1234 5678 9012", "+91-91234-56789"]})
     assert sorted(r.phones) == ["9123456789", "9876543210"]
     assert r.accounts == ["123456789012"]
+
+
+def test_complaint_right_after_a_read_keeps_the_correction_in_the_notes():
+    from dadi.brain import system_prompt
+    from dadi.fakes import fake_wallet
+    from dadi.personas import PERSONAS
+    first, again = _play(["card number bataiye", "galat hai, card number phir se bataiye"], turn=5)
+    assert first.fake_field == "card" and again.fake_field is None and again.fake_recent == "card"
+    assert again.move != "slow_digits"  # the call moves on; the correction is only read if he complains
+    w = fake_wallet(3)
+    assert w["card"] in system_prompt(PERSONAS["dadi"], again, w)
+    sp = system_prompt(PERSONAS["dadi"], _play(["aapka card block ho gaya hai"], turn=5)[0], w)
+    assert w["card"] not in sp and "never make up digits" in sp

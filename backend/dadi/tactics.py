@@ -96,7 +96,8 @@ class Tactic:
     phase: str
     move: str
     instruction: str
-    fake_field: str | None = None
+    fake_field: str | None = None  # fake detail to read out this turn
+    fake_recent: str | None = None  # asked again right after it was read: notes stay up for a correction
 
 
 def _phase(state: CallState) -> str:
@@ -128,8 +129,9 @@ def next_tactic(state: CallState, rng: random.Random) -> Tactic:
     phase = _phase(state)
     recent = set(state.recent_moves[-3:])
     fake = _fake_field(state.last_scammer_text)
+    recent_fake = None
     if fake and state.turn - state.fake_served.get(fake, -FAKE_COOLDOWN) < FAKE_COOLDOWN:
-        fake = None  # read out just now: stall or extract instead of reading it again
+        recent_fake, fake = fake, None  # read out just now: stall or extract instead of reading it again
     if fake:
         state.fake_served[fake] = state.turn
         move = "slow_digits" if "slow_digits" not in recent else "wrong_button"
@@ -148,4 +150,7 @@ def next_tactic(state: CallState, rng: random.Random) -> Tactic:
         instruction += f" Your hidden aim for this call: {MISSIONS[state.mission]['label'].lower()}."
     if fake:
         instruction += f" They asked for your {fake}: read the FAKE {fake} from your notes, slowly, digit by digit, exactly as your notes say."
-    return Tactic(phase=phase, move=move, instruction=instruction, fake_field=fake)
+    elif recent_fake:
+        instruction += (f" He asks for your {recent_fake} again: only if he says what you read was wrong, read the "
+                        "correction from your notes once; otherwise do this turn's task first.")
+    return Tactic(phase=phase, move=move, instruction=instruction, fake_field=fake, fake_recent=recent_fake)
