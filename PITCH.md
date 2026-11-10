@@ -2,6 +2,8 @@
 
 **Team:** Nitya Prakash Pandey & Dilavesh Kanz Nidooli · Built on Gnani **Prisma v3.0** (speech-to-text), **Timbre v3.0** (text-to-speech) and **Gnani voice cloning** · One shared realtime engine (barge-in, in-character fillers, echo guard, reconnects, a request gate for Gnani's one-request-per-key limit) powers all three.
 
+**Live demos:** Dadi vs Scammers *[live demo link]* · Pukaar *[live demo link]* · Apni Awaaz *[live demo link]* &nbsp;|&nbsp; **Videos:** Dadi vs Scammers *[video link]* · Pukaar *[video link]* · Apni Awaaz *[video link]*
+
 ## 1. Dadi vs Scammers: *don't block scammers, route them to Dadi* (flagship)
 
 **Problem.** Indians lost **₹22,845 crore** to cyber fraud in 2024 ([MHA via Inc42](https://inc42.com/?p=523954)); in 2025, **1,03,488 senior citizens** reported losing ₹4,005 crore ([MHA via ANI](https://newsable.asianetnews.com/india/senior-citizens-women-lost-rs-7-769-crore-to-cyber-fraud-in-2025-articleshow-u9oad8w)). A fake "CBI" call took ₹7 crore from industrialist S.P. Oswal in 2024 ([Scroll](https://scroll.in/latest/1073888/2-arrested-for-duping-industrialist-sp-oswal-of-rs-7-crore-by-posing-as-officers-of-central-agencies)). Blocking a number costs the scammer nothing; he dials the next grandmother.
