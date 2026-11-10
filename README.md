@@ -11,7 +11,7 @@
 [![CI](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers/actions/workflows/ci.yml/badge.svg)](https://github.com/nitya-prakash-pandey-2005/dadi-vs-scammers/actions/workflows/ci.yml)
 ![Languages](https://img.shields.io/badge/speaks-5_Indian_code--mixed_languages-fbbf24)
 
-**Live demo:** *[live demo link]* &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
+**Live demo:** [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) &nbsp;·&nbsp; **Video:** *[video link]* &nbsp;·&nbsp; [One-page pitch (PDF)](PITCH.pdf) &nbsp;·&nbsp; [PITCH.md](PITCH.md) &nbsp;·&nbsp; Sister repos on the same engine: [Pukaar](https://github.com/nitya-prakash-pandey-2005/pukaar) · [Apni Awaaz](https://github.com/nitya-prakash-pandey-2005/apni-awaaz)
 
 <img src="docs/screenshots/live/08-live-call-warroom-1440.png" alt="Live call: the scammer's words transcribed by Gnani Prisma, Dadi's replies, the intel card with his UPI ID, red flags and the time-wasted counter" width="100%">
 

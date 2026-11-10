@@ -2,7 +2,7 @@
 
 **Team:** Nitya Prakash Pandey & Dilavesh Kanz Nidooli · Built on Gnani **Prisma v3.0** (speech-to-text), **Timbre v3.0** (text-to-speech) and **Gnani voice cloning** · One shared realtime engine (barge-in, in-character fillers, echo guard, reconnects, a request gate for Gnani's one-request-per-key limit) powers all three.
 
-**Live demos:** Dadi vs Scammers *[live demo link]* · Pukaar *[live demo link]* · Apni Awaaz *[live demo link]* &nbsp;|&nbsp; **Videos:** Dadi vs Scammers *[video link]* · Pukaar *[video link]* · Apni Awaaz *[video link]*
+**Live demos:** Dadi vs Scammers [dadi-vs-scammers.vercel.app](https://dadi-vs-scammers.vercel.app/) · Pukaar [pukaar-snowy.vercel.app](https://pukaar-snowy.vercel.app/) · Apni Awaaz [apni-awaaz-kappa.vercel.app](https://apni-awaaz-kappa.vercel.app/) &nbsp;|&nbsp; **Videos:** Dadi vs Scammers *[video link]* · Pukaar *[video link]* · Apni Awaaz *[video link]*
 
 ## 1. Dadi vs Scammers: *don't block scammers, route them to Dadi* (flagship)
 
