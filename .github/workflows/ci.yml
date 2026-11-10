@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python tests (voice-core + backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.20"
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install workspace (locked)
+        run: uv sync --all-packages --locked
+
+      - name: Lint (ruff, report only)
+        run: uv run --with ruff ruff check backend voice-core scripts --output-format=github
+        continue-on-error: true
+
+      - name: Run tests (fakes only, no API keys)
+        run: uv run python -m pytest -q
+
+  frontend:
+    name: Frontend build (app + static demo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Build the static demo (what Vercel deploys)
+        run: npm run build:demo
