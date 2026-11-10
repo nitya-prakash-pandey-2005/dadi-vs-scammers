@@ -207,3 +207,44 @@ def test_call_recording_evidence_pack_and_mule_feed(tmp_path):
     assert "rathore.cbi@okaxis" in z.read("transcript.txt").decode("utf-8")
     assert feed_csv.status_code == 200 and feed_csv.text.splitlines()[0].startswith("kind,value,calls")
     assert any(r["value"] == "rathore.cbi@okaxis" and r["kind"] == "upi_id" for r in feed_json["rows"])
+
+
+def test_ws_call_survives_stt_connect_failure(tmp_path):
+    import json
+
+    settings = Settings(sample_rate=8000, cache_dir=tmp_path / "cache")
+    holder = {}
+
+    class FailingStt:
+        connected = False
+
+        async def connect(self):
+            raise OSError("getaddrinfo failed")
+
+    def factory(send_json, send_audio, persona):
+        store = holder.setdefault("s", Store(tmp_path / "t.db"))
+        agent = DadiAgent(store=store, llm=FakeLLM(["हाँ बेटा।"]), intel_llm=FakeLLM([]), persona_key="dadi", seed=1)
+        holder["agent"] = agent
+        sess = VoiceAgentSession(agent, send_json=send_json, send_audio=send_audio, settings=settings,
+                                 stt_factory=FailingStt, tts_fn=fake_tts, rng=random.Random(0),
+                                 reconnect_delays=(0.01,))
+        return sess, agent
+
+    with TestClient(create_app(settings, session_factory=factory)) as c:
+        with c.websocket_connect("/ws/call") as ws:
+            ws.send_json({"type": "start", "persona": "dadi"})
+            msgs = []
+            for _ in range(60):
+                m = ws.receive()
+                if m.get("type") == "websocket.close":
+                    break
+                if m.get("text"):
+                    msgs.append(json.loads(m["text"]))
+                    if msgs[-1].get("type") == "status" and msgs[-1].get("stt") == "error":
+                        ws.send_json({"type": "hangup"})
+                    if msgs[-1].get("type") == "call_ended":
+                        break
+    kinds = [m["type"] for m in msgs]
+    assert kinds[0] == "session_started" and "call_ended" in kinds
+    assert any(m["type"] == "turn" and m["speaker"] == "dadi" for m in msgs)  # the greeting still played
+    assert holder["s"].get_call(holder["agent"].call_id)["ended_at"] is not None

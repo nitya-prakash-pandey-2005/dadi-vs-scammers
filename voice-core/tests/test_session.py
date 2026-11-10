@@ -137,3 +137,39 @@ async def test_no_fallback_when_reply_spoke_or_was_cancelled():
     await sess.wait_idle()
     assert [m["text"] for m in turns(out_json, "agent")] == ["theek hai."]
     await sess.hangup()
+
+
+# ---------------------------------------------------------------- 2. Prisma connect failure at call start
+
+class FailingStt:
+    connected = False
+
+    async def connect(self):
+        raise OSError("getaddrinfo failed (train tunnel)")
+
+
+async def test_stt_connect_failure_at_start_still_greets_and_reconnects():
+    agent = StubAgent([["achha."]], greeting="hello?")
+    good = FakeStt([ev("transcript", "main bank se bol raha hoon")], gap=0.02)
+    streams = [FailingStt(), good]
+    sess, out_json, _ = make(agent, factory=lambda: streams.pop(0), delays=(0.01, 0.01))
+    await sess.start()  # must not raise
+    await asyncio.sleep(0.2)
+    await sess.wait_idle()
+    statuses = [m["stt"] for m in out_json if m.get("type") == "status"]
+    assert statuses[0] == "reconnecting" and "connected" in statuses
+    assert [m["text"] for m in turns(out_json, "agent")] == ["hello?", "achha."]
+    assert [m["text"] for m in turns(out_json, "caller")] == ["main bank se bol raha hoon"]
+    await sess.hangup()
+    assert agent.ended is not None
+
+
+async def test_stt_never_connects_reports_error_and_hangup_works():
+    agent = StubAgent(greeting="hello?")
+    sess, out_json, _ = make(agent, factory=FailingStt, delays=(0.01, 0.01))
+    await sess.start()
+    await asyncio.sleep(0.15)
+    assert [m["stt"] for m in out_json if m.get("type") == "status"][-1] == "error"
+    assert [m["text"] for m in turns(out_json, "agent")] == ["hello?"]
+    await sess.hangup()
+    assert agent.ended is not None

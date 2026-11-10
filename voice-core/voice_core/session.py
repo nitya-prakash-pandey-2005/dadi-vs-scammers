@@ -97,9 +97,13 @@ class VoiceAgentSession:
         greeting = self.agent.greeting()
         if greeting:
             self._recent_agent_lines.append(greeting)
-        await self._open_stt()
         if greeting:
             self._speak_task = asyncio.create_task(self._speak_fixed(greeting))
+        try:
+            await self._open_stt()
+        except Exception as e:  # train tunnel, 429, timeout: keep the call alive and keep trying
+            log.warning("STT connect failed at start: %r", e)
+            self._stt_task = asyncio.create_task(self._reconnect())
 
     async def hangup(self) -> dict:
         self._closing = True

@@ -248,10 +248,10 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
                            embed_fn=voice_embed_fn, api_key=settings.gnani_api_key, on_match=on_repeat_caller,
                            speech_filter=all_audio if fake else speech_only)
         t0["v"] = time.monotonic()
-        await sess.start()
-        if first.get("noise_snr_db") is not None:
-            await sess.set_noise(float(first["noise_snr_db"]))
         try:
+            await sess.start()
+            if first.get("noise_snr_db") is not None:
+                await sess.set_noise(float(first["noise_snr_db"]))
             while True:
                 msg = await ws.receive()
                 if msg.get("type") == "websocket.disconnect":
@@ -270,6 +270,8 @@ def create_app(settings: Settings | None = None, *, session_factory=None, voice_
                         await sess.set_noise(None if snr is None else float(snr))
         except (WebSocketDisconnect, RuntimeError):
             pass
+        except Exception as e:  # never lose the call row, recording or voiceprint because of one bad message
+            log.warning("call loop failed: %r", e)
         finally:
             res = await sess.hangup()
             call_store = getattr(agent, "store", store)
