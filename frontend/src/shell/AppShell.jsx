@@ -23,7 +23,7 @@ export default function AppShell({ path, brand, nav, titles = [], mobileTabs, to
     <div className="shell">
       <aside className="sidebar">
         <a href={brand?.href || "#/"} className="brand">
-          <span className="logo">{brand?.logo ? <img src={brand.logo} width="26" height="26" alt="" /> : null}</span>
+          <span className="logo">{brand?.logo ? <img src={brand.logo} width="30" height="30" alt="" /> : null}</span>
           <span><b>{brand?.name}</b>{brand?.sub && <div className="sub">{brand.sub}</div>}</span>
         </a>
         {nav.map((g) => (

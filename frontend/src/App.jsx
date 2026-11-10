@@ -95,7 +95,7 @@ export default function App() {
     <>
       <AppShell
         path={route.path}
-        brand={{ name: "Dadi vs Scammers", sub: "AI scam-baiter · Gnani", logo: "/icons/icon.svg", href: "#/app" }}
+        brand={{ name: "Dadi vs Scammers", sub: "AI scam-baiter · Gnani", logo: "/icons/mark.svg", href: "#/app" }}
         nav={NAV}
         mobileTabs={MOBILE_TABS}
         titles={TITLES}
